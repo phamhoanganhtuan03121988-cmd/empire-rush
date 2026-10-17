@@ -1,0 +1,55 @@
+## Headless test runner. Discovers res://tests/**/test_*.gd, runs every
+## method whose name starts with "test_", and exits with code 0 only when
+## every test passes. No third-party test framework is used so the runner has
+## no licensing or version coupling.
+##
+## Usage (from repo root): scripts/run_tests.sh
+extends SceneTree
+
+const TEST_ROOTS := ["res://tests/unit", "res://tests/integration"]
+
+var _failures: Array[String] = []
+var _passed := 0
+
+
+func _initialize() -> void:
+	var files: Array[String] = []
+	for root in TEST_ROOTS:
+		_collect(root, files)
+	files.sort()
+	for path in files:
+		_run_file(path)
+	print("RESULT: %d passed, %d failed" % [_passed, _failures.size()])
+	for failure in _failures:
+		printerr("FAIL: " + failure)
+	quit(0 if _failures.is_empty() and _passed > 0 else 1)
+
+
+func _collect(dir_path: String, out: Array[String]) -> void:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return
+	for sub in dir.get_directories():
+		_collect(dir_path.path_join(sub), out)
+	for file in dir.get_files():
+		if file.begins_with("test_") and file.ends_with(".gd"):
+			out.append(dir_path.path_join(file))
+
+
+func _run_file(path: String) -> void:
+	var script: GDScript = load(path)
+	if script == null:
+		_failures.append("%s: failed to load" % path)
+		return
+	for method in script.get_script_method_list():
+		var name: String = method["name"]
+		if not name.begins_with("test_"):
+			continue
+		var suite: TestCase = script.new()
+		suite.call(name)
+		if suite.errors.is_empty():
+			_passed += 1
+			print("PASS: %s::%s" % [path.get_file(), name])
+		else:
+			for err in suite.errors:
+				_failures.append("%s::%s - %s" % [path.get_file(), name, err])

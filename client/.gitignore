@@ -1,0 +1,7 @@
+# Godot 4 editor/import cache and local settings
+.godot/
+*.translation
+# Export output
+/build/
+*.apk
+*.aab
