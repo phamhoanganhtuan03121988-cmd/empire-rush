@@ -1,0 +1,48 @@
+{
+  "_status": "DRAFT v2 - tuned by simulation (see docs/M1_REPORT.md), still tunable, requires owner review (G1). All money is integer RC.",
+  "starting_cash": 1500,
+  "start_reward": 200,
+  "max_rounds": 25,
+  "time_cap_ms": 1800000,
+  "turn_timer_ms": 45000,
+  "trade_timer_ms": 20000,
+  "rescue_timer_ms": 30000,
+  "timeout_auto_roll": true,
+  "auction": {
+    "timer_ms": 12000,
+    "min_bid_pct_of_price": 10,
+    "min_bid_floor": 10,
+    "min_increment": 10,
+    "anti_snipe_window_ms": 3000,
+    "anti_snipe_extension_ms": 3000,
+    "max_extensions": 2
+  },
+  "trade": {
+    "max_properties_per_side": 3
+  },
+  "wealth_tax": {
+    "_formula": "tax = min(cap, floor(taxable_wealth * pct / 100)); taxable_wealth = cash + sum(liquidation value of owned properties incl. buildings) = MVP net worth",
+    "pct": 10,
+    "cap": 200
+  },
+  "rent_multiplier_pct": {
+    "_rule": "rent = base_rent * pct / 100. Exactly ONE row applies (no stacking): level 0 uses 'level0_incomplete' or 'level0_district_complete'; levels 1-3 already include the district-completion value and never get the 2x on top.",
+    "level0_incomplete": 100,
+    "level0_district_complete": 200,
+    "level1": 600,
+    "level2": 1800,
+    "level3": 4500
+  },
+  "upgrade_refund_pct": 50,
+  "max_level": 3,
+  "max_total_discount_pct": 75,
+  "tiers": [
+    {"tier": 1, "price": 60, "base_rent": 8, "upgrade_cost": 40, "liquidation_value": 30},
+    {"tier": 2, "price": 90, "base_rent": 11, "upgrade_cost": 40, "liquidation_value": 45},
+    {"tier": 3, "price": 120, "base_rent": 15, "upgrade_cost": 60, "liquidation_value": 60},
+    {"tier": 4, "price": 150, "base_rent": 18, "upgrade_cost": 60, "liquidation_value": 75},
+    {"tier": 5, "price": 180, "base_rent": 22, "upgrade_cost": 80, "liquidation_value": 90},
+    {"tier": 6, "price": 220, "base_rent": 26, "upgrade_cost": 80, "liquidation_value": 110},
+    {"tier": 7, "price": 260, "base_rent": 32, "upgrade_cost": 100, "liquidation_value": 130}
+  ]
+}

@@ -1,0 +1,77 @@
+4.7.2.stable.official.ed1daf0bf
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SIMULATION: 2000 matches, wall 51890 ms
+== 4p ==
+{
+  "avg_cash_per_player_at": {
+    "round1": 1500,
+    "round10": 1285,
+    "round15": 1344,
+    "round20": 1448,
+    "round25": 1596,
+    "round5": 1251
+  },
+  "bankruptcy": {
+    "matches_with_any_pct": 20.5,
+    "per_match": 0.24,
+    "round_mean": 22.7,
+    "round_median": 23.0
+  },
+  "comeback_pct": 74.3,
+  "duration_min": {
+    "max": 25.3,
+    "mean": 18.3,
+    "median": 18.2,
+    "min": 13.2,
+    "p90": 20.6
+  },
+  "end_reasons_pct": {
+    "last_solvent": 0.1,
+    "round_cap": 100.0
+  },
+  "fair_share_pct": 25.0,
+  "matches": 2000,
+  "per_match": {
+    "abilities": 5.11,
+    "auctions": 1.36,
+    "auctions_sold": 1.36,
+    "liquidations": 1.1,
+    "rent_paid": 3811.86,
+    "rescues": 0.6,
+    "timeouts": 12.83,
+    "trades_accepted": 2.2,
+    "trades_expired": 0.16,
+    "trades_proposed": 5.32,
+    "unowned_at_end": 1.68,
+    "upgrades": 16.83
+  },
+  "players": 4,
+  "rounds": {
+    "mean": 25.0,
+    "median": 25.0
+  },
+  "win_pct_by_character": {
+    "INVESTOR": {
+      "games": 2667,
+      "win_pct": 25.9
+    },
+    "NEGOTIATOR": {
+      "games": 2667,
+      "win_pct": 23.0
+    },
+    "TYCOON": {
+      "games": 2666,
+      "win_pct": 26.1
+    }
+  },
+  "win_pct_by_seat": {
+    "seat0": 30.0,
+    "seat1": 27.6,
+    "seat2": 21.8,
+    "seat3": 20.7
+  },
+  "winner_net_worth_share_pct": 45.2
+}
+FAILURES: {"examples":[],"invariant_errors":0,"rejections":0,"stuck":0,"total":0}
+wrote /home/user/empire-rush/docs/test-logs/m1_sim_2000_4p_summary.json

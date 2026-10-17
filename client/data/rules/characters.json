@@ -1,0 +1,25 @@
+{
+  "_status": "DRAFT - text and numbers require owner review (G10). Abilities never touch dice.",
+  "characters": [
+    {
+      "character_id": "TYCOON",
+      "name": "The Tycoon",
+      "description": "Builds cheaper: every upgrade costs 10% less.",
+      "ability": {"ability_id": "BUILDER_DISCOUNT", "kind": "passive", "upgrade_discount_pct": 10}
+    },
+    {
+      "character_id": "INVESTOR",
+      "name": "The Investor",
+      "description": "Dividend Call: collect 15 RC per owned property (max 120 RC). 2 uses per match, 3-round cooldown. Counts as your strategic action.",
+      "ability": {"ability_id": "DIVIDEND_CALL", "kind": "active", "uses_per_match": 2, "cooldown_rounds": 3,
+                  "effects": [{"type": "per_property_cash", "amount": 15, "max_total": 120}]}
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "name": "The Negotiator",
+      "description": "Contract Clause: the next rent you pay within 2 rounds is halved. 2 uses per match, 3-round cooldown. Counts as your strategic action.",
+      "ability": {"ability_id": "CONTRACT_CLAUSE", "kind": "active", "uses_per_match": 2, "cooldown_rounds": 3,
+                  "effects": [{"type": "rent_discount_next", "pct": 50, "duration_rounds": 2}]}
+    }
+  ]
+}
