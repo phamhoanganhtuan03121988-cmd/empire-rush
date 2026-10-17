@@ -1,0 +1,9 @@
+4.7.2.stable.official.ed1daf0bf
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+== M1 baseline ==
+  2p n=1000  min med/p90 9.9/11.8  s/turn 12.0  rounds 25.0  end { "round_cap": 97.4, "last_solvent": 2.6 }  bk 2.6% (rd 24.0)  seats [53.5, 46.5] spread 7.0pp  chars { "INVESTOR": 53.2, "NEGOTIATOR": 49.5, "TYCOON": 47.3 }  winner!=book 17.7%  hoarder/focus 49.9%±3.1
+  3p n=1000  min med/p90 14.3/16.3  s/turn 11.5  rounds 25.0  end { "round_cap": 99.5, "last_solvent": 0.5 }  bk 11.0% (rd 23.0)  seats [38.1, 33.6, 28.3] spread 9.8pp  chars { "TYCOON": 33.8, "INVESTOR": 35.1, "NEGOTIATOR": 31.1 }  winner!=book 17.2%  hoarder/focus 31.1%±2.9
+  4p n=2000  min med/p90 18.3/20.6  s/turn 11.1  rounds 25.0  end { "round_cap": 99.8, "last_solvent": 0.3 }  bk 20.6% (rd 23.0)  seats [31.0, 26.4, 23.8, 18.9] spread 12.1pp  chars { "INVESTOR": 27.3, "TYCOON": 24.4, "NEGOTIATOR": 23.3 }  winner!=book 12.6%  hoarder/focus 24.4%±1.9
+FAILURES: 0  wall 91200 ms
+wrote /home/user/empire-rush/docs/test-logs/m1.1/seat_block_2000000.json
