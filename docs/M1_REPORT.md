@@ -215,7 +215,7 @@ These steps belong to M2 (visual slice) and M4 (MVP), once there is something to
 | 5 | Financial invariants preserved | **PASS** | Checked after every step: cash ≥ 0, money conserved, unique sequential tx ids, single ownership, bankrupt players hold nothing |
 | 6 | M1 report with commands, counts, results, failures, limitations, questions | **PASS** | This document |
 | 7 | Plan and docs updated | **PASS** | IMPLEMENTATION_PLAN, PROTOCOL, README, RULES_M1 |
-| 8 | Committed and pushed to the M1 branch | See the commit and push status reported with this milestone. Pushing is attempted only after this file is committed. |
+| 8 | Committed and pushed to the M1 branch | **PASS** | Implementation commit `331f33a` pushed to `origin/claude/m1-offline-game-rules` (confirmed by `git ls-remote`); this status line was added in a follow-up commit |
 | — | Balance meets the 22–27 min pacing target | **Not met / unverified.** Simulation-only time model; needs owner decisions (§10.7) and real playtests |
 | — | iPhone 14 Pro build and 30 FPS | **Not done.** Requires macOS/Xcode (§11) |
 
