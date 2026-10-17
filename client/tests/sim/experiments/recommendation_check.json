@@ -1,0 +1,421 @@
+{
+ "players": [
+  2,
+  3,
+  4
+ ],
+ "matches": {
+  "2": 1000,
+  "3": 1000,
+  "4": 2000
+ },
+ "seed_base": 800000,
+ "variants": [
+  {
+   "name": "V4 time model m1 (fast)",
+   "time_model": "m1",
+   "max_rounds_by_players": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+   },
+   "balance": {
+    "rent_multiplier_pct": {
+     "level1": 700,
+     "level2": 2200,
+     "level3": 5500
+    },
+    "tiers": [
+     {
+      "tier": 1,
+      "price": 60,
+      "base_rent": 8,
+      "upgrade_cost": 30,
+      "liquidation_value": 30
+     },
+     {
+      "tier": 2,
+      "price": 90,
+      "base_rent": 11,
+      "upgrade_cost": 30,
+      "liquidation_value": 45
+     },
+     {
+      "tier": 3,
+      "price": 120,
+      "base_rent": 15,
+      "upgrade_cost": 45,
+      "liquidation_value": 60
+     },
+     {
+      "tier": 4,
+      "price": 150,
+      "base_rent": 18,
+      "upgrade_cost": 45,
+      "liquidation_value": 75
+     },
+     {
+      "tier": 5,
+      "price": 180,
+      "base_rent": 22,
+      "upgrade_cost": 60,
+      "liquidation_value": 90
+     },
+     {
+      "tier": 6,
+      "price": 220,
+      "base_rent": 26,
+      "upgrade_cost": 60,
+      "liquidation_value": 110
+     },
+     {
+      "tier": 7,
+      "price": 260,
+      "base_rent": 32,
+      "upgrade_cost": 75,
+      "liquidation_value": 130
+     }
+    ]
+   }
+  },
+  {
+   "name": "V4 time model slow",
+   "time_model": "slow",
+   "max_rounds_by_players": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+   },
+   "balance": {
+    "rent_multiplier_pct": {
+     "level1": 700,
+     "level2": 2200,
+     "level3": 5500
+    },
+    "tiers": [
+     {
+      "tier": 1,
+      "price": 60,
+      "base_rent": 8,
+      "upgrade_cost": 30,
+      "liquidation_value": 30
+     },
+     {
+      "tier": 2,
+      "price": 90,
+      "base_rent": 11,
+      "upgrade_cost": 30,
+      "liquidation_value": 45
+     },
+     {
+      "tier": 3,
+      "price": 120,
+      "base_rent": 15,
+      "upgrade_cost": 45,
+      "liquidation_value": 60
+     },
+     {
+      "tier": 4,
+      "price": 150,
+      "base_rent": 18,
+      "upgrade_cost": 45,
+      "liquidation_value": 75
+     },
+     {
+      "tier": 5,
+      "price": 180,
+      "base_rent": 22,
+      "upgrade_cost": 60,
+      "liquidation_value": 90
+     },
+     {
+      "tier": 6,
+      "price": 220,
+      "base_rent": 26,
+      "upgrade_cost": 60,
+      "liquidation_value": 110
+     },
+     {
+      "tier": 7,
+      "price": 260,
+      "base_rent": 32,
+      "upgrade_cost": 75,
+      "liquidation_value": 130
+     }
+    ]
+   }
+  },
+  {
+   "name": "V4 + seat cash +25/seat (DATA ONLY, not a rule)",
+   "time_model": "medium",
+   "max_rounds_by_players": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+   },
+   "balance": {
+    "rent_multiplier_pct": {
+     "level1": 700,
+     "level2": 2200,
+     "level3": 5500
+    },
+    "tiers": [
+     {
+      "tier": 1,
+      "price": 60,
+      "base_rent": 8,
+      "upgrade_cost": 30,
+      "liquidation_value": 30
+     },
+     {
+      "tier": 2,
+      "price": 90,
+      "base_rent": 11,
+      "upgrade_cost": 30,
+      "liquidation_value": 45
+     },
+     {
+      "tier": 3,
+      "price": 120,
+      "base_rent": 15,
+      "upgrade_cost": 45,
+      "liquidation_value": 60
+     },
+     {
+      "tier": 4,
+      "price": 150,
+      "base_rent": 18,
+      "upgrade_cost": 45,
+      "liquidation_value": 75
+     },
+     {
+      "tier": 5,
+      "price": 180,
+      "base_rent": 22,
+      "upgrade_cost": 60,
+      "liquidation_value": 90
+     },
+     {
+      "tier": 6,
+      "price": 220,
+      "base_rent": 26,
+      "upgrade_cost": 60,
+      "liquidation_value": 110
+     },
+     {
+      "tier": 7,
+      "price": 260,
+      "base_rent": 32,
+      "upgrade_cost": 75,
+      "liquidation_value": 130
+     }
+    ]
+   },
+   "seat_cash_delta": 25
+  },
+  {
+   "name": "V4 + seat cash +50/seat (DATA ONLY, not a rule)",
+   "time_model": "medium",
+   "max_rounds_by_players": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+   },
+   "balance": {
+    "rent_multiplier_pct": {
+     "level1": 700,
+     "level2": 2200,
+     "level3": 5500
+    },
+    "tiers": [
+     {
+      "tier": 1,
+      "price": 60,
+      "base_rent": 8,
+      "upgrade_cost": 30,
+      "liquidation_value": 30
+     },
+     {
+      "tier": 2,
+      "price": 90,
+      "base_rent": 11,
+      "upgrade_cost": 30,
+      "liquidation_value": 45
+     },
+     {
+      "tier": 3,
+      "price": 120,
+      "base_rent": 15,
+      "upgrade_cost": 45,
+      "liquidation_value": 60
+     },
+     {
+      "tier": 4,
+      "price": 150,
+      "base_rent": 18,
+      "upgrade_cost": 45,
+      "liquidation_value": 75
+     },
+     {
+      "tier": 5,
+      "price": 180,
+      "base_rent": 22,
+      "upgrade_cost": 60,
+      "liquidation_value": 90
+     },
+     {
+      "tier": 6,
+      "price": 220,
+      "base_rent": 26,
+      "upgrade_cost": 60,
+      "liquidation_value": 110
+     },
+     {
+      "tier": 7,
+      "price": 260,
+      "base_rent": 32,
+      "upgrade_cost": 75,
+      "liquidation_value": 130
+     }
+    ]
+   },
+   "seat_cash_delta": 50
+  },
+  {
+   "name": "V4 + seat cash +75/seat (DATA ONLY, not a rule)",
+   "time_model": "medium",
+   "max_rounds_by_players": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+   },
+   "balance": {
+    "rent_multiplier_pct": {
+     "level1": 700,
+     "level2": 2200,
+     "level3": 5500
+    },
+    "tiers": [
+     {
+      "tier": 1,
+      "price": 60,
+      "base_rent": 8,
+      "upgrade_cost": 30,
+      "liquidation_value": 30
+     },
+     {
+      "tier": 2,
+      "price": 90,
+      "base_rent": 11,
+      "upgrade_cost": 30,
+      "liquidation_value": 45
+     },
+     {
+      "tier": 3,
+      "price": 120,
+      "base_rent": 15,
+      "upgrade_cost": 45,
+      "liquidation_value": 60
+     },
+     {
+      "tier": 4,
+      "price": 150,
+      "base_rent": 18,
+      "upgrade_cost": 45,
+      "liquidation_value": 75
+     },
+     {
+      "tier": 5,
+      "price": 180,
+      "base_rent": 22,
+      "upgrade_cost": 60,
+      "liquidation_value": 90
+     },
+     {
+      "tier": 6,
+      "price": 220,
+      "base_rent": 26,
+      "upgrade_cost": 60,
+      "liquidation_value": 110
+     },
+     {
+      "tier": 7,
+      "price": 260,
+      "base_rent": 32,
+      "upgrade_cost": 75,
+      "liquidation_value": 130
+     }
+    ]
+   },
+   "seat_cash_delta": 75
+  },
+  {
+   "name": "V4 + seat cash +100/seat (DATA ONLY, not a rule)",
+   "time_model": "medium",
+   "max_rounds_by_players": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+   },
+   "balance": {
+    "rent_multiplier_pct": {
+     "level1": 700,
+     "level2": 2200,
+     "level3": 5500
+    },
+    "tiers": [
+     {
+      "tier": 1,
+      "price": 60,
+      "base_rent": 8,
+      "upgrade_cost": 30,
+      "liquidation_value": 30
+     },
+     {
+      "tier": 2,
+      "price": 90,
+      "base_rent": 11,
+      "upgrade_cost": 30,
+      "liquidation_value": 45
+     },
+     {
+      "tier": 3,
+      "price": 120,
+      "base_rent": 15,
+      "upgrade_cost": 45,
+      "liquidation_value": 60
+     },
+     {
+      "tier": 4,
+      "price": 150,
+      "base_rent": 18,
+      "upgrade_cost": 45,
+      "liquidation_value": 75
+     },
+     {
+      "tier": 5,
+      "price": 180,
+      "base_rent": 22,
+      "upgrade_cost": 60,
+      "liquidation_value": 90
+     },
+     {
+      "tier": 6,
+      "price": 220,
+      "base_rent": 26,
+      "upgrade_cost": 60,
+      "liquidation_value": 110
+     },
+     {
+      "tier": 7,
+      "price": 260,
+      "base_rent": 32,
+      "upgrade_cost": 75,
+      "liquidation_value": 130
+     }
+    ]
+   },
+   "seat_cash_delta": 100
+  }
+ ]
+}
