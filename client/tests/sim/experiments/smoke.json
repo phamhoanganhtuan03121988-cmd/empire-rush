@@ -1,0 +1,2 @@
+{"players": [2, 4], "matches": {"2": 20, "4": 20}, "seed_base": 900000,
+ "variants": [{"name": "baseline"}, {"name": "hoard5", "hoarder_freeze_rounds": 5, "time_model": "slow"}]}

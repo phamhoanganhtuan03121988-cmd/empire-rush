@@ -12,6 +12,9 @@ var buy_factor: int         # % of price it values property at in auctions
 var trade_premium: int      # % of price it offers to complete a district
 var trade_chance_pct: int
 var idle_chance_pct: int    # chance to let a timer expire (exercises timeouts)
+## Experiment knob (M1.1): in the last N rounds the bot stops buying, bidding,
+## upgrading and proposing trades (an end-game cash-hoarding strategy).
+var endgame_freeze_rounds := 0
 var _rng: ErRng
 var _cmd_counter := 0
 
@@ -62,6 +65,10 @@ func decide(engine: GameEngine) -> Dictionary:
 	return {}
 
 
+func _frozen(engine: GameEngine) -> bool:
+	return endgame_freeze_rounds > 0 and engine.state.round > engine.config.balance["max_rounds"] - endgame_freeze_rounds
+
+
 func _would_complete(engine: GameEngine, pid: String, for_seat: int) -> bool:
 	var did: String = engine.config.property_district[pid]
 	for other in engine.config.district_props[did]:
@@ -74,6 +81,8 @@ func _decide_buy(engine: GameEngine) -> Dictionary:
 	var pid := engine.property_at(engine.state.player(seat)["position"])
 	var price: int = engine.config.tier_of(pid)["price"]
 	var cash := _cash(engine)
+	if _frozen(engine):
+		return _cmd(engine, ErCommand.PASS_PROPERTY, {"property_id": pid})
 	if price <= cash and (cash - price >= reserve or _would_complete(engine, pid, seat)):
 		return _cmd(engine, ErCommand.BUY_PROPERTY, {"property_id": pid})
 	return _cmd(engine, ErCommand.PASS_PROPERTY, {"property_id": pid})
@@ -81,7 +90,7 @@ func _decide_buy(engine: GameEngine) -> Dictionary:
 
 func _decide_bid(engine: GameEngine) -> Dictionary:
 	var a := engine.state.auction
-	if engine.state.player(seat)["bankrupt"] or a["high_seat"] == seat:
+	if engine.state.player(seat)["bankrupt"] or a["high_seat"] == seat or _frozen(engine):
 		return {}
 	var price: int = engine.config.tier_of(a["property_id"])["price"]
 	var value := price * buy_factor / 100
@@ -132,6 +141,8 @@ func _decide_choice(engine: GameEngine) -> Dictionary:
 func _decide_strategy(engine: GameEngine) -> Dictionary:
 	var s := engine.state
 	if s.strategy_used:
+		return _cmd(engine, ErCommand.END_TURN)
+	if _frozen(engine):
 		return _cmd(engine, ErCommand.END_TURN)
 	var cash := _cash(engine)
 	# 1) Upgrade: lowest level first, then cheapest.

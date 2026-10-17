@@ -6,12 +6,22 @@
 ## Time model (presentation time the real game will spend; documented in
 ## docs/M1_REPORT.md): decisions take 0.6-5 s, the dice + token animation takes
 ## 1.8 s + 0.25 s per space, auctions run until their timer, idle bots wait
-## out the full timer.
+## out the full timer. opts["time_model"] overrides any of TIME_MODEL_M1.
+##
+## Experiment-only options (M1.1 balance review; NOT game rules):
+##   seat_cash_delta  - extra starting RC per seat index (seat k gets +k*delta)
+##   bot_opts         - per-seat Dictionary of BotPlayer overrides
+## Defaults reproduce M1 results exactly.
 class_name MatchSimulator
 extends RefCounted
 
 const CHARACTER_ORDER := ["TYCOON", "INVESTOR", "NEGOTIATOR"]
 const MAX_STEPS := 50000
+## [min_ms, random_span_ms] per decision kind, plus dice/token animation.
+const TIME_MODEL_M1 := {
+	"bid": [600, 1400], "roll": [800, 1700], "trade": [2000, 7000], "strategy": [700, 2300],
+	"other": [1500, 3500], "anim_base": 1800, "anim_per_space": 250,
+}
 
 
 static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dictionary = {}) -> Dictionary:
@@ -25,9 +35,21 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 	var clock := MatchClock.new(0)
 	var engine := GameEngine.create(config, clock, seats, seed_value, "sim-%d" % seed_value)
 	engine.keep_event_log = opts.get("keep_event_log", false)
+	var tm: Dictionary = TIME_MODEL_M1.duplicate()
+	tm.merge(opts.get("time_model", {}), true)
+	var seat_delta: int = opts.get("seat_cash_delta", 0)
+	if seat_delta != 0:
+		for i in n_players:
+			engine.state.player(i)["cash"] += i * seat_delta
+			engine.state.bank_net_issued += i * seat_delta
 	var bots: Array = []
+	var bot_opts: Array = opts.get("bot_opts", [])
 	for i in n_players:
-		bots.append(BotPlayer.new(i, "p%d" % i, sim_rng, idle_pct))
+		var bot := BotPlayer.new(i, "p%d" % i, sim_rng, idle_pct)
+		if i < bot_opts.size():
+			for k in bot_opts[i]:
+				bot.set(k, bot_opts[i][k])
+		bots.append(bot)
 
 	var st := {
 		"seed": seed_value, "players": n_players,
@@ -36,7 +58,7 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 		"trades": {"proposed": 0, "accepted": 0, "rejected": 0, "expired": 0, "invalidated": 0},
 		"auctions": {"opened": 0, "sold": 0}, "purchases": 0, "upgrades": 0, "rescues": 0,
 		"liquidations": 0, "abilities": 0, "rent_paid": 0, "rent_events": 0,
-		"bankruptcies": [], "round_samples": {}, "stuck": false,
+		"bankruptcies": [], "round_samples": {}, "stuck": false, "flows": {},
 	}
 	var tracker := {"seq": 0, "tx": 0}
 	# Events emitted by create() (MatchStarted/TurnStarted) are not returned by
@@ -61,7 +83,7 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 				cmd = bots[bseat].decide(engine)
 				if not cmd.is_empty():
 					break
-			delay = 600 + sim_rng.range_int(1400)
+			delay = tm["bid"][0] + sim_rng.range_int(tm["bid"][1])
 		else:
 			var actor := s.current_seat
 			match s.phase:
@@ -71,10 +93,10 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 			if not bots[actor].wants_to_idle():
 				cmd = bots[actor].decide(engine)
 			match s.phase:
-				GameState.AWAIT_ROLL: delay = 800 + sim_rng.range_int(1700)
-				GameState.TRADE_PENDING: delay = 2000 + sim_rng.range_int(7000)
-				GameState.STRATEGY: delay = 700 + sim_rng.range_int(2300)
-				_: delay = 1500 + sim_rng.range_int(3500)
+				GameState.AWAIT_ROLL: delay = tm["roll"][0] + sim_rng.range_int(tm["roll"][1])
+				GameState.TRADE_PENDING: delay = tm["trade"][0] + sim_rng.range_int(tm["trade"][1])
+				GameState.STRATEGY: delay = tm["strategy"][0] + sim_rng.range_int(tm["strategy"][1])
+				_: delay = tm["other"][0] + sim_rng.range_int(tm["other"][1])
 		if cmd.is_empty():
 			clock.set_now(maxi(clock.now_ms(), deadline))
 			_absorb(engine.advance(), engine, st, tracker, check_inv)
@@ -89,7 +111,7 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 		_absorb(res["events"], engine, st, tracker, check_inv)
 		if cmd["type"] == ErCommand.ROLL_DICE and not engine.is_ended():
 			var steps_moved: int = s.last_roll[0] + s.last_roll[1] if s.last_roll.size() == 2 else 0
-			var anim := 1800 + 250 * steps_moved
+			var anim: int = tm["anim_base"] + tm["anim_per_space"] * steps_moved
 			clock.advance(clampi(anim, 0, maxi(0, engine.current_deadline_ms() - clock.now_ms() - 1)))
 	if not engine.is_ended():
 		st["stuck"] = true
@@ -102,6 +124,20 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 	st["state_hash"] = s2.state_hash()
 	st["final_seq"] = s2.seq
 	st["unowned_at_end"] = s2.owner.values().filter(func(o): return o == GameState.BANK).size()
+	# Final per-seat valuation under alternative formulas (balance review).
+	var final: Array = []
+	for p in s2.players:
+		var book: int = p["cash"]
+		var levels := 0
+		for pid in s2.properties_of(p["seat"]):
+			var t := engine.config.tier_of(pid)
+			book += t["price"] + s2.level[pid] * t["upgrade_cost"]
+			levels += s2.level[pid]
+		final.append({"seat": p["seat"], "bankrupt": p["bankrupt"], "cash": p["cash"],
+			"liquidation_nw": engine.net_worth(p["seat"]), "book_value": book if not p["bankrupt"] else 0,
+			"properties": s2.properties_of(p["seat"]).size(), "levels": levels,
+			"districts": engine.completed_districts(p["seat"]) if not p["bankrupt"] else 0})
+	st["final"] = final
 	if opts.get("return_engine", false):
 		st["engine"] = engine
 	return st
@@ -130,6 +166,9 @@ static func _absorb(events: Array, engine: GameEngine, st: Dictionary, tracker: 
 			"RescueStarted": st["rescues"] += 1
 			"PropertyLiquidated": st["liquidations"] += 1
 			"AbilityUsed": st["abilities"] += 1
+			"CashChanged":
+				var bucket: String = str(d["reason"]).get_slice(":", 0)
+				st["flows"][bucket] = st["flows"].get(bucket, 0) + d["amount"]
 			"RentCharged":
 				st["rent_paid"] += d["amount"]
 				st["rent_events"] += 1

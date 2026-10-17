@@ -52,6 +52,24 @@ static func from_dicts(p_board, p_balance, p_events, p_characters, p_opportuniti
 	return cfg
 
 
+## Returns a new validated config whose balance is this one's deep-merged with
+## `patch` (dictionaries merge, everything else - including arrays such as
+## `tiers` - is replaced). Used by balance experiments; never mutates self.
+func with_balance(patch: Dictionary) -> GameConfig:
+	var merged: Dictionary = balance.duplicate(true)
+	_deep_merge(merged, normalize_numbers(patch))
+	return GameConfig.from_dicts(board.duplicate(true), merged, events.duplicate(true),
+		characters.duplicate(true), opportunities.duplicate(true))
+
+
+static func _deep_merge(into: Dictionary, patch: Dictionary) -> void:
+	for k in patch:
+		if typeof(patch[k]) == TYPE_DICTIONARY and typeof(into.get(k)) == TYPE_DICTIONARY:
+			_deep_merge(into[k], patch[k])
+		else:
+			into[k] = patch[k]
+
+
 func is_valid() -> bool:
 	return errors.is_empty()
 
