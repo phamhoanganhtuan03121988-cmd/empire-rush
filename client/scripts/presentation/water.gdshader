@@ -2,7 +2,7 @@
 // ripples, foam along the quay walls and a fresnel sky tint. Cheap enough
 // for the Mobile renderer (no screen textures).
 shader_type spatial;
-render_mode specular_schlick_ggx;
+render_mode specular_schlick_ggx, shadows_disabled;
 
 uniform vec3 shallow : source_color = vec3(0.12, 0.43, 0.52);
 uniform vec3 deep : source_color = vec3(0.04, 0.17, 0.31);

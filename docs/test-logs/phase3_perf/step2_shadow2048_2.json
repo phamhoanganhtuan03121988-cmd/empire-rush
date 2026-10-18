@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "api": "1.4.318",
+    "args": {
+      "frames": "120",
+      "out": "/tmp/claude-0/-home-user-empire-rush/550d1413-894c-52c7-942f-285b47abf167/scratchpad/p3/shadow2k_2.json",
+      "presets": "medium,high"
+    },
+    "engine": "4.7.2-stable (official)",
+    "viewport": "(720.0, 1560.0)",
+    "window": "(786, 1704)"
+  },
+  "results": [
+    {
+      "ablation": "base",
+      "buffer_mem_mb": 10.2,
+      "draw_calls_3d": 43,
+      "draw_calls_shadow": 28,
+      "draw_calls_total": 118,
+      "frame_ms": {
+        "max": 222.63,
+        "mean": 186.47,
+        "p50": 184.84,
+        "p95": 211.14,
+        "p99": 217.77
+      },
+      "frames": 120,
+      "preset": "medium",
+      "primitives_3d": 52162,
+      "primitives_shadow": 44390,
+      "primitives_total": 100200,
+      "process_ms_mean": 194.64,
+      "render_cpu_ms": {
+        "max": 1.02,
+        "mean": 0.66,
+        "p50": 0.61,
+        "p95": 0.85,
+        "p99": 0.96
+      },
+      "render_gpu_ms": {
+        "max": 208.53,
+        "mean": 174.35,
+        "p50": 172.4,
+        "p95": 198.03,
+        "p99": 205.17
+      },
+      "static_mem_mb": 55.0,
+      "texture_mem_mb": 79.7,
+      "video_mem_mb": 111.8
+    },
+    {
+      "ablation": "base",
+      "buffer_mem_mb": 10.2,
+      "draw_calls_3d": 43,
+      "draw_calls_shadow": 28,
+      "draw_calls_total": 118,
+      "frame_ms": {
+        "max": 455.92,
+        "mean": 370.1,
+        "p50": 365.29,
+        "p95": 415.67,
+        "p99": 447.09
+      },
+      "frames": 120,
+      "preset": "high",
+      "primitives_3d": 52162,
+      "primitives_shadow": 44390,
+      "primitives_total": 100200,
+      "process_ms_mean": 379.53,
+      "render_cpu_ms": {
+        "max": 1.29,
+        "mean": 0.67,
+        "p50": 0.62,
+        "p95": 0.93,
+        "p99": 1.1
+      },
+      "render_gpu_ms": {
+        "max": 441.21,
+        "mean": 356.98,
+        "p50": 352.7,
+        "p95": 400.87,
+        "p99": 432.81
+      },
+      "static_mem_mb": 54.8,
+      "texture_mem_mb": 110.9,
+      "video_mem_mb": 143.0
+    }
+  ]
+}

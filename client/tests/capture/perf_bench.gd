@@ -30,11 +30,21 @@ func _frames(n: int) -> void:
 		await process_frame
 
 
+var load_ms := {}
+
+
 func _setup() -> void:
-	main = load("res://scenes/main.tscn").instantiate()
+	# Load time: scene load + instantiate, then until the board is built and
+	# the first frames are drawn (presentation only; engine start included).
+	var t_load := Time.get_ticks_usec()
+	var packed: PackedScene = load("res://scenes/main.tscn")
+	main = packed.instantiate()
+	load_ms["scene_load_instantiate"] = snappedf((Time.get_ticks_usec() - t_load) / 1000.0, 0.1)
 	main.args_override = {"players": "4", "seed": "7", "quality": "medium", "notch": "1"}
 	root.add_child(main)
-	await _frames(5)
+	await _frames(1)
+	load_ms["to_first_frame"] = snappedf((Time.get_ticks_usec() - t_load) / 1000.0, 0.1)
+	await _frames(4)
 	main.presenter.speed = 0.05
 	main.match_ref.bot_delay_range = Vector2(999, 999)
 	for i in 600:
@@ -139,6 +149,7 @@ static func _stats(a: PackedFloat64Array) -> Dictionary:
 
 func _run() -> void:
 	await _setup()
+	print("LOAD ", JSON.stringify(load_ms))
 	var presets := str(args.get("presets", "low,medium,high")).split(",")
 	var ablations := ["no_shadows", "no_hud", "no_buildings", "no_static", "no_water", "no_detail_tex", "no_glow"]
 	for p in presets:
@@ -150,7 +161,7 @@ func _run() -> void:
 				await _measure(p, a)
 				_set_ablation(a, false)
 			main.set_quality(p)
-	var meta := {"engine": Engine.get_version_info()["string"], "adapter": RenderingServer.get_video_adapter_name(),
+	var meta := {"load_ms": load_ms, "engine": Engine.get_version_info()["string"], "adapter": RenderingServer.get_video_adapter_name(),
 		"api": RenderingServer.get_video_adapter_api_version(), "viewport": str(root.get_viewport().get_visible_rect().size),
 		"window": str(DisplayServer.window_get_size()), "args": args}
 	if args.has("out"):

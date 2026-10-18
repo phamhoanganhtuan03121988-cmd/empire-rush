@@ -162,6 +162,8 @@ func _run() -> void:
 			act["button"].pressed.emit()
 	await _frames(10)
 	await _shot("03_upgrade_menu")
+	if args.has("extra"):
+		await _extra_scenes(e)
 	# Results screen.
 	e._end_match("round_cap")
 	main.match_ref.events_emitted.emit(e._commit())
@@ -169,6 +171,61 @@ func _run() -> void:
 	await _frames(40)
 	await _shot("04_results")
 	quit()
+
+
+## Phase 3 UI review (--extra): incoming trade, opportunity choice, tile
+## info, rescue. States are reached through real engine commands/landings
+## where possible; only the turn/phase set-up is white-box (as above).
+func _extra_scenes(e: GameEngine) -> void:
+	var clock: MatchClock = main.match_ref.clock
+	main.hud._sub_view = ""
+	# 05: seat 1 (bot) proposes a trade to the human through a real command.
+	e.state.current_seat = 1
+	e.state.phase = GameState.STRATEGY
+	e.state.strategy_used = false
+	e.state.turn_deadline_ms = clock.now_ms() + 45000
+	main.match_ref.events_emitted.emit(e._commit())
+	await _settle()
+	var r := e.submit(ErCommand.make(e.state.match_id, "p1", "cap-trade", e.state.state_version, ErCommand.PROPOSE_TRADE,
+		{"to_player_id": "p0", "give": {"cash": 120, "property_ids": ["P_D6_2"]}, "take": {"cash": 0, "property_ids": ["P_D4_3"]}}))
+	print("CAPTURE trade proposal ok=", r["ok"], " ", r.get("error", ""))
+	main.match_ref.events_emitted.emit(r.get("events", []))
+	await _settle()
+	await _shot("05_trade_incoming")
+	main.match_ref.events_emitted.emit(e.submit(ErCommand.make(e.state.match_id, "p0", "cap-trade-r", e.state.state_version,
+		ErCommand.RESPOND_TRADE, {"trade_id": e.state.trade["trade_id"], "accept": false})).get("events", []))
+	await _settle()
+	# 06: the human lands on an Opportunity square -> choice panel.
+	e.state.current_seat = 0
+	e.state.phase = GameState.AWAIT_ROLL
+	e.state.player(0)["position"] = 16
+	main.presenter.presented_pos[0] = 16
+	main.presenter.tokens[0].position = main.board.tile_position(16) + Vector3(-0.16, 0, -0.16)
+	e.state.turn_deadline_ms = clock.now_ms() + 45000
+	e._resolve_landing(0)
+	main.match_ref.events_emitted.emit(e._commit())
+	await _settle()
+	await _frames(10)
+	print("CAPTURE choice phase=", e.state.phase)
+	await _shot("06_opportunity_choice")
+	# 07: tile info for a level-3 tower (tap on a tile).
+	main.hud.open_tile_info(25)
+	await _frames(10)
+	await _shot("07_tile_info")
+	main.hud._info.visible = false
+	# 08: the human cannot pay rent on a level-3 tower -> rescue panel.
+	e.state.phase = GameState.AWAIT_ROLL
+	e.state.choice = {}
+	e.state.player(0)["cash"] = 60
+	e.state.player(0)["position"] = 27
+	main.presenter.presented_pos[0] = 27
+	main.presenter.tokens[0].position = main.board.tile_position(27) + Vector3(-0.16, 0, -0.16)
+	e._resolve_landing(0)
+	main.match_ref.events_emitted.emit(e._commit())
+	await _settle()
+	await _frames(10)
+	print("CAPTURE rescue phase=", e.state.phase)
+	await _shot("08_rescue")
 
 
 ## Visible mesh surfaces grouped by owner (≈ opaque draw calls before the

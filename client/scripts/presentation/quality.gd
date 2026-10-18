@@ -13,11 +13,41 @@ const DETAIL_MATERIALS := ["plaster", "concrete", "paving", "stone_wall", "aspha
 	"wood", "foliage", "marble", "paving_planar", "asphalt_planar", "grass_planar", "marble_planar"]
 
 static var _detail_saved: Dictionary = {}
+## Runtime copies of library materials without triplanar (MeshMerger bakes
+## the projection into UVs for static meshes, Phase 3): name -> [material].
+static var _variants: Dictionary = {}
+static var _detail_on := true
+static var _aniso := false
+
+
+static func register_variant(name: String, m: StandardMaterial3D) -> void:
+	if not _variants.has(name):
+		_variants[name] = []
+	_variants[name].append(m)
+	m.set_meta("detail_textures", [m.albedo_texture, m.normal_texture, m.normal_enabled])
+	_apply_variant(m)
+
+
+static func _apply_variant(m: StandardMaterial3D) -> void:
+	var d: Array = m.get_meta("detail_textures")
+	m.albedo_texture = d[0] if _detail_on else null
+	m.normal_texture = d[1] if _detail_on else null
+	m.normal_enabled = d[2] if _detail_on else false
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC if _aniso \
+		else BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+
+
+static func _apply_variants() -> void:
+	for n in _variants:
+		for m in _variants[n]:
+			_apply_variant(m)
 
 
 ## Texture filtering per preset: anisotropic only on High (it multiplies
 ## texture fetches; trilinear is enough at phone pixel density).
 static func set_material_filter(aniso: bool) -> void:
+	_aniso = aniso
+	_apply_variants()
 	for n in DETAIL_MATERIALS:
 		var path := "res://assets/materials/%s.tres" % n
 		if ResourceLoader.exists(path):
@@ -28,6 +58,8 @@ static func set_material_filter(aniso: bool) -> void:
 
 
 static func set_material_detail(full: bool) -> void:
+	_detail_on = full
+	_apply_variants()
 	for n in DETAIL_MATERIALS:
 		var path := "res://assets/materials/%s.tres" % n
 		if not ResourceLoader.exists(path):
@@ -45,7 +77,15 @@ static func set_material_detail(full: bool) -> void:
 		# (planar variants never use triplanar: d[3] is false for them)
 
 
+## Directional shadow map size, explicit per preset (Phase 3). Godot's default
+## is 4096 on desktop but 2048 on iOS/Android (`size.mobile`), so desktop
+## benchmarks used to measure a heavier shadow pass than phones run.
+const SHADOW_ATLAS := {"medium": 2048, "high": 2048}
+
+
 static func apply(name: String, viewport: Viewport, sun: DirectionalLight3D, env: Environment) -> void:
+	if SHADOW_ATLAS.has(name):
+		RenderingServer.directional_shadow_atlas_set_size(SHADOW_ATLAS[name], true)
 	set_material_detail(name != "low")
 	set_material_filter(name == "high")
 	match name:

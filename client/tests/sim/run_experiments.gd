@@ -11,6 +11,8 @@
 ##     "max_rounds_by_players": {"2": 35},    # overrides balance.max_rounds per player count
 ##     "time_model": "m1" | "medium" | "slow" | {...},
 ##     "seat_cash_delta": 0,                  # experiment only, NOT a game rule
+##     "seat_cash_offsets": {"4": [-45, -15, 15, 45]},   # Phase 3, per player count
+##     "seat_start_positions": {"4": [0, 2, 4, 6]},      # Phase 3, per player count
 ##     "hoarder_freeze_rounds": 0             # seat (seed % n) hoards cash in the last N rounds
 ##   }]
 ## }
@@ -27,7 +29,7 @@ const TIME_MODELS := {
 
 
 func _initialize() -> void:
-	var args := {"spec": "", "out": "", "seed_base": ""}
+	var args := {"spec": "", "out": "", "seed_base": "", "csv": ""}
 	for a in OS.get_cmdline_user_args():
 		var kv := a.trim_prefix("--").split("=", true, 1)
 		if kv.size() == 2:
@@ -43,6 +45,9 @@ func _initialize() -> void:
 	var t0 := Time.get_ticks_msec()
 	var report := {"spec": args["spec"], "seed_base": spec["seed_base"], "variants": {}}
 	var failures := 0
+	# --csv: one row per match (batch columns + variant), for scripts/analysis.
+	var csv_rows: Array = []
+	var batch := load("res://tests/sim/run_playtest_batch.gd")
 	for v in spec["variants"]:
 		var runs: Array = []
 		for np in spec["players"]:
@@ -62,7 +67,9 @@ func _initialize() -> void:
 				return
 			var tm = v.get("time_model", "m1")
 			var opts := {"time_model": TIME_MODELS[tm] if typeof(tm) == TYPE_STRING else tm,
-				"seat_cash_delta": v.get("seat_cash_delta", 0)}
+				"seat_cash_delta": v.get("seat_cash_delta", 0),
+				"seat_cash_offsets": v.get("seat_cash_offsets", {}).get(str(np), []),
+				"seat_start_positions": v.get("seat_start_positions", {}).get(str(np), [])}
 			var count: int = spec["matches"][str(np)]
 			for i in count:
 				var seed_value: int = spec["seed_base"] + np * 1000000 + i
@@ -78,6 +85,10 @@ func _initialize() -> void:
 					failures += 1
 					printerr("FAILURE %s seed %d: %s %s" % [v["name"], seed_value, str(r["invariant_errors"].slice(0, 2)), str(r["rejections"].slice(0, 2))])
 				runs.append(r)
+				if args["csv"] != "":
+					var row: Dictionary = batch.row_from_run(r, 0.0)
+					row["variant"] = v["name"]
+					csv_rows.append(row)
 		var focus := func(r): return r["seed"] % r["players"]
 		var ext := SimStats.extended(runs, focus)
 		report["variants"][v["name"]] = {"definition": v, "groups": ext}
@@ -92,6 +103,14 @@ func _initialize() -> void:
 	report["failures"] = failures
 	report["wall_time_ms"] = Time.get_ticks_msec() - t0
 	print("FAILURES: %d  wall %d ms" % [failures, report["wall_time_ms"]])
+	if args["csv"] != "" and not csv_rows.is_empty():
+		var cols: Array = ["variant"] + batch.CSV_COLUMNS
+		var cf := FileAccess.open(args["csv"], FileAccess.WRITE)
+		cf.store_line(",".join(cols))
+		for row in csv_rows:
+			cf.store_line(",".join(cols.map(func(c: String) -> String: return str(row.get(c, "")).replace(",", ";"))))
+		cf.close()
+		print("wrote " + args["csv"])
 	if args["out"] != "":
 		var f := FileAccess.open(args["out"], FileAccess.WRITE)
 		f.store_string(JSON.stringify(report, "  ", true))

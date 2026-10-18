@@ -186,3 +186,43 @@ func test_upgrade_item_lines_fit_their_buttons() -> void:
 			assert_true(w <= avail, "'%s' fits (%d <= %d px)" % [line, w, avail])
 			checked += 1
 	assert_true(checked >= 6, "checked %d label lines" % checked)
+
+
+## Phase 3 (A3): the rescue list with many properties overflows its band; it
+## shows whole rows only (no label cut in half), says it scrolls, and every
+## label line fits its button. The bankruptcy button stays reachable.
+func test_rescue_list_scrolls_by_whole_rows_with_hint() -> void:
+	await start_game(2, 3, {"notch": "1"})
+	await wait_for_action(ErCommand.ROLL_DICE)
+	give(1, ["P_D7_1", "P_D7_2", "P_D7_3"], 3)
+	give(0, ["P_D1_1", "P_D1_2", "P_D1_3", "P_D2_1", "P_D2_2", "P_D2_3", "P_D3_1", "P_D4_2", "P_D6_2"])
+	engine().state.player(0)["cash"] = 40
+	await land_human(25)
+	assert_eq(engine().state.phase, GameState.RESCUE, "rescue phase")
+	assert_true(await wait_for_action(ErCommand.LIQUIDATE), "liquidation buttons listed")
+	await frames(4)
+	var hud: GameHud = main.hud
+	var grid: GridContainer = hud._buttons
+	var scroll: ScrollContainer = hud._buttons_scroll
+	var want := grid.get_combined_minimum_size().y
+	assert_true(want > scroll.size.y + 1.0, "list overflows its band (%d > %d)" % [want, scroll.size.y])
+	assert_true(hud._action_body.text.contains("Kéo để xem thêm"), "scroll hint shown: %s" % hud._action_body.text)
+	var ends: Array = hud.row_tops()
+	var h := scroll.custom_minimum_size.y
+	assert_true(ends.any(func(e: float) -> bool: return absf(e - h) < 0.5), "scroll ends exactly after a row (%d; rows end at %s)" % [h, str(ends)])
+	var has_declare := false
+	for a in hud.actions:
+		var b: Button = a["button"]
+		if a["type"] == ErCommand.DECLARE_BANKRUPTCY:
+			has_declare = not b.disabled
+		var font := b.get_theme_font("font")
+		var fs := b.get_theme_font_size("font_size")
+		var sb := b.get_theme_stylebox("normal")
+		var icon_w := 0.0
+		if b.icon != null:
+			var maxw := b.get_theme_constant("icon_max_width")
+			icon_w = (mini(maxw, b.icon.get_width()) if maxw > 0 else b.icon.get_width()) + b.get_theme_constant("h_separation")
+		var avail := b.size.x - sb.get_margin(SIDE_LEFT) - sb.get_margin(SIDE_RIGHT) - icon_w
+		for line in b.text.split("\n"):
+			assert_true(font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= avail, "'%s' fits its button" % line)
+	assert_true(has_declare, "bankruptcy button present in the list")

@@ -63,6 +63,7 @@ var _sub_view := ""
 var _last_key := ""
 var _timer_total := 45.0
 var _landscape := false
+var _refits_left := 0
 
 
 func setup(p_match: LocalMatch, p_presenter: EventPresenter, p_theme: ThemeData, p_config: GameConfig) -> void:
@@ -625,14 +626,74 @@ func _fit_button_scroll(s: Rect2) -> void:
 	var max_panel := (vp.y * ACTION_BAND - 14.0) if not _landscape else (s.end.y - (_top.position.y + _top.size.y) - TOAST_BAND - 28.0)
 	_action_body.visible = _action_body.text != ""
 	# Everything in the panel except the scroll area, measured, not guessed.
-	var fixed := _action_panel.get_combined_minimum_size().y - _buttons_scroll.get_combined_minimum_size().y + 4.0
-	var want := _buttons.get_combined_minimum_size().y
-	_buttons_scroll.custom_minimum_size.y = clampf(want, 0.0, maxf(UiTheme.MIN_TOUCH, max_panel - fixed))
+	# Measured from the parts, not from container minimum sizes: those are
+	# only refreshed on the next layout pass and were stale here (Phase 3).
+	var n := _buttons.get_child_count()
+	var tops := row_tops()
+	var want: float = tops.back() if not tops.is_empty() else 0.0
+	var hint := UiText.t("more_below") % n
+	var cap := maxf(UiTheme.MIN_TOUCH, max_panel - _panel_fixed_height())
+	if want > cap and not _action_body.text.ends_with(hint):
+		# Overflow: say so (a cut-off row alone did not read as scrollable;
+		# Phase 3 UI review), then measure again with the hint line.
+		_action_body.text = (_action_body.text + "\n" if _action_body.text != "" else "") + hint
+		_action_body.visible = true
+		cap = maxf(UiTheme.MIN_TOUCH, max_panel - _panel_fixed_height())
+	if want > cap and n > 0:
+		# Show whole rows only, so no label is cut in half.
+		var best: float = tops[0]  # never less than one whole row
+		for top in tops:
+			if top > cap:
+				break
+			best = top
+		cap = best
+	_buttons_scroll.custom_minimum_size.y = clampf(want, 0.0, cap)
 	_buttons_scroll.scroll_vertical = 0
+	# Wrapping buttons only know their height once they have a width (after
+	# the next layout pass): measure again then, a bounded number of times.
+	if _refits_left > 0 and not get_tree().process_frame.is_connected(_place_bottom):
+		_refits_left -= 1
+		get_tree().process_frame.connect(_place_bottom, CONNECT_ONE_SHOT)
+
+
+## Height of the action panel without its button list: margins, title,
+## body and the separations between them.
+func _panel_fixed_height() -> float:
+	var v := _buttons_scroll.get_parent() as VBoxContainer
+	var sb := _action_panel.get_theme_stylebox("panel")
+	var h := sb.get_margin(SIDE_TOP) + sb.get_margin(SIDE_BOTTOM) if sb else 0.0
+	var shown := 0
+	for c in v.get_children():
+		if c is Control and c.visible:
+			shown += 1
+			if c != _buttons_scroll:
+				h += c.get_combined_minimum_size().y
+	return h + maxi(0, shown - 1) * v.get_theme_constant("separation") + 4.0
+
+
+## Bottom edge of each button row (a grid row is as tall as its tallest
+## button), so a scroll area can end exactly after a row.
+func row_tops() -> Array:
+	var cols := maxi(1, _buttons.columns)
+	var sep := float(_buttons.get_theme_constant("v_separation"))
+	var out: Array = []
+	var y := 0.0
+	var kids := _buttons.get_children()
+	for r in ceili(float(kids.size()) / cols):
+		var h := 0.0
+		for c in cols:
+			var i := r * cols + c
+			if i < kids.size():
+				h = maxf(h, kids[i].get_combined_minimum_size().y)
+		y += h
+		out.append(y)
+		y += sep
+	return out
 
 
 ## 2 buttons side by side, 3 in a row, longer lists in two columns.
 func _apply_columns() -> void:
+	_refits_left = 2
 	var n := _buttons.get_child_count()
 	_buttons.columns = 1 if n <= 1 else (n if n <= 3 else 2)
 	var fs := 30 if _buttons.columns == 1 else (26 if _buttons.columns == 2 else 22)

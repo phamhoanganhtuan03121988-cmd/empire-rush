@@ -80,6 +80,11 @@ jobs:
       - name: Public Release has no device tools, Internal Test keeps them
         run: scripts/ci/check_release_lock.sh
 
+      # iOS presets (no Team ID / signing in the repo), orientation, secret
+      # scan, asset register coverage.
+      - name: Repository and mobile readiness (static)
+        run: python3 scripts/ci/check_repo_readiness.py
+
       - name: Upload release-lock logs
         if: always()
         uses: actions/upload-artifact@v6

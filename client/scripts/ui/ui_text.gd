@@ -26,6 +26,7 @@ const T := {
 	"no_upgrades": "Chưa có quận hoàn chỉnh để nâng cấp.",
 	"auction_title": "Đấu giá: %s",
 	"auction_state": "Giá hiện tại %d RC (%s) · tối thiểu %d RC",
+	"more_below": "▼ Kéo để xem thêm (%d lựa chọn)",
 	"auction_no_bid": "Chưa ai trả giá · giá khởi điểm %d RC",
 	"bid_btn": "TRẢ %d",
 	"you_lead": "Bạn đang dẫn đầu.",
@@ -35,8 +36,8 @@ const T := {
 	"accept": "ĐỒNG Ý",
 	"reject": "TỪ CHỐI",
 	"rescue_title": "Thiếu tiền! Cần trả %d RC",
-	"rescue_body": "Tiền mặt %d RC. Bán tài sản cho ngân hàng hoặc tuyên bố phá sản.",
-	"liquidate_item": "BÁN %s\n+%d\u00a0RC",
+	"rescue_body": "Tiền mặt %d RC · bán tài sản hoặc PHÁ SẢN",
+	"liquidate_item": "%s\nBÁN\u00a0+%d\u00a0RC",  # name on its own line (Phase 3)
 	"declare": "PHÁ SẢN",
 	"results": "Kết quả trận đấu",
 	"result_row": "#%d  %s  —  %d RC%s",

@@ -13,13 +13,25 @@ extends RefCounted
 static var _materials: Dictionary = {}
 static var _box_cache: Dictionary = {}
 
-var _surfaces: Dictionary = {}  # key -> {v, n, uv, c, i}
+var _surfaces: Dictionary = {}  # key -> {v, n, uv, c, i, t?}
+## Phase 3: static merges bake world-space triplanar mapping into UVs (one
+## texture fetch instead of three). Off for meshes that move.
+var bake_triplanar := true
 
 
 static func material_for(key: String) -> Material:
 	if _materials.has(key):
 		return _materials[key]
 	var m: Material
+	if key.ends_with("#box"):
+		# Same material without triplanar: the mesh carries baked world UVs.
+		var src := load(key.trim_suffix("#box")) as StandardMaterial3D
+		var bm := src.duplicate() as StandardMaterial3D
+		bm.uv1_triplanar = false
+		bm.uv1_world_triplanar = false
+		QualitySettings.register_variant(key.trim_suffix("#box").get_file().get_basename(), bm)
+		_materials[key] = bm
+		return bm
 	if key.begins_with("res://"):
 		m = load(key)
 		_materials[key] = m
@@ -80,7 +92,11 @@ func add_kit(mesh: Mesh, xform: Transform3D, tint := Color.WHITE) -> void:
 	for si in mesh.get_surface_count():
 		var mat := mesh.surface_get_material(si)
 		var key: String = mat.resource_path if mat and mat.resource_path != "" else std(0.7)
-		_append(mesh.surface_get_arrays(si), xform, tint, key, true)
+		var sm := mat as StandardMaterial3D
+		if bake_triplanar and sm != null and sm.uv1_triplanar and sm.uv1_world_triplanar:
+			_append_boxed(mesh.surface_get_arrays(si), xform, tint, key + "#box")
+		else:
+			_append(mesh.surface_get_arrays(si), xform, tint, key, true)
 
 
 func _append(arr: Array, xform: Transform3D, color: Color, key: String, multiply: bool) -> void:
@@ -89,28 +105,77 @@ func _append(arr: Array, xform: Transform3D, color: Color, key: String, multiply
 	var uvs = arr[Mesh.ARRAY_TEX_UV]
 	var cols = arr[Mesh.ARRAY_COLOR]
 	var idx = arr[Mesh.ARRAY_INDEX]
+	# "*_planar" materials are mapped by world X/Z (flat ground pieces), so
+	# textures line up across merged pieces with a single fetch.
+	var planar := key.contains("_planar")
 	if not _surfaces.has(key):
 		_surfaces[key] = {"v": PackedVector3Array(), "n": PackedVector3Array(), "uv": PackedVector2Array(), "c": PackedColorArray(), "i": PackedInt32Array()}
+		if planar:
+			_surfaces[key]["t"] = PackedFloat32Array()  # normal maps need tangents
 	var s: Dictionary = _surfaces[key]
 	var base: int = s["v"].size()
 	var nb := xform.basis.inverse().transposed()
 	var has_uv: bool = uvs != null and uvs.size() == verts.size()
 	var has_c: bool = multiply and cols != null and cols.size() == verts.size()
-	# "*_planar" materials are mapped by world X/Z (flat ground pieces), so
-	# textures line up across merged pieces with a single fetch.
-	var planar := key.contains("_planar")
 	for k in verts.size():
 		var wv := xform * verts[k]
 		s["v"].append(wv)
 		s["n"].append((nb * norms[k]).normalized())
 		s["uv"].append(Vector2(wv.x, wv.z) if planar else (uvs[k] if has_uv else Vector2.ZERO))
 		s["c"].append(cols[k] * color if has_c else color)
+		if planar:
+			s["t"].append_array([1.0, 0.0, 0.0, -1.0])  # u = +X, v = +Z
 	if idx == null or idx.is_empty():
 		for k in verts.size():
 			s["i"].append(base + k)
 	else:
 		for k in idx:
 			s["i"].append(base + k)
+
+
+## Bakes world triplanar mapping: each triangle is projected along the world
+## axis closest to its face normal, which is what triplanar sampling picks on
+## box-like kit pieces (blend zones only differ on curved parts). Triangles
+## get their own vertices so a vertex never needs two projections.
+func _append_boxed(arr: Array, xform: Transform3D, color: Color, key: String) -> void:
+	var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+	var norms: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+	var cols = arr[Mesh.ARRAY_COLOR]
+	var idx = arr[Mesh.ARRAY_INDEX]
+	if not _surfaces.has(key):
+		_surfaces[key] = {"v": PackedVector3Array(), "n": PackedVector3Array(), "uv": PackedVector2Array(),
+			"c": PackedColorArray(), "i": PackedInt32Array(), "t": PackedFloat32Array()}
+	var s: Dictionary = _surfaces[key]
+	var nb := xform.basis.inverse().transposed()
+	var has_c: bool = cols != null and cols.size() == verts.size()
+	var order: Array = []
+	if idx == null or idx.is_empty():
+		order = range(verts.size())
+	else:
+		order = Array(idx)
+	for t in order.size() / 3:
+		var ids := [order[t * 3], order[t * 3 + 1], order[t * 3 + 2]]
+		var w := [xform * verts[ids[0]], xform * verts[ids[1]], xform * verts[ids[2]]]
+		var fn: Vector3 = (w[1] - w[0]).cross(w[2] - w[0])
+		var a := fn.abs()
+		# u/v directions in world space for the chosen projection.
+		var tu := Vector3.RIGHT
+		var tv := Vector3.BACK
+		if a.x >= a.y and a.x >= a.z:
+			tu = Vector3.BACK
+			tv = Vector3.UP
+		elif a.z >= a.y:
+			tu = Vector3.RIGHT
+			tv = Vector3.UP
+		for k in 3:
+			var n := (nb * norms[ids[k]]).normalized()
+			s["i"].append(s["v"].size())
+			s["v"].append(w[k])
+			s["n"].append(n)
+			s["uv"].append(Vector2(w[k].dot(tu), w[k].dot(tv)))
+			s["c"].append(cols[ids[k]] * color if has_c else color)
+			var tg := (tu - n * n.dot(tu)).normalized()
+			s["t"].append_array([tg.x, tg.y, tg.z, 1.0 if n.cross(tg).dot(tv) >= 0.0 else -1.0])
 
 
 ## Number of vertices added so far (asset budgets / tests).
@@ -134,6 +199,8 @@ func build() -> ArrayMesh:
 		arrays[Mesh.ARRAY_TEX_UV] = s["uv"]
 		arrays[Mesh.ARRAY_COLOR] = s["c"]
 		arrays[Mesh.ARRAY_INDEX] = s["i"]
+		if s.has("t"):
+			arrays[Mesh.ARRAY_TANGENT] = s["t"]
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, material_for(key))
 	return mesh

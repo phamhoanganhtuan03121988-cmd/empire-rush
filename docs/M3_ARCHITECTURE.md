@@ -1,6 +1,6 @@
 # EMPIRE RUSH — M3 Online Foundation: Architecture, Spike Results, Plan
 
-Status (2026-10-18, updated in Phase 2):
+Status (2026-10-18, updated in Phase 3 — see §3d):
 - **Architecture proposal + two verified spikes:**
   - **In-process** (M2.3): `LoopbackNetwork`, simulated time, runs in CI (§3).
   - **Multi-process** (Phase 2): one headless Godot server process + 2–4 headless Godot client processes over **real WebSockets on 127.0.0.1**, with a server crash/restart (§3b).
@@ -137,6 +137,55 @@ The server here runs one match per process.
 - Reason: with `timers` alone, one absent player costs the table up to 45 s per decision.
 - This replaces the D5 recommendation below until the owner decides.
 
+## 3d. Phase 3: rooms, hardening, 9 multi-process scenarios
+
+**Server:**
+- `RoomServer` (`client/scripts/net/room_server.gd`) hosts many private rooms in one process. Each room has its own `MatchHost` (engine, clock, journal, disconnect policy).
+- Protocol additions: PROTOCOL.md §11.
+- Running it: `docs/SERVER_DEPLOYMENT.md`.
+
+**Verified on this machine** (`scripts/run_net_e2e.sh OUT all-scenarios`, logs in `docs/test-logs/phase3_net_e2e/`):
+
+| Scenario | What it proves |
+|---|---|
+| chaos | 4 client processes. Room created and joined by code. Duplicates, hostile frames, a 1000-frame flood (rate limited), faked client state, drop > hold (bot takeover, then reclaim), **server SIGKILL + restart from journals** |
+| concurrent | 3 rooms (2/3/4 players) at once in one server. Each room's journal replays alone to its final state (isolation) |
+| sequential | 3 matches back to back on one server. Object count 1497 → 1497 → 1497, static memory 25.4 MB each time (no leak). Ended rooms removed |
+| client_restart | A client **process** killed with kill -9 and started again. It resumes its seat from its saved session token |
+| abandon | A player never returns. After the hold the bot plays to a normal end. No forfeit, assets untouched |
+| tls | `wss://` with certificate verification (throw-away self-signed certificate, CN=localhost) |
+| tls_bad_ca | A client trusting another certificate refuses the server. A plain `ws://` client cannot use the TLS port. No room is created |
+| netem | Local proxy: 40–200 ms latency per chunk and every connection cut after 6–14 s (38 cuts). Clients reconnect and converge |
+| lan | Server on 0.0.0.0; clients via 127.0.0.2, 127.0.0.3 and the host's own IP |
+
+**In-process tests** (`test_room_server.gd`, in CI):
+- concurrent isolation;
+- error paths (unknown or full room, bad player count, guessed token, unknown character, room limit, case-insensitive codes);
+- `SESSION_REPLACED`;
+- rate limit and refill;
+- handshake timeout;
+- link limit;
+- restart from meta + journal;
+- player never returns, plus a restart during the takeover (takeover resumes);
+- removal of ended rooms with no object growth.
+
+**Disconnect policy** (configuration; test default 60 s hold, then bot):
+- takeover after the hold (not before);
+- reclaim on reconnect;
+- match ends while the player is away;
+- restart during a takeover.
+
+All four are covered by tests. Forfeit is still not implemented: it needs a rule.
+
+**Still NOT done:**
+- Internet / real LAN between machines;
+- phones;
+- a public certificate;
+- hosting;
+- a lobby UI in the game client;
+- event projection on the client (the test client re-fetches snapshots);
+- load (many rooms at once beyond 3) and 24 h soak.
+
 ## 4. Decisions for the owner
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
@@ -144,7 +193,7 @@ The server here runs one match per process.
 | D2 | Hosting | Self-managed VM / container service / managed game hosting | Needs owner budget and account; **no paid service chosen, no secrets in the repo** |
 | D3 | Identity | Guest token per device vs accounts | Guest token for private rooms in M3; accounts in M4 |
 | D4 | Persistence | PostgreSQL (plan) | Store seed + input log + results; the replay test shows that is enough to rebuild a match |
-| D5 | Disconnect policy | `timers` / `bot` after a hold / `forfeit` (needs a rule) — §3c | Test default 60 s hold then `bot`; **final choice is a product decision** |
+| D5 | Disconnect policy | `timers` / `bot` after a hold / `forfeit` (needs a rule) — §3c | Test default 60 s hold then `bot` (Phase 3: covered end to end); **final choice is a product decision** |
 | D6 | Seed commitment | PROTOCOL §8 (optional for MVP) | Defer to M4 |
 
 ## 5. Milestones for M3

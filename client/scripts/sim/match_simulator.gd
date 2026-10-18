@@ -10,6 +10,9 @@
 ##
 ## Experiment-only options (M1.1 balance review; NOT game rules):
 ##   seat_cash_delta  - extra starting RC per seat index (seat k gets +k*delta)
+##   seat_cash_offsets - Phase 3: starting RC change per seat, e.g. [-45,-15,15,45]
+##                      (sums to 0 = same total budget)
+##   seat_start_positions - Phase 3: board index each seat starts on (default 0)
 ##   bot_opts         - per-seat Dictionary of BotPlayer overrides
 ## Defaults reproduce M1 results exactly.
 class_name MatchSimulator
@@ -42,6 +45,13 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 		for i in n_players:
 			engine.state.player(i)["cash"] += i * seat_delta
 			engine.state.bank_net_issued += i * seat_delta
+	var offsets: Array = opts.get("seat_cash_offsets", [])
+	for i in mini(offsets.size(), n_players):
+		engine.state.player(i)["cash"] += int(offsets[i])
+		engine.state.bank_net_issued += int(offsets[i])
+	var starts: Array = opts.get("seat_start_positions", [])
+	for i in mini(starts.size(), n_players):
+		engine.state.player(i)["position"] = int(starts[i])
 	var bots: Array = []
 	var bot_opts: Array = opts.get("bot_opts", [])
 	for i in n_players:
