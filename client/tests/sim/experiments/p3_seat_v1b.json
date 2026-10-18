@@ -1,0 +1,10 @@
+{
+ "_note": "Phase 3 follow-up to P3-SEAT-v1 (same seeds): how much zero-sum cash offset flattens 3p/4p? Experiment only; balance.json unchanged.",
+ "players": [2, 3, 4],
+ "matches": {"2": 3000, "3": 3000, "4": 3000},
+ "seed_base": 3000000,
+ "variants": [
+  {"name": "V0 baseline v3"},
+  {"name": "V5 zero-sum cash x-large", "seat_cash_offsets": {"2": [-50, 50], "3": [-130, 0, 130], "4": [-150, -50, 50, 150]}}
+ ]
+}

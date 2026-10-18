@@ -632,8 +632,13 @@ func _fit_button_scroll(s: Rect2) -> void:
 	var tops := row_tops()
 	var want: float = tops.back() if not tops.is_empty() else 0.0
 	var hint := UiText.t("more_below") % n
+	# Start from the body without the hint: an earlier pass (before layout)
+	# may have added it although the list fits now.
+	if _action_body.text.ends_with(hint):
+		_action_body.text = _action_body.text.trim_suffix(hint).trim_suffix("\n")
+		_action_body.visible = _action_body.text != ""
 	var cap := maxf(UiTheme.MIN_TOUCH, max_panel - _panel_fixed_height())
-	if want > cap and not _action_body.text.ends_with(hint):
+	if want > cap:
 		# Overflow: say so (a cut-off row alone did not read as scrollable;
 		# Phase 3 UI review), then measure again with the hint line.
 		_action_body.text = (_action_body.text + "\n" if _action_body.text != "" else "") + hint

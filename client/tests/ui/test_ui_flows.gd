@@ -226,3 +226,12 @@ func test_rescue_list_scrolls_by_whole_rows_with_hint() -> void:
 		for line in b.text.split("\n"):
 			assert_true(font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= avail, "'%s' fits its button" % line)
 	assert_true(has_declare, "bankruptcy button present in the list")
+	# Landscape: the right column is tall enough for the whole list, so the
+	# hint must go away again.
+	tree.root.content_scale_size = Vector2i(1280, 720)
+	tree.root.size = Vector2i(1280, 720)
+	await frames(6)
+	if grid.get_combined_minimum_size().y <= scroll.size.y + 1.0:
+		assert_false(hud._action_body.text.contains("Kéo để xem thêm"), "no scroll hint when everything fits: %s" % hud._action_body.text)
+	tree.root.content_scale_size = Vector2i(720, 1280)
+	tree.root.size = Vector2i(405, 720)
