@@ -7,6 +7,8 @@ extends Control
 
 signal restart_requested
 signal quality_cycle_requested
+## Holding the quality button opens the device-validation panel (DevPanel).
+signal dev_menu_requested
 signal action_buttons_changed
 
 var match_ref: LocalMatch
@@ -27,6 +29,8 @@ var _round_label: Label
 var _turn_label: Label
 var _timer_bar: ProgressBar
 var _quality_btn: Button
+var _quality_down_ms := 0
+var _quality_down := false
 var _action_panel: PanelContainer
 var _action_title: Label
 var _action_body: Label
@@ -42,6 +46,7 @@ var _placeholder_tag: Label
 const TOAST_MAX := 2
 const TOAST_BAND := 104.0   # px reserved under the top panel for toasts (portrait)
 const ACTION_BAND := 0.235  # fraction of height reserved for the action panel (portrait)
+const LONG_PRESS_MS := 900
 
 var _presented_turn := 0
 var _presented_round := 1
@@ -108,7 +113,10 @@ func _build_top() -> void:
 	_quality_btn.custom_minimum_size = Vector2(UiTheme.MIN_TOUCH * 1.4, 82)
 	_quality_btn.add_theme_font_size_override("font_size", 20)
 	UiTheme.secondary(_quality_btn)
-	_quality_btn.pressed.connect(func(): quality_cycle_requested.emit())
+	_quality_btn.button_down.connect(func():
+		_quality_down = true
+		_quality_down_ms = Time.get_ticks_msec())
+	_quality_btn.pressed.connect(_on_quality_pressed)
 	row.add_child(_quality_btn)
 	_cards_box = HBoxContainer.new()
 	_cards_box.add_theme_constant_override("separation", 8)
@@ -408,6 +416,15 @@ func _on_match_ended(d: Dictionary) -> void:
 	_results.visible = true
 	_action_panel.visible = false
 	_place_bottom.call_deferred()
+
+
+func _on_quality_pressed() -> void:
+	var held := Time.get_ticks_msec() - _quality_down_ms if _quality_down else 0
+	_quality_down = false
+	if held >= LONG_PRESS_MS:
+		dev_menu_requested.emit()
+	else:
+		quality_cycle_requested.emit()
 
 
 func set_quality_label(name: String) -> void:

@@ -5,6 +5,9 @@
 ##   safe area) --autoplay (HUD autopilot plays seat 0) --timescale=X
 ##   --telemetry=PATH --shots=DIR --shot-every=SECONDS --quit-on-end
 ##   --stats=FRAMES (print render statistics once after N frames)
+##   --perf (show the device-validation overlay) --bench=SECONDS (run the
+##   low/medium/high benchmark at start, SECONDS per preset) --bench-quit
+##   --devpanel (open the device panel at start)
 extends Node3D
 
 const CHARACTERS := ["TYCOON", "INVESTOR", "NEGOTIATOR", "TYCOON"]
@@ -24,6 +27,8 @@ var sun: DirectionalLight3D
 var env: Environment
 var telemetry: SessionTelemetry
 var autopilot: HudAutopilot
+var probe: DeviceProbe
+var dev_panel: DevPanel
 var quality := "medium"
 var _shot_t := 0.0
 var _shot_n := 0
@@ -83,14 +88,52 @@ func _ready() -> void:
 	hud.setup(match_ref, presenter, theme_data, config)
 	hud.restart_requested.connect(func(): get_tree().reload_current_scene())
 	hud.quality_cycle_requested.connect(func(): set_quality(QualitySettings.next(quality)))
+	_setup_device_probe()
 	presenter.match_ended_presented.connect(_on_match_ended)
 	set_quality(args.get("quality", "medium"))
 	get_viewport().size_changed.connect(_reframe)
 	_reframe.call_deferred()
 	if args.has("autoplay"):
-		autopilot = HudAutopilot.new()
-		add_child(autopilot)
-		autopilot.setup(hud, match_ref, 0, seed_value + 1)
+		start_autopilot()
+	if dev_panel and args.has("perf"):
+		dev_panel.toggle_overlay()
+	if dev_panel and args.has("devpanel"):
+		dev_panel.open.call_deferred()
+	if dev_panel and args.has("bench"):
+		dev_panel.bench_seconds = float(args["bench"])
+		dev_panel.start_bench.call_deferred()
+
+
+func start_autopilot() -> void:
+	if autopilot:
+		return
+	autopilot = HudAutopilot.new()
+	add_child(autopilot)
+	autopilot.setup(hud, match_ref, 0, match_ref.engine.state.seed_value + 1)
+
+
+## The probe lives on the root so it survives "play again" scene reloads and
+## keeps measuring one app session. Automated tests (args_override) only get
+## it when they ask for it, so test runs do not write device reports.
+func _setup_device_probe() -> void:
+	if not args_override.is_empty() and not args.has("probe"):
+		return
+	probe = get_tree().root.get_node_or_null("DeviceProbe") as DeviceProbe
+	if probe == null:
+		probe = DeviceProbe.new()
+		probe.name = "DeviceProbe"
+		get_tree().root.add_child.call_deferred(probe)
+	dev_panel = DevPanel.new()
+	dev_panel.set_quality = set_quality
+	dev_panel.start_autopilot = start_autopilot
+	dev_panel.current_quality = func() -> String: return quality
+	hud.add_child(dev_panel)
+	dev_panel.setup(probe)
+	hud.dev_menu_requested.connect(dev_panel.open)
+	dev_panel.bench_finished.connect(func(path: String):
+		print("BENCH_REPORT ", ProjectSettings.globalize_path(path))
+		if args.has("bench-quit"):
+			get_tree().quit())
 
 
 func _build_world() -> void:
@@ -150,6 +193,8 @@ func set_quality(name: String) -> void:
 	quality = name
 	QualitySettings.apply(name, get_viewport(), sun, env)
 	hud.set_quality_label(name)
+	if probe and not (dev_panel and dev_panel.is_benchmarking()):
+		probe.begin_segment(name)
 
 
 func _reframe() -> void:

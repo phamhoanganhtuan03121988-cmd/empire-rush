@@ -12,6 +12,7 @@ config/description="Mobile-first online strategy-party board game."
 config/version="0.0.1"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://assets/placeholder/app_icon_placeholder_1024.png"
 
 [display]
 

@@ -71,6 +71,17 @@ const T := {
 	"placeholder": "Bản thử nghiệm — đồ họa tạm",
 	"bankrupt_tag": " (phá sản)",
 	"seconds": "%ds",
+	# Device-validation panel (opened by holding the graphics button ~1 s).
+	"dev_title": "Đo trên thiết bị",
+	"dev_overlay_on": "HIỆN SỐ ĐO",
+	"dev_overlay_off": "ẨN SỐ ĐO",
+	"dev_bench": "ĐO TỰ ĐỘNG\n3 preset × %d giây",
+	"dev_bench_running": "Đang đo %s… còn %d giây",
+	"dev_bench_done": "Đo xong. Đã lưu báo cáo.",
+	"dev_save": "LƯU BÁO CÁO",
+	"dev_saved": "Đã lưu: %s",
+	"dev_close": "ĐÓNG",
+	"dev_prev_unclean": "Lần chạy trước kết thúc bất thường (%s).",
 }
 
 
