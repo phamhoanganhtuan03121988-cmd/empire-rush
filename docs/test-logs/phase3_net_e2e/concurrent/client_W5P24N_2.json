@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 64,
+  "frames_dropped_local": 0,
+  "frames_sent": 303,
+  "invalid_kinds": [],
+  "last_seq": 685,
+  "public_hash": "ebc621203e26c560b81c280b2cbd65dbdfdef1808fd0eeb9cb80d3a3b98f7b80",
+  "room_code": "W5P24N",
+  "seat": 2,
+  "snapshot_hash": "ebc621203e26c560b81c280b2cbd65dbdfdef1808fd0eeb9cb80d3a3b98f7b80",
+  "state_version": 238,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 238,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 238
+  }
+}

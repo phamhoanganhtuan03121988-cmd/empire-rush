@@ -6,7 +6,8 @@
 class_name LoopbackNetwork
 extends RefCounted
 
-var host: MatchHost
+## MatchHost (one match) or RoomServer (rooms); both speak frames per link.
+var host
 var clients: Array = []      # NetClient per link id
 var now_ms := 0
 var latency_ms := Vector2i(20, 120)
@@ -17,7 +18,7 @@ var _down: Array = []        # per link: host -> client
 var _connected: Array = []
 
 
-func setup(p_host: MatchHost, p_clients: Array, seed_value: int) -> void:
+func setup(p_host: Object, p_clients: Array, seed_value: int) -> void:
 	host = p_host
 	clients = p_clients
 	rng.seed = seed_value
@@ -37,6 +38,8 @@ func teardown() -> void:
 
 func connect_client(link: int) -> void:
 	_connected[link] = true
+	if host is RoomServer:
+		host.link_opened(link, now_ms)
 	clients[link].on_connected(self, link)
 
 
@@ -45,7 +48,10 @@ func disconnect_client(link: int) -> void:
 	frames_dropped += _up[link].size() + _down[link].size()
 	_up[link].clear()
 	_down[link].clear()
-	host.disconnect_link(link)
+	if host is RoomServer:
+		host.link_closed(link)
+	else:
+		host.disconnect_link(link)
 	clients[link].on_disconnected()
 
 
@@ -81,8 +87,14 @@ func step(dt_ms: int) -> void:
 	for link in _up.size():
 		while not _up[link].is_empty() and _up[link][0][0] <= now_ms:
 			var f: Array = _up[link].pop_front()
-			for o in host.handle_frame(link, f[1]):
+			var outs: Array = host.handle_frame(link, f[1], now_ms) if host is RoomServer else host.handle_frame(link, f[1])
+			for o in outs:
 				_send_down(o[0], o[1])
+	# Links the server asked to close (replaced session, flood, timeout).
+	for link in host.to_close:
+		if link >= 0 and link < _connected.size() and _connected[link]:
+			disconnect_client(link)
+	host.to_close.clear()
 	for link in _down.size():
 		while not _down[link].is_empty() and _down[link][0][0] <= now_ms:
 			var f: Array = _down[link].pop_front()

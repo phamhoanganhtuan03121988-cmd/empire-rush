@@ -203,7 +203,7 @@ func test_host_restores_from_journal_and_finishes() -> void:
 	for e in host.take_journal():
 		journal.append(JSON.parse_string(JSON.stringify(e)))  # through text, like the file
 	var restored := MatchHost.new()
-	restored.restore(h["cfg"], h["seats"], 505, h["host"].sessions.keys(), journal, 1)
+	restored.restore(h["cfg"], h["seats"], 505, h["host"].sessions.keys(), journal, 1, true)  # sessions hold token hashes
 	assert_eq(restored.engine.state.state_hash(), host.engine.state.state_hash(), "restored state = live state")
 	var any_cmd: Dictionary = {}
 	for e in host.engine.input_log:

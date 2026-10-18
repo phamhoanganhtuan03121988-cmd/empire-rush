@@ -116,6 +116,51 @@ On turn timeout the server applies the safe default from GDD §3.8.
 - `board_config_hash` / `balance_config_hash` let clients detect mismatched data packs.
 
 ## 10. Open items (decide in M3)
-- Auth model (guest token vs account) and how `player_id` binds to the session.
+- Auth model: Phase 3 implements **guest tokens per room seat** (§11). Accounts are still open.
 - Persistence store and which events are "critical" (minimum: cash, ownership, trade, match result — GDD §10).
 - Server runtime: headless Godot reusing `scripts/domain/` vs a separate backend. See IMPLEMENTATION_PLAN §4.
+
+## 11. Rooms, sessions and hardening (Phase 3, implemented in `client/scripts/net/room_server.gd`)
+
+**Rooms (private, code based)**
+
+| Direction | Message | Body | Answer |
+|---|---|---|---|
+| C → S | `CreateRoom` | `{players: 2..4, character_id?}` | `RoomJoined{room_code, token, seat: 0, player_id, players, joined}` |
+| C → S | `JoinRoom` | `{room_code, character_id?}` | `RoomJoined{…}` or `Error ROOM_NOT_FOUND / ROOM_FULL` |
+| S → C | `RoomState` | `{room_code, players, joined, started}` | sent to every link in the room after each join |
+| C → S | `Hello` | `{token, last_seq}` | `Welcome` + `Snapshot`; used both to enter a started match and to reconnect |
+
+- The room starts when the last seat is taken. The server then picks the seed, never the client.
+- Room codes have 6 characters from an alphabet without 0/O/1/I/L, and are case-insensitive on input.
+- `player_id` (`p0`…`p3`) and the seat are assigned by the server.
+- An unknown `character_id` is replaced by the server default.
+
+**Sessions**
+- The token is a 128-bit random value, sent **once** in `RoomJoined` to that link only.
+- The server stores only `sha256(token)`: in memory, in `meta.json` and in logs.
+- One live connection per seat. A second `Hello` with the same token closes the older link with `SESSION_REPLACED`.
+- When an ended room is removed (after `linger_ms`, default 30 s), its tokens stop working and every link in it is closed with `ROOM_CLOSED`.
+
+**Limits and abuse handling** (defaults; server flags in brackets)
+- Frame size is checked before JSON parsing (16 KiB). The WebSocket inbound buffer is 32 KiB, so larger frames are cut at the socket.
+- Rate limit is a token bucket per link: 20 frames/s, burst 40 (`--rate`, `--burst`).
+  - Frames over the limit are dropped unread.
+  - One `RATE_LIMITED` error is sent per 10 dropped frames.
+  - After 50 violations the link is closed.
+- Handshake timeout: a link that has not created, joined or resumed within 10 s is closed (`HANDSHAKE_TIMEOUT`).
+- Server limits: max rooms 64 (`--max_rooms`, `SERVER_FULL`) and max links 512 (refused at accept).
+- Identity always comes from the session. A command whose `player_id` is not the session's is rejected `UNAUTHENTICATED`.
+- New error codes: `RATE_LIMITED, ROOM_NOT_FOUND, ROOM_FULL, ROOM_CLOSED, SERVER_FULL, HANDSHAKE_TIMEOUT, SESSION_REPLACED`.
+
+**Persistence**
+- Per room: `meta.json` (seats, seed, token hashes, policy) is written when the match starts.
+- `journal.jsonl` is append-only: accepted commands and timer advances with server times. Each entry is written and flushed **before** any frame is sent.
+- `result.json` is written when the match ends.
+- On restart the server replays each unfinished room. Downtime does not count as match time.
+
+**TLS**
+- `server_main.gd --tls_key --tls_cert` serves `wss://` directly through Godot's `StreamPeerTLS`.
+- Clients verify the certificate against a trusted CA (`TLSOptions.client`).
+- Tested locally with a throw-away self-signed certificate, including a negative test: wrong CA and plain `ws://` against the TLS port.
+- Not yet tested: a public certificate, an Internet endpoint, or a TLS-terminating proxy.

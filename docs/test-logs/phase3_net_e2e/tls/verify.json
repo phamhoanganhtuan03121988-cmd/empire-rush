@@ -1,0 +1,69 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 2,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "clients": 2,
+  "failures": [],
+  "pass": true,
+  "rooms": [
+    {
+      "code": "2BJRJZ",
+      "commands_applied": 220,
+      "end_reason": "round_cap",
+      "journal_entries": 220,
+      "players": 2,
+      "restarts": 0,
+      "rounds": 40,
+      "state_version": 221,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 220,
+        "duplicates": 0,
+        "frame_errors": {},
+        "frames_in": 660,
+        "frames_out": 1102,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 440
+      }
+    }
+  ],
+  "server_meta": {
+    "links": 0,
+    "objects": 1506,
+    "pid": 4957,
+    "restarts": 0,
+    "rooms": 1,
+    "static_mem_mb": 27,
+    "stats": {
+      "frame_errors": {},
+      "handshake_timeouts": 0,
+      "links_refused": 0,
+      "rate_closed": 0,
+      "rate_limited": 0,
+      "rooms_created": 1,
+      "rooms_ended": 1,
+      "rooms_removed": 0,
+      "rooms_started": 1
+    },
+    "tls": true
+  },
+  "server_stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 220,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 660,
+    "frames_out": 1102,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 440
+  }
+}

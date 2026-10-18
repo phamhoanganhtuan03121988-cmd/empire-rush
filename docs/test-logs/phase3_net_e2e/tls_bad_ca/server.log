@@ -1,0 +1,29 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[server 3 ms] LISTENING bind=127.0.0.1 port=41163 tls=true time_scale=10.0 policy={ "hold_ms": 60000, "on_expiry": "bot" } rooms_restored=0
+ERROR: TLS handshake error: -29184
+   at: _do_handshake (modules/mbedtls/stream_peer_mbedtls.cpp:89)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://tools/net/server_main.gd:115)
+mbedtls error: returned -0x7200
+
+ERROR: Condition "status != STATUS_CONNECTED && status != STATUS_HANDSHAKING" is true.
+   at: poll (modules/mbedtls/stream_peer_mbedtls.cpp:238)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://tools/net/server_main.gd:125)
+[server 301 ms] LINK_TLS_FAILED 1
+mbedtls error: returned -0x7180
+
+[server 335 ms] LINK_CLOSED 2
+mbedtls error: returned -0x7200
+
+[server 570 ms] LINK_CLOSED 3
+mbedtls error: returned -0x7180
+
+[server 611 ms] LINK_CLOSED 4
+mbedtls error: returned -0x7200
+
+[server 1087 ms] LINK_CLOSED 5
+mbedtls error: returned -0x7180
+
+[server 1135 ms] LINK_CLOSED 6

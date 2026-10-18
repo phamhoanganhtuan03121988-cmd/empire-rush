@@ -1,0 +1,47 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[server 2 ms] LISTENING bind=127.0.0.1 port=33485 tls=false time_scale=10.0 policy={ "hold_ms": 60000, "on_expiry": "bot" } rooms_restored=0
+[server 1308 ms] ROOM_STARTED room=J7B3JP players=3
+[server 7482 ms] LINK_CLOSED 3
+[server 9193 ms] LINK_CLOSED 1
+[server 9945 ms] LINK_CLOSED 2
+[server 16465 ms] LINK_CLOSED 4
+[server 22358 ms] LINK_CLOSED 5
+[server 22655 ms] LINK_CLOSED 6
+[server 26353 ms] LINK_CLOSED 7
+[server 30217 ms] LINK_CLOSED 9
+[server 31852 ms] LINK_CLOSED 8
+[server 32860 ms] LINK_CLOSED 10
+[server 37621 ms] LINK_CLOSED 11
+[server 39077 ms] LINK_CLOSED 12
+[server 43834 ms] LINK_CLOSED 13
+[server 50485 ms] LINK_CLOSED 14
+[server 50934 ms] LINK_CLOSED 15
+[server 56668 ms] LINK_CLOSED 16
+[server 58324 ms] LINK_CLOSED 18
+[server 60339 ms] LINK_CLOSED 17
+[server 66128 ms] LINK_CLOSED 20
+[server 66507 ms] LINK_CLOSED 19
+[server 73580 ms] LINK_CLOSED 21
+[server 74842 ms] LINK_CLOSED 23
+[server 78699 ms] LINK_CLOSED 22
+[server 84799 ms] LINK_CLOSED 25
+[server 86427 ms] LINK_CLOSED 26
+[server 87055 ms] LINK_CLOSED 24
+[server 91871 ms] LINK_CLOSED 27
+[server 96639 ms] LINK_CLOSED 28
+[server 98640 ms] LINK_CLOSED 29
+[server 104430 ms] LINK_CLOSED 30
+[server 109516 ms] LINK_CLOSED 31
+[server 111358 ms] LINK_CLOSED 32
+[server 116899 ms] LINK_CLOSED 34
+[server 116975 ms] LINK_CLOSED 33
+[server 124358 ms] LINK_CLOSED 35
+[server 128298 ms] LINK_CLOSED 37
+[server 130637 ms] LINK_CLOSED 36
+[server 131313 ms] LINK_CLOSED 38
+[server 135164 ms] ROOM_ENDED room=J7B3JP reason=round_cap state_version=218
+[server 135398 ms] LINK_CLOSED 40
+[server 135605 ms] LINK_CLOSED 41
+[server 135625 ms] LINK_CLOSED 39
+[server 140168 ms] EXIT all 1 rooms ended and removed; objects=1497 static_mem_mb=25.4

@@ -1,0 +1,14 @@
+{
+  "bot_commands": 0,
+  "bot_takeovers": 0,
+  "commands": 173,
+  "duplicates": 0,
+  "frame_errors": {},
+  "frames_in": 521,
+  "frames_out": 869,
+  "rejected": {
+    "STALE_STATE": 1
+  },
+  "seat_reclaims": 0,
+  "snapshots": 348
+}

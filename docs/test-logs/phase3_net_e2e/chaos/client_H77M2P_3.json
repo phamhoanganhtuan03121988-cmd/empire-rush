@@ -1,0 +1,34 @@
+{
+  "chaos": {
+    "connect_attempts": 5,
+    "duplicates": 0,
+    "fake_state": 1,
+    "invalid": 0,
+    "reconnects": 1,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 53,
+  "frames_dropped_local": 0,
+  "frames_sent": 302,
+  "invalid_kinds": [],
+  "last_seq": 687,
+  "public_hash": "6ef8a37a7577bc3ca722ec08a7edd941f635b0b4107a4cac005e3be25c708ce8",
+  "room_code": "H77M2P",
+  "seat": 3,
+  "snapshot_hash": "6ef8a37a7577bc3ca722ec08a7edd941f635b0b4107a4cac005e3be25c708ce8",
+  "state_version": 247,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 246,
+    "hash_mismatch": 0,
+    "rejections": {
+      "INVALID_TARGET": 1,
+      "STALE_STATE": 1,
+      "WRONG_PHASE": 1
+    },
+    "resends": 0,
+    "snapshots": 246
+  }
+}

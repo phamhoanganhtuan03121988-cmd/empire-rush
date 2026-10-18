@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 98,
+  "frames_dropped_local": 0,
+  "frames_sent": 299,
+  "invalid_kinds": [],
+  "last_seq": 535,
+  "public_hash": "dfd1562159bf577b67a3672ea9cf5de520797b526d6f36ed6e5afbe2159d88d0",
+  "room_code": "HYGTPY",
+  "seat": 0,
+  "snapshot_hash": "dfd1562159bf577b67a3672ea9cf5de520797b526d6f36ed6e5afbe2159d88d0",
+  "state_version": 200,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 200,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 200
+  }
+}

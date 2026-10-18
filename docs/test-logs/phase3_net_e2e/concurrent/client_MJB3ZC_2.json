@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 73,
+  "frames_dropped_local": 0,
+  "frames_sent": 287,
+  "invalid_kinds": [],
+  "last_seq": 614,
+  "public_hash": "2b2ba53943883d5d7b9063ed6ffef9d1c07fd1bc37498b3214880bc70161d948",
+  "room_code": "MJB3ZC",
+  "seat": 2,
+  "snapshot_hash": "2b2ba53943883d5d7b9063ed6ffef9d1c07fd1bc37498b3214880bc70161d948",
+  "state_version": 213,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 213,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 213
+  }
+}

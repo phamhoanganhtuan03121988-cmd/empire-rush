@@ -1,0 +1,24 @@
+{
+  "code": "BCDCRZ",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 954942522,
+  "token_hashes": [
+    "ab1f44b5ff777a2f975206aec00dbeda30dd05192801d22de54da6c214113159",
+    "759a107b6dee8fa5b445d0730f278223d20cf9b0f19e228c622b762c433753d9"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "code": "MNERY4",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1764966829,
+  "token_hashes": [
+    "75cf8ad5c223ddef0d491c02b64706f8a6b71499ea2742dd50cdcd8d8f952bd8",
+    "cbc256fcf7aba1cffb107d978a445ef22ab486cb42707a6232597f2e7c4facb3"
+  ]
+}

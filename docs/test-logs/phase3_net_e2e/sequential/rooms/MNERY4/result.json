@@ -1,0 +1,48 @@
+{
+  "code": "MNERY4",
+  "end_reason": "last_solvent",
+  "public_hash": "2d114b9f90bad274d2a87fb9a7399c7822e168246a6f184a4a6514146446ad3b",
+  "restarts": 0,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2975,
+      "character_id": "INVESTOR",
+      "districts": 1,
+      "net_worth": 4070,
+      "player_id": "p1",
+      "rank": 1,
+      "seat": 1
+    },
+    {
+      "bankrupt": true,
+      "bankrupt_turn": 71,
+      "cash": 0,
+      "character_id": "TYCOON",
+      "districts": 0,
+      "net_worth": 0,
+      "player_id": "p0",
+      "rank": 2,
+      "seat": 0
+    }
+  ],
+  "rounds": 36,
+  "server_ms": 230530,
+  "state_hash": "844a779c34bcff4969446a7ca48b0f682763059bc80b4046fb1ea7f9add74e2c",
+  "state_version": 179,
+  "stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 178,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 534,
+    "frames_out": 892,
+    "rejected": {
+      "STALE_STATE": 1
+    },
+    "seat_reclaims": 0,
+    "snapshots": 356
+  }
+}

@@ -8,10 +8,12 @@ extends RefCounted
 
 var engine: GameEngine
 var clock := MatchClock.new(0)
-## token -> {player_id, seat}
+## sha256(token) -> {player_id, seat}. Plain tokens are never stored.
 var sessions: Dictionary = {}
-## link id -> token (authenticated links)
+## link id -> token hash (authenticated links)
 var links: Dictionary = {}
+## Links the transport must close (a newer connection took over the seat).
+var to_close: Array = []
 var stats := {"commands": 0, "duplicates": 0, "rejected": {}, "frames_in": 0, "frames_out": 0, "snapshots": 0,
 	"bot_takeovers": 0, "bot_commands": 0, "seat_reclaims": 0, "frame_errors": {}}
 var policy := DisconnectPolicy.new()
@@ -27,19 +29,22 @@ var _bot_n := 0
 var _journaled := 0
 
 
-func start(config: GameConfig, seats: Array, seed_value: int, tokens: Array) -> void:
-	engine = GameEngine.create(config, clock, seats, seed_value, "m3-%d" % seed_value)
+## `tokens` are plain tokens, or their hashes when `hashed` (restore from disk).
+func start(config: GameConfig, seats: Array, seed_value: int, tokens: Array, hashed := false, match_id := "") -> void:
+	engine = GameEngine.create(config, clock, seats, seed_value, match_id if match_id != "" else "m3-%d" % seed_value)
 	engine.keep_event_log = true
 	for i in seats.size():
-		sessions[tokens[i]] = {"player_id": seats[i]["player_id"], "seat": i}
+		var key: String = tokens[i] if hashed else NetProtocol.token_hash(tokens[i])
+		sessions[key] = {"player_id": seats[i]["player_id"], "seat": i}
 		# Until a client says Hello its seat counts as disconnected.
 		seat_down_since[i] = clock.now_ms()
 
 
 ## Rebuilds the match after a server restart by replaying the journal (the
 ## engine is deterministic: same commands + advance times = same state).
-func restore(config: GameConfig, seats: Array, seed_value: int, tokens: Array, journal: Array, p_epoch: int) -> void:
-	start(config, seats, seed_value, tokens)
+func restore(config: GameConfig, seats: Array, seed_value: int, tokens: Array, journal: Array, p_epoch: int,
+		hashed := false, match_id := "") -> void:
+	start(config, seats, seed_value, tokens, hashed, match_id)
 	epoch = p_epoch
 	for entry in journal:
 		var e: Dictionary = NetProtocol._ints(entry)
@@ -77,10 +82,17 @@ func handle_frame(link_id: int, text: String) -> Array:
 	var msg: Dictionary = dec["msg"]
 	match msg["kind"]:
 		NetProtocol.HELLO:
-			var token: String = str(msg.get("token", ""))
+			var token: String = NetProtocol.token_hash(str(msg.get("token", "")))
 			if not sessions.has(token):
 				_send(link_id, NetProtocol.ERROR, {"code": NetProtocol.E_UNAUTHENTICATED})
 			else:
+				# One live connection per seat: a reconnect replaces the old link
+				# (stale half-open sockets, or a second device with the token).
+				for other in links.keys():
+					if other != link_id and links[other] == token:
+						_send(other, NetProtocol.ERROR, {"code": NetProtocol.E_SESSION_REPLACED})
+						links.erase(other)
+						to_close.append(other)
 				links[link_id] = token
 				var seat: int = sessions[token]["seat"]
 				if _bots.has(seat):

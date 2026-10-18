@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 14,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 13,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 75,
+  "frames_dropped_local": 0,
+  "frames_sent": 292,
+  "invalid_kinds": [],
+  "last_seq": 661,
+  "public_hash": "933e9c487e4a301390c32cb2c5ef1ea9033e4e7c38438d8b7653f29e8a10feaa",
+  "room_code": "J7B3JP",
+  "seat": 1,
+  "snapshot_hash": "933e9c487e4a301390c32cb2c5ef1ea9033e4e7c38438d8b7653f29e8a10feaa",
+  "state_version": 218,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 209,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 1,
+    "snapshots": 209
+  }
+}

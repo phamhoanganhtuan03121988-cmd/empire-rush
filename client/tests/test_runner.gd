@@ -11,9 +11,11 @@ const TEST_ROOTS := ["res://tests/unit", "res://tests/integration"]
 
 var _failures: Array[String] = []
 var _passed := 0
+var _trap := ScriptErrorTrap.new()
 
 
 func _initialize() -> void:
+	OS.add_logger(_trap)
 	var files: Array[String] = []
 	for root in TEST_ROOTS:
 		_collect(root, files)
@@ -50,7 +52,9 @@ func _run_file(path: String) -> void:
 		if not name.begins_with("test_"):
 			continue
 		var suite: TestCase = script.new()
+		_trap.take()
 		suite.call(name)
+		suite.errors.append_array(_trap.take())
 		if suite.errors.is_empty():
 			_passed += 1
 			print("PASS: %s::%s" % [path.get_file(), name])

@@ -1,0 +1,72 @@
+{
+  "code": "H77M2P",
+  "end_reason": "round_cap",
+  "public_hash": "6ef8a37a7577bc3ca722ec08a7edd941f635b0b4107a4cac005e3be25c708ce8",
+  "restarts": 1,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2067,
+      "character_id": "NEGOTIATOR",
+      "districts": 1,
+      "net_worth": 2891,
+      "player_id": "p2",
+      "rank": 1,
+      "seat": 2
+    },
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2132,
+      "character_id": "TYCOON",
+      "districts": 0,
+      "net_worth": 2282,
+      "player_id": "p3",
+      "rank": 2,
+      "seat": 3
+    },
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 1956,
+      "character_id": "INVESTOR",
+      "districts": 0,
+      "net_worth": 2231,
+      "player_id": "p1",
+      "rank": 3,
+      "seat": 1
+    },
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 783,
+      "character_id": "TYCOON",
+      "districts": 1,
+      "net_worth": 1654,
+      "player_id": "p0",
+      "rank": 4,
+      "seat": 0
+    }
+  ],
+  "rounds": 25,
+  "server_ms": 511350,
+  "state_hash": "5e4cc1b9fd792a8a1de246723a2e23379adbd276152ff76732bc04e1d1677938",
+  "state_version": 247,
+  "stats": {
+    "bot_commands": 4,
+    "bot_takeovers": 1,
+    "commands": 254,
+    "duplicates": 13,
+    "frame_errors": {},
+    "frames_in": 1647,
+    "frames_out": 2617,
+    "rejected": {
+      "INVALID_TARGET": 1,
+      "STALE_STATE": 6,
+      "WRONG_PHASE": 1
+    },
+    "seat_reclaims": 1,
+    "snapshots": 1392
+  }
+}

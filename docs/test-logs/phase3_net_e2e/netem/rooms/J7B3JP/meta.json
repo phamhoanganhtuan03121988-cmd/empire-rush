@@ -1,0 +1,29 @@
+{
+  "code": "J7B3JP",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 1336361351,
+  "token_hashes": [
+    "d95ac35fe49cae2bec1ca68e72a63812e4f701ff6086cba2f0b94162c4275e54",
+    "313d888e20414b42fb72f5ea3f7c8c411002158d10a40205c9727204c3eafe86",
+    "ef0749eb2ef5887da4632d2b45813bd63a07fda58494d0d0413026e0b7a2d5a3"
+  ]
+}

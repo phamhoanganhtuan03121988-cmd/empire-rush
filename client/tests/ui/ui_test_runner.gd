@@ -4,9 +4,11 @@ extends SceneTree
 
 var _failures: Array[String] = []
 var _passed := 0
+var _trap := ScriptErrorTrap.new()
 
 
 func _initialize() -> void:
+	OS.add_logger(_trap)
 	_run.call_deferred()
 
 
@@ -25,8 +27,10 @@ func _run() -> void:
 				continue
 			var suite: UiTestCase = script.new()
 			suite.tree = self
+			_trap.take()
 			await suite.call(name)
 			await suite.stop_game()
+			suite.errors.append_array(_trap.take())
 			if suite.errors.is_empty():
 				_passed += 1
 				print("PASS: %s::%s" % [path.get_file(), name])

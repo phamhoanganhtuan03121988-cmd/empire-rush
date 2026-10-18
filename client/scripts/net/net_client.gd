@@ -24,6 +24,11 @@ var public_hash := ""
 var events: Array = []          # events applied after the latest snapshot
 var all_events_seen := 0
 var stats := {"duplicate_events": 0, "gaps": 0, "snapshots": 0, "resends": 0, "rejections": {}, "hash_checks": 0, "hash_mismatch": 0, "errors": {}}
+## Phase 3 rooms: when there is no token yet, the client first sends this
+## request ({"kind": CreateRoom|JoinRoom, ...}) and receives its token.
+var room_request: Dictionary = {}
+var room_code := ""
+var welcomed := false
 var _cmd_n := 0
 var _pending: Dictionary = {}   # command_id -> {cmd, sent_ms}
 
@@ -36,6 +41,16 @@ func on_connected(p_net: Object, p_link: int) -> void:
 	net = p_net
 	link = p_link
 	connected = true
+	welcomed = false
+	if token == "" and not room_request.is_empty():
+		var body := room_request.duplicate()
+		body.erase("kind")
+		net.send_up(link, NetProtocol.encode(room_request["kind"], body))
+	else:
+		_hello()
+
+
+func _hello() -> void:
 	net.send_up(link, NetProtocol.encode(NetProtocol.HELLO, {"token": token, "last_seq": last_seq}))
 
 
@@ -49,7 +64,17 @@ func handle_frame(text: String) -> void:
 		return
 	var m: Dictionary = dec["msg"]
 	match m["kind"]:
+		NetProtocol.ROOM_JOINED:
+			token = m["token"]
+			room_code = m["room_code"]
+			seat = m["seat"]
+			player_id = m["player_id"]
+			room_request = {}
+		NetProtocol.ROOM_STATE:
+			if m["started"] and not welcomed:
+				_hello()
 		NetProtocol.WELCOME:
+			welcomed = true
 			seat = m["seat"]
 			player_id = m["player_id"]
 		NetProtocol.SNAPSHOT:
