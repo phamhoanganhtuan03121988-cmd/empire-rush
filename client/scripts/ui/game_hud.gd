@@ -705,8 +705,10 @@ func _rebuild_actions() -> void:
 			var a := s.auction
 			var need := e.min_next_bid()
 			_set_title(UiText.t("auction_title") % _prop_name(a["property_id"]), "gavel", UiTheme.AMBER)
-			var leader: String = "—" if a["high_seat"] < 0 else theme_data.player_name(a["high_seat"])
-			_action_body.text = UiText.t("auction_state") % [a["high_bid"], leader, need]
+			if a["high_seat"] < 0:
+				_action_body.text = UiText.t("auction_no_bid") % need
+			else:
+				_action_body.text = UiText.t("auction_state") % [a["high_bid"], theme_data.player_name(a["high_seat"]), need]
 			if a["high_seat"] == seat:
 				_action_body.text += "\n" + UiText.t("you_lead")
 			else:

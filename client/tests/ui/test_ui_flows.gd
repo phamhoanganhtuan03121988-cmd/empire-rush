@@ -145,3 +145,35 @@ func test_full_match_completes_with_results_screen() -> void:
 	var inv := Invariants.check(engine())
 	assert_true(inv.is_empty(), "engine invariants: %s" % str(inv))
 	assert_true(engine().state.end_reason in ["round_cap", "last_solvent", "time_cap"], "valid end")
+
+
+## Phase 2 (A4): every explicit line of an action label fits its button, so
+## automatic wrapping never splits "cấp 2" or a price onto its own line.
+func test_upgrade_item_lines_fit_their_buttons() -> void:
+	await start_game(2, 3, {"notch": "1"})
+	await wait_for_action(ErCommand.ROLL_DICE)
+	give(0, ["P_D1_1", "P_D1_2", "P_D1_3", "P_D2_1", "P_D2_2", "P_D2_3"])
+	await land_human(1)
+	await wait_for_action("")
+	for a in main.hud.actions:
+		if a["button"].has_meta("opens"):
+			a["button"].pressed.emit()
+	await frames(3)
+	assert_true(await wait_for_action(ErCommand.UPGRADE), "upgrade items listed")
+	await frames(3)
+	var checked := 0
+	for a in main.hud.actions:
+		var b: Button = a["button"]
+		var font := b.get_theme_font("font")
+		var fs := b.get_theme_font_size("font_size")
+		var sb := b.get_theme_stylebox("normal")
+		var icon_w := 0.0
+		if b.icon != null:
+			var maxw := b.get_theme_constant("icon_max_width")
+			icon_w = (mini(maxw, b.icon.get_width()) if maxw > 0 else b.icon.get_width()) + b.get_theme_constant("h_separation")
+		var avail := b.size.x - sb.get_margin(SIDE_LEFT) - sb.get_margin(SIDE_RIGHT) - icon_w
+		for line in b.text.split("\n"):
+			var w := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+			assert_true(w <= avail, "'%s' fits (%d <= %d px)" % [line, w, avail])
+			checked += 1
+	assert_true(checked >= 6, "checked %d label lines" % checked)

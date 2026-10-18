@@ -117,3 +117,19 @@ func test_lots_are_axis_aligned() -> void:
 		var r: float = main.board._lots[pid].rotation.y
 		var k := fposmod(r, PI * 0.5)
 		assert_true(k < 0.001 or k > PI * 0.5 - 0.001, "%s lot rotation %.3f rad is a multiple of 90 degrees" % [pid, r])
+
+
+## Phase 2 (A3): every pawn has a ring in its seat colour; only the active
+## player's ring is fully opaque.
+func test_pawn_rings_mark_owner_and_active_player() -> void:
+	await start_game(3, 3)
+	await wait_for_action(ErCommand.ROLL_DICE)
+	await frames(2)
+	var tokens: Array = main.presenter.tokens
+	for t in tokens:
+		var ring: MeshInstance3D = t.get_node("Ring")
+		var mat := ring.material_override as StandardMaterial3D
+		var want: Color = main.theme_data.player_color(t.seat)
+		assert_true(Color(mat.albedo_color, 1.0).is_equal_approx(Color(want, 1.0)), "seat %d ring uses its colour" % t.seat)
+		var active: bool = t.seat == engine().state.current_seat
+		assert_true(is_equal_approx(mat.albedo_color.a, 1.0 if active else 0.55), "seat %d ring opacity %.2f" % [t.seat, mat.albedo_color.a])

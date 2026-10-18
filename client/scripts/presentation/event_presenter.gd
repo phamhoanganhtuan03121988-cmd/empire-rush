@@ -72,6 +72,8 @@ func _present(ev: Dictionary) -> void:
 			_place_tokens()
 		"TurnStarted":
 			turn_presented.emit(d["seat"], d["round"])
+			for t in tokens:
+				t.set_active(t.seat == d["seat"], not reduced_motion)
 			board.set_highlight(presented_pos.get(d["seat"], 0))
 			dice.hide_dice()
 		"DiceRolled":
