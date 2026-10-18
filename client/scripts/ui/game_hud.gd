@@ -30,13 +30,18 @@ var _quality_btn: Button
 var _action_panel: PanelContainer
 var _action_title: Label
 var _action_body: Label
-var _buttons: VBoxContainer
+var _buttons: GridContainer
+var _buttons_scroll: ScrollContainer
 var _toasts: VBoxContainer
 var _info: PanelContainer
 var _info_label: Label
 var _results: PanelContainer
 var _results_label: Label
 var _placeholder_tag: Label
+
+const TOAST_MAX := 2
+const TOAST_BAND := 104.0   # px reserved under the top panel for toasts (portrait)
+const ACTION_BAND := 0.235  # fraction of height reserved for the action panel (portrait)
 
 var _presented_turn := 0
 var _presented_round := 1
@@ -84,20 +89,23 @@ func _build_top() -> void:
 	_top.add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.NAVY, Color(1, 1, 1, 0.1), 24, 0.82))
 	add_child(_top)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 8)
+	v.add_theme_constant_override("separation", 6)
 	_top.add_child(v)
 	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_child(row)
 	_round_label = _label(24, UiTheme.GOLD)
 	_round_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_round_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	row.add_child(_round_label)
-	_placeholder_tag = _label(18, Color(1, 1, 1, 0.55), HORIZONTAL_ALIGNMENT_RIGHT)
+	_placeholder_tag = _label(18, Color(1, 1, 1, 0.5), HORIZONTAL_ALIGNMENT_RIGHT)
+	_placeholder_tag.set_meta("decorative", true)
 	_placeholder_tag.text = UiText.t("placeholder")
 	_placeholder_tag.autowrap_mode = TextServer.AUTOWRAP_OFF
 	row.add_child(_placeholder_tag)
 	_quality_btn = Button.new()
-	_quality_btn.custom_minimum_size = Vector2(UiTheme.MIN_TOUCH, UiTheme.MIN_TOUCH * 0.7)
+	# 82 px ≈ 44 pt (Apple's minimum) for this secondary control.
+	_quality_btn.custom_minimum_size = Vector2(UiTheme.MIN_TOUCH * 1.4, 82)
 	_quality_btn.add_theme_font_size_override("font_size", 20)
 	UiTheme.secondary(_quality_btn)
 	_quality_btn.pressed.connect(func(): quality_cycle_requested.emit())
@@ -107,12 +115,14 @@ func _build_top() -> void:
 	v.add_child(_cards_box)
 	for seat in match_ref.engine.state.players.size():
 		_cards.append(_build_card(seat))
-	_turn_label = _label(26)
-	_turn_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	# The active player is shown by the highlighted card; the action panel
+	# title says whose turn it is, so no separate turn line (saves height).
+	_turn_label = _label(20)
+	_turn_label.visible = false
 	v.add_child(_turn_label)
 	_timer_bar = ProgressBar.new()
 	_timer_bar.show_percentage = false
-	_timer_bar.custom_minimum_size = Vector2(0, 10)
+	_timer_bar.custom_minimum_size = Vector2(0, 8)
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color(1, 1, 1, 0.12)
 	bg.set_corner_radius_all(5)
@@ -138,10 +148,10 @@ func _build_card(seat: int) -> Dictionary:
 	name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name.text = theme_data.player_name(seat)
 	v.add_child(name)
-	var ch := _label(16, Color(1, 1, 1, 0.7))
+	var ch := _label(20, Color(1, 1, 1, 0.72))
 	ch.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ch.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	ch.text = theme_data.character_name(p["character_id"], config)
+	ch.text = theme_data.loc(p["character_id"], "short", theme_data.character_name(p["character_id"], config))
 	v.add_child(ch)
 	var cash := _label(30, UiTheme.TEXT)
 	cash.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -155,13 +165,24 @@ func _build_action_panel() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 10)
 	_action_panel.add_child(v)
-	_action_title = _label(32, UiTheme.GOLD)
+	_action_title = _label(29, UiTheme.GOLD)
 	v.add_child(_action_title)
 	_action_body = _label(24)
 	v.add_child(_action_body)
-	_buttons = VBoxContainer.new()
-	_buttons.add_theme_constant_override("separation", 10)
-	v.add_child(_buttons)
+	# Grid: binary choices and long lists use two columns so the panel stays
+	# within the band the camera reserves for it.
+	_buttons = GridContainer.new()
+	_buttons.columns = 1
+	_buttons.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_buttons.add_theme_constant_override("h_separation", 10)
+	_buttons.add_theme_constant_override("v_separation", 10)
+	# Long lists (upgrades, liquidation) scroll by touch instead of growing
+	# the panel over the board.
+	_buttons_scroll = ScrollContainer.new()
+	_buttons_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_buttons_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_buttons_scroll.add_child(_buttons)
+	v.add_child(_buttons_scroll)
 
 
 func _build_toasts() -> void:
@@ -195,7 +216,7 @@ func _build_results() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 14)
 	_results.add_child(v)
-	_results_label = _label(28)
+	_results_label = _label(25)
 	v.add_child(_results_label)
 	var again := Button.new()
 	again.text = UiText.t("play_again")
@@ -240,10 +261,12 @@ func _layout() -> void:
 		_top.position = s.position + Vector2(m, m)
 		_width(_top, s.size.x - m * 2)
 		_width(_action_panel, s.size.x - m * 2)
-		_toasts.position = s.position + Vector2(m, s.size.y * 0.25)
 		_width(_toasts, s.size.x - m * 2)
 	_width(_info, minf(s.size.x - m * 4, 620))
-	_width(_results, minf(s.size.x - m * 4, 640))
+	if _landscape:
+		_width(_results, s.size.x * 0.42 - m)
+	else:
+		_width(_results, s.size.x - m * 2)
 	_place_bottom.call_deferred()
 
 
@@ -261,16 +284,23 @@ func _width(c: Control, w: float) -> void:
 func _place_bottom() -> void:
 	var s := safe_rect()
 	var m := 14.0
+	_fit_button_scroll(s)
 	if not _landscape:
+		_top.reset_size()
+		_toasts.position = Vector2(s.position.x + m, _top.position.y + _top.size.y + 8)
 		_action_panel.size.y = 0
 		_action_panel.reset_size()
 		_action_panel.position = Vector2(s.position.x + m, s.end.y - _action_panel.size.y - m)
+		# Results replace the action panel as a bottom sheet so the final
+		# board stays visible.
+		_results.reset_size()
+		_results.position = Vector2(s.position.x + m, s.end.y - _results.size.y - m)
 	else:
 		_action_panel.reset_size()
+		_results.reset_size()
+		_results.position = _action_panel.position
 	_info.reset_size()
 	_info.position = s.get_center() - _info.size * 0.5
-	_results.reset_size()
-	_results.position = s.get_center() - _results.size * 0.5
 
 
 ## Fraction of the viewport height covered by HUD at top/bottom (portrait),
@@ -283,7 +313,7 @@ func board_insets() -> Dictionary:
 	# Reserve a fixed band for the action panel so the board does not jump
 	# every time the panel height changes.
 	var s := safe_rect()
-	return {"top": (_top.position.y + _top.size.y) / vp.y, "bottom": (vp.y - s.end.y) / vp.y + 0.21, "left": 0.0, "right": 0.0}
+	return {"top": (_top.position.y + _top.size.y + TOAST_BAND) / vp.y, "bottom": (vp.y - s.end.y) / vp.y + ACTION_BAND, "left": 0.0, "right": 0.0}
 
 
 # --- live updates ---------------------------------------------------------------
@@ -319,10 +349,12 @@ func show_toast(text: String, color := Color.WHITE) -> void:
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	p.add_theme_stylebox_override("panel", UiTheme.panel(Color(0.05, 0.07, 0.12), color.darkened(0.2), 14, 0.78))
 	var l := _label(22, color.lightened(0.35))
+	l.autowrap_mode = TextServer.AUTOWRAP_OFF
+	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	l.text = text
 	p.add_child(l)
 	_toasts.add_child(p)
-	while _toasts.get_child_count() > 3:
+	while _toasts.get_child_count() > TOAST_MAX:
 		var old := _toasts.get_child(0)
 		_toasts.remove_child(old)
 		old.queue_free()
@@ -365,7 +397,7 @@ func open_tile_info(index: int) -> void:
 
 
 func _on_match_ended(d: Dictionary) -> void:
-	var rows: Array[String] = [UiText.t("results"), UiText.t("end_reason_" + d["reason"]), ""]
+	var rows: Array[String] = [UiText.t("results") + " · " + UiText.t("end_reason_" + d["reason"])]
 	var human_won := false
 	for r in d["results"]:
 		rows.append(UiText.t("result_row") % [r["rank"], theme_data.player_name(r["seat"]), r["net_worth"], UiText.t("bankrupt_tag") if r["bankrupt"] else ""])
@@ -395,6 +427,8 @@ func _add_button(text: String, type: String, payload := {}, style := "", enabled
 	var b := Button.new()
 	b.text = text
 	b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.disabled = not enabled
 	match style:
 		"secondary": UiTheme.secondary(b)
@@ -406,6 +440,28 @@ func _add_button(text: String, type: String, payload := {}, style := "", enabled
 	_buttons.add_child(b)
 	actions.append({"button": b, "type": type, "payload": payload})
 	return b
+
+
+## Caps the button area so the action panel never exceeds its reserved band
+## (portrait: ACTION_BAND of the height; landscape: the right column).
+func _fit_button_scroll(s: Rect2) -> void:
+	var vp := get_viewport_rect().size
+	var max_panel := (vp.y * ACTION_BAND - 14.0) if not _landscape else (s.size.y - 28.0)
+	_action_body.visible = _action_body.text != ""
+	# Everything in the panel except the scroll area, measured, not guessed.
+	var fixed := _action_panel.get_combined_minimum_size().y - _buttons_scroll.get_combined_minimum_size().y + 4.0
+	var want := _buttons.get_combined_minimum_size().y
+	_buttons_scroll.custom_minimum_size.y = clampf(want, 0.0, maxf(UiTheme.MIN_TOUCH, max_panel - fixed))
+	_buttons_scroll.scroll_vertical = 0
+
+
+## 2 buttons side by side, 3 in a row, longer lists in two columns.
+func _apply_columns() -> void:
+	var n := _buttons.get_child_count()
+	_buttons.columns = 1 if n <= 1 else (n if n <= 3 else 2)
+	var fs := 30 if _buttons.columns == 1 else (26 if _buttons.columns == 2 else 22)
+	for b in _buttons.get_children():
+		b.add_theme_font_size_override("font_size", fs)
 
 
 func _send(type: String, payload: Dictionary) -> void:
@@ -446,7 +502,7 @@ func _rebuild_actions() -> void:
 			var sp: Dictionary = config.spaces[s.player(seat)["position"]]
 			var lad := e.rent_ladder(pid)
 			_action_title.text = "%s · %s" % [_prop_name(pid), theme_data.districts[sp["district_id"]]["label"]]
-			_action_body.text = (UiText.t("price_rent") % [price, lad[0]]) + "\n" + (UiText.t("rent_table") % lad) + "\n" + UiText.t("pass_hint")
+			_action_body.text = (UiText.t("price_rent") % [price, lad[0]]) + "\n" + (UiText.t("rent_table") % lad)
 			if price > cash:
 				_action_body.text += "\n" + UiText.t("cant_afford") % price
 			_add_button(UiText.t("buy") % price, ErCommand.BUY_PROPERTY, {"property_id": pid}, "", price <= cash)
@@ -488,6 +544,7 @@ func _rebuild_actions() -> void:
 			for pid in s.properties_of(seat):
 				_add_button(UiText.t("liquidate_item") % [_prop_name(pid), e.liquidation_value(pid)], ErCommand.LIQUIDATE, {"property_ids": [pid]}, "secondary")
 			_add_button(UiText.t("declare"), ErCommand.DECLARE_BANKRUPTCY, {}, "danger")
+	_apply_columns()
 	_place_bottom.call_deferred()
 	action_buttons_changed.emit()
 

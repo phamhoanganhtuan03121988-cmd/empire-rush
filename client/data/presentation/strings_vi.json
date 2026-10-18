@@ -2,13 +2,16 @@
   "_note": "DRAFT Vietnamese display text for DRAFT rules content (owner review pending). Presentation only; rules data unchanged.",
   "content": {
     "TYCOON": {
-      "name": "Doanh Nhân"
+      "name": "Doanh Nhân",
+      "short": "Doanh Nhân"
     },
     "INVESTOR": {
-      "name": "Nhà Đầu Tư"
+      "name": "Nhà Đầu Tư",
+      "short": "Đầu Tư"
     },
     "NEGOTIATOR": {
-      "name": "Chuyên Gia Đàm Phán"
+      "name": "Chuyên Gia Đàm Phán",
+      "short": "Đàm Phán"
     },
     "TOURISM_BOOM": {
       "title": "Bùng Nổ Du Lịch",

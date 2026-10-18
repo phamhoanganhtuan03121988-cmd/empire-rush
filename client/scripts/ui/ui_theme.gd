@@ -12,6 +12,8 @@ const TEXT := Color("#f6f1e7")
 const RED := Color("#e05d5d")
 const BLUE := Color("#3d6fd6")
 const MIN_TOUCH := 88
+## Smallest font for information text: 20 px ≈ 11 pt on a 393 pt-wide phone.
+const MIN_FONT := 20
 
 
 static func panel(bg := NAVY, border := Color(1, 1, 1, 0.12), radius := 22, alpha := 0.92) -> StyleBoxFlat:

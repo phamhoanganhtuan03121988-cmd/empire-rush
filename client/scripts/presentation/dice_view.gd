@@ -23,27 +23,21 @@ func build(theme: ThemeData) -> void:
 	_rng.randomize()
 	for i in 2:
 		var die := Node3D.new()
-		var cube := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3.ONE * SIZE
-		cube.mesh = bm
-		cube.material_override = theme.mat(Color("#fbf8f1"), 0.35)
-		die.add_child(cube)
-		var pip_mat := theme.mat(Color("#1d1d1f"), 0.5)
+		# Cube + 21 pips merged into one mesh (was 22 draw calls per die).
+		var mm := MeshMerger.new()
+		mm.add_box(Vector3.ONE * SIZE, Vector3.ZERO, Color("#fbf8f1"), MeshMerger.std(0.4))
+		var sm := SphereMesh.new()
+		sm.radius = 0.032
+		sm.height = 0.02
+		sm.radial_segments = 8
+		sm.rings = 3
 		for v in PIPS:
 			var n: Vector3 = FACE_NORMAL[v]
 			var basis := _face_basis(n)
 			for p in PIPS[v]:
-				var pip := MeshInstance3D.new()
-				var sm := SphereMesh.new()
-				sm.radius = 0.032
-				sm.height = 0.02
-				sm.radial_segments = 8
-				sm.rings = 3
-				pip.mesh = sm
-				pip.material_override = pip_mat if v != 1 else theme.mat(Color("#c0392b"), 0.4)
-				pip.position = n * (SIZE * 0.5) + basis[0] * p.x * SIZE * 0.26 + basis[1] * p.y * SIZE * 0.26
-				die.add_child(pip)
+				var pos: Vector3 = n * (SIZE * 0.5) + basis[0] * p.x * SIZE * 0.26 + basis[1] * p.y * SIZE * 0.26
+				mm.add_mesh(sm, Transform3D(Basis(), pos), Color("#c0392b") if v == 1 else Color("#1d1d1f"), MeshMerger.std(0.5))
+		die.add_child(mm.instance("Die"))
 		die.visible = false
 		add_child(die)
 		_dice.append(die)

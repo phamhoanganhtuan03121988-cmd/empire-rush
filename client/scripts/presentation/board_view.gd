@@ -25,10 +25,14 @@ func build(p_config: GameConfig, p_theme: ThemeData) -> void:
 	theme = p_theme
 	_rng.seed = 2026
 	_build_water()
-	_build_base()
-	_build_center_city()
+	# All static board geometry goes into ONE merged mesh (a few surfaces)
+	# instead of ~120 separate MeshInstance3D nodes (M2.1 rendering pass).
+	var st := MeshMerger.new()
+	_build_base(st)
+	_build_center_city(st)
 	for i in config.board_size():
-		_build_tile(i)
+		_build_tile(i, st)
+	add_child(st.instance("StaticBoard"))
 	_highlight = MeshInstance3D.new()
 	var hm := TorusMesh.new()
 	hm.inner_radius = 0.38
@@ -57,114 +61,77 @@ func _build_water() -> void:
 	add_child(w)
 
 
-func _build_base() -> void:
+func _build_base(st: MeshMerger) -> void:
 	# Stone quay slab under the ring of tiles, with a darker skirt.
-	var slab := _box(Vector3(8.7, BOARD_H, 8.7), Color("#d9cdb4"), 0.85)
-	slab.position.y = -BOARD_H * 0.5
-	add_child(slab)
-	var skirt := _box(Vector3(9.0, 0.12, 9.0), Color("#8a7b66"), 0.9)
-	skirt.position.y = -BOARD_H + 0.02
-	add_child(skirt)
+	st.add_box(Vector3(8.7, BOARD_H, 8.7), Vector3(0, -BOARD_H * 0.5, 0), Color("#d9cdb4"), MeshMerger.std(0.85))
+	st.add_box(Vector3(9.0, 0.12, 9.0), Vector3(0, -BOARD_H + 0.02, 0), Color("#8a7b66"), MeshMerger.std(0.9))
 	# Inner park lawn.
-	var lawn := _box(Vector3(5.9, 0.06, 5.9), Color("#7fb069"), 0.95)
-	lawn.position.y = 0.0
-	add_child(lawn)
+	st.add_box(Vector3(5.9, 0.06, 5.9), Vector3.ZERO, Color("#7fb069"), MeshMerger.std(0.95))
 
 
-func _build_center_city() -> void:
+func _build_center_city(st: MeshMerger) -> void:
 	# Decorative skyline: a central landmark tower plus a ring of blocks,
 	# roads and trees. Purely visual.
-	var city := Node3D.new()
-	city.name = "CenterCity"
-	add_child(city)
-	var road_mat := theme.mat(Color("#5b5f66"), 0.95)
 	for axis in [Vector3(5.2, 0.02, 0.45), Vector3(0.45, 0.02, 5.2)]:
-		var road := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = axis
-		road.mesh = bm
-		road.material_override = road_mat
-		road.position.y = 0.04
-		city.add_child(road)
+		st.add_box(axis, Vector3(0, 0.04, 0), Color("#5b5f66"), MeshMerger.std(0.95))
 	# Landmark tower (gold crown) in the middle.
-	var tower := _box(Vector3(0.7, 2.2, 0.7), Color("#e9e4d8"), 0.4, 0.1)
-	tower.position = Vector3(0, 1.13, 0)
-	city.add_child(tower)
-	var crown := MeshInstance3D.new()
+	st.add_box(Vector3(0.7, 2.2, 0.7), Vector3(0, 1.13, 0), Color("#e9e4d8"), MeshMerger.std(0.4, 0.1))
 	var cm := CylinderMesh.new()
 	cm.top_radius = 0.0
 	cm.bottom_radius = 0.42
 	cm.height = 0.6
 	cm.radial_segments = 24
 	cm.rings = 1
-	crown.mesh = cm
-	crown.material_override = theme.mat(Color("#f4c542"), 0.25, 0.8, 0.6)
-	crown.position = Vector3(0, 2.53, 0)
-	city.add_child(crown)
+	st.add_mesh(cm, Transform3D(Basis(), Vector3(0, 2.53, 0)), Color("#f4c542"), MeshMerger.glow(0.6, 0.25, 0.8))
 	# Blocks in four quadrants.
 	var palette := [Color("#f1e3c6"), Color("#cfd8dc"), Color("#f6d5c3"), Color("#d7ccc8"), Color("#bfd7ea")]
 	for qx in [-1, 1]:
 		for qz in [-1, 1]:
 			for k in 4:
 				var h := _rng.randf_range(0.4, 1.4)
-				var b := _box(Vector3(0.55, h, 0.55), palette[_rng.randi() % palette.size()], 0.6)
+				var col: Color = palette[_rng.randi() % palette.size()]
 				var off := Vector3(0.75 + (k % 2) * 0.85, 0, 0.75 + (k / 2) * 0.85)
-				b.position = Vector3(qx * off.x, h * 0.5 + 0.03, qz * off.z)
-				city.add_child(b)
-				var roof := _box(Vector3(0.6, 0.06, 0.6), Color("#7a8a99"), 0.7)
-				roof.position = b.position + Vector3(0, h * 0.5 + 0.03, 0)
-				city.add_child(roof)
-	for i in 14:
-		var ang := TAU * i / 14.0
-		_tree(city, Vector3(cos(ang) * 2.55, 0.03, sin(ang) * 2.55))
-
-
-func _tree(parent: Node3D, pos: Vector3) -> void:
-	var trunk := MeshInstance3D.new()
+				var pos := Vector3(qx * off.x, h * 0.5 + 0.03, qz * off.z)
+				st.add_box(Vector3(0.55, h, 0.55), pos, col, MeshMerger.std(0.6))
+				st.add_box(Vector3(0.6, 0.06, 0.6), pos + Vector3(0, h * 0.5 + 0.03, 0), Color("#7a8a99"), MeshMerger.std(0.7))
 	var tm := CylinderMesh.new()
 	tm.top_radius = 0.03
 	tm.bottom_radius = 0.04
 	tm.height = 0.18
 	tm.radial_segments = 6
 	tm.rings = 1
-	trunk.mesh = tm
-	trunk.material_override = theme.mat(Color("#6d4c41"), 0.9)
-	trunk.position = pos + Vector3(0, 0.09, 0)
-	parent.add_child(trunk)
-	var crown := MeshInstance3D.new()
 	var sm := SphereMesh.new()
 	sm.radius = 0.16
 	sm.height = 0.3
 	sm.radial_segments = 10
 	sm.rings = 5
-	crown.mesh = sm
-	crown.material_override = theme.mat(Color("#4e8f3a").lerp(Color("#7cb342"), _rng.randf()), 0.9)
-	crown.position = pos + Vector3(0, 0.3, 0)
-	parent.add_child(crown)
+	for i in 14:
+		var ang := TAU * i / 14.0
+		var pos := Vector3(cos(ang) * 2.55, 0.03, sin(ang) * 2.55)
+		st.add_mesh(tm, Transform3D(Basis(), pos + Vector3(0, 0.09, 0)), Color("#6d4c41"), MeshMerger.std(0.9))
+		st.add_mesh(sm, Transform3D(Basis(), pos + Vector3(0, 0.3, 0)), Color("#4e8f3a").lerp(Color("#7cb342"), _rng.randf()), MeshMerger.std(0.9))
 
 
 # --- tiles -----------------------------------------------------------------------
 
-func _build_tile(i: int) -> void:
+func _build_tile(i: int, st: MeshMerger) -> void:
 	var root := Node3D.new()
 	root.name = "Tile%02d" % i
 	root.position = BoardLayout.position_of(i)
 	add_child(root)
 	_tiles.append(root)
 	var sp: Dictionary = config.spaces[i]
-	var st: String = sp["space_type"]
+	var stype: String = sp["space_type"]
 	var size := Vector3(BoardLayout.TILE - BoardLayout.GAP, TILE_H, BoardLayout.TILE - BoardLayout.GAP)
 	var base_color := Color("#f7f1e3")
 	var accent: Color
-	if st == "PROPERTY":
+	if stype == "PROPERTY":
 		accent = theme.district_color(sp["district_id"])
 	else:
-		accent = Color(theme.special[st]["color"])
+		accent = Color(theme.special[stype]["color"])
 		base_color = accent.lerp(Color.WHITE, 0.55)
-	var tile := _box(size, base_color, 0.7)
-	tile.position.y = TILE_H * 0.5
-	root.add_child(tile)
-	# Pick body for tap-to-inspect.
+	st.add_box(size, root.position + Vector3(0, TILE_H * 0.5, 0), base_color, MeshMerger.std(0.7))
+	# Pick body for tap-to-inspect (no rendering cost).
 	var body := StaticBody3D.new()
 	body.set_meta("tile_index", i)
 	var shape := CollisionShape3D.new()
@@ -175,14 +142,11 @@ func _build_tile(i: int) -> void:
 	body.add_child(shape)
 	root.add_child(body)
 	var inward := BoardLayout.inward(i)
-	if st == "PROPERTY":
+	if stype == "PROPERTY":
 		# District colour band on the inner edge (classic board read).
-		var band := _box(Vector3(size.x, 0.03, size.z * 0.28), accent, 0.5)
 		var flat_in := Vector3(signf(inward.x) if absf(inward.x) > 0.5 else 0.0, 0, signf(inward.z) if absf(inward.z) > 0.5 else 0.0)
-		if absf(flat_in.x) > 0.0:
-			band.mesh.size = Vector3(size.x * 0.28, 0.03, size.z)
-		band.position = Vector3(flat_in.x * size.x * 0.36, TILE_H + 0.015, flat_in.z * size.z * 0.36)
-		root.add_child(band)
+		var band_size := Vector3(size.x, 0.03, size.z * 0.28) if absf(flat_in.x) == 0.0 else Vector3(size.x * 0.28, 0.03, size.z)
+		st.add_box(band_size, root.position + Vector3(flat_in.x * size.x * 0.36, TILE_H + 0.015, flat_in.z * size.z * 0.36), accent, MeshMerger.std(0.5))
 		var lot := Node3D.new()
 		lot.position = Vector3(-flat_in.x * 0.1, TILE_H, -flat_in.z * 0.1)
 		root.add_child(lot)
@@ -190,9 +154,11 @@ func _build_tile(i: int) -> void:
 		_levels[sp["property_id"]] = -1
 	else:
 		var label := Label3D.new()
-		label.text = theme.special[st]["label"]
+		var glyph: String = theme.special[stype].get("glyph", theme.special[stype]["label"])
+		label.text = glyph
 		label.font_size = 64
-		label.pixel_size = 0.0032
+		# Single glyphs are drawn large so they stay legible on a phone.
+		label.pixel_size = 0.0105 if glyph.length() == 1 else 0.0042
 		label.outline_size = 10
 		label.modulate = Color.WHITE
 		label.outline_modulate = accent.darkened(0.45)
@@ -214,32 +180,29 @@ func show_owner(pid: String, seat: int) -> void:
 		_owner_marks.erase(pid)
 	if seat < 0:
 		return
-	var flag := Node3D.new()
-	var pole := MeshInstance3D.new()
+	var c := theme.player_color(seat)
+	var lot: Node3D = _lots[pid]
+	var mm := MeshMerger.new()
+	# Owner tint over the whole tile top (readable at phone size), then ring,
+	# pole and flag - one merged mesh per owned lot.
+	var span := BoardLayout.TILE - BoardLayout.GAP - 0.06
+	mm.add_box(Vector3(span, 0.012, span), Vector3(-lot.position.x, 0.004, -lot.position.z), c.lerp(Color.WHITE, 0.45), MeshMerger.std(0.7))
 	var pm := CylinderMesh.new()
 	pm.top_radius = 0.012
 	pm.bottom_radius = 0.012
 	pm.height = 0.36
 	pm.radial_segments = 6
 	pm.rings = 1
-	pole.mesh = pm
-	pole.material_override = theme.mat(Color("#eeeeee"), 0.4, 0.6)
-	pole.position = Vector3(0.3, 0.18, 0.3)
-	flag.add_child(pole)
-	var cloth := _box(Vector3(0.16, 0.1, 0.01), theme.player_color(seat), 0.6)
-	cloth.position = Vector3(0.38, 0.31, 0.3)
-	flag.add_child(cloth)
-	var ring := MeshInstance3D.new()
+	mm.add_mesh(pm, Transform3D(Basis(), Vector3(0.3, 0.18, 0.3)), Color("#eeeeee"), MeshMerger.std(0.4, 0.6))
+	mm.add_box(Vector3(0.16, 0.1, 0.01), Vector3(0.38, 0.31, 0.3), c, MeshMerger.std(0.6))
 	var rm := TorusMesh.new()
 	rm.inner_radius = 0.40
 	rm.outer_radius = 0.44
 	rm.rings = 24
 	rm.ring_segments = 6
-	ring.mesh = rm
-	ring.material_override = theme.mat(theme.player_color(seat), 0.4, 0.0, 0.6)
-	ring.position.y = 0.005
-	flag.add_child(ring)
-	_lots[pid].add_child(flag)
+	mm.add_mesh(rm, Transform3D(Basis(), Vector3(0, 0.012, 0)), c, MeshMerger.glow(0.6, 0.4))
+	var flag := mm.instance("Owner")
+	lot.add_child(flag)
 	_owner_marks[pid] = flag
 	flag.scale = Vector3.ONE * 0.01
 	create_tween().tween_property(flag, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -253,83 +216,59 @@ func show_level(pid: String, level: int, seat: int, animate := true) -> void:
 	var lot: Node3D = _lots[pid]
 	var old := lot.get_node_or_null("Building")
 	if old:
+		# Detach now: a queued node would keep the name and the new building
+		# would be auto-renamed, so the next upgrade could not find it.
+		lot.remove_child(old)
 		old.queue_free()
 	if level <= 0:
 		return
-	var b := Node3D.new()
-	b.name = "Building"
-	lot.add_child(b)
 	var accent: Color = theme.player_color(seat) if seat >= 0 else Color.WHITE
+	var mm := MeshMerger.new()
 	match level:
-		1: _house(b, accent)
-		2: _apartment(b, accent)
-		_: _tower(b, accent)
+		1: _house(mm, accent)
+		2: _apartment(mm, accent)
+		_: _tower(mm, accent)
+	var b := mm.instance("Building")
+	lot.add_child(b)
 	if animate:
 		b.scale = Vector3(1, 0.01, 1)
 		create_tween().tween_property(b, "scale", Vector3.ONE, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 
-func _house(b: Node3D, accent: Color) -> void:
-	var body := _box(Vector3(0.36, 0.24, 0.32), Color("#f5ebe0"), 0.7)
-	body.position.y = 0.12
-	b.add_child(body)
-	var roof := MeshInstance3D.new()
+func _house(mm: MeshMerger, accent: Color) -> void:
+	mm.add_box(Vector3(0.36, 0.24, 0.32), Vector3(0, 0.12, 0), Color("#f5ebe0"), MeshMerger.std(0.7))
 	var pm := PrismMesh.new()
 	pm.size = Vector3(0.42, 0.18, 0.36)
-	roof.mesh = pm
-	roof.material_override = theme.mat(accent.darkened(0.15), 0.6)
-	roof.position.y = 0.33
-	b.add_child(roof)
-	_windows(b, Vector3(0.36, 0.24, 0.32), 0.12, 1)
+	mm.add_mesh(pm, Transform3D(Basis(), Vector3(0, 0.33, 0)), accent.darkened(0.15), MeshMerger.std(0.6))
+	_windows(mm, Vector3(0.36, 0.24, 0.32), 0.12, 1)
 
 
-func _apartment(b: Node3D, accent: Color) -> void:
-	var body := _box(Vector3(0.4, 0.6, 0.38), Color("#e8e2d4"), 0.55)
-	body.position.y = 0.3
-	b.add_child(body)
-	var roof := _box(Vector3(0.44, 0.05, 0.42), accent, 0.5)
-	roof.position.y = 0.625
-	b.add_child(roof)
-	_windows(b, Vector3(0.4, 0.6, 0.38), 0.3, 3)
+func _apartment(mm: MeshMerger, accent: Color) -> void:
+	mm.add_box(Vector3(0.4, 0.6, 0.38), Vector3(0, 0.3, 0), Color("#e8e2d4"), MeshMerger.std(0.6))
+	mm.add_box(Vector3(0.44, 0.05, 0.42), Vector3(0, 0.625, 0), accent, MeshMerger.std(0.5))
+	_windows(mm, Vector3(0.4, 0.6, 0.38), 0.3, 3)
 
 
-func _tower(b: Node3D, accent: Color) -> void:
-	var body := _box(Vector3(0.38, 1.0, 0.38), Color("#cfe3f0"), 0.2, 0.3)
-	body.position.y = 0.5
-	b.add_child(body)
-	var top := _box(Vector3(0.28, 0.2, 0.28), Color("#e9edf2"), 0.3, 0.3)
-	top.position.y = 1.1
-	b.add_child(top)
-	var cap := MeshInstance3D.new()
+func _tower(mm: MeshMerger, accent: Color) -> void:
+	mm.add_box(Vector3(0.38, 1.0, 0.38), Vector3(0, 0.5, 0), Color("#cfe3f0"), MeshMerger.std(0.3, 0.3))
+	mm.add_box(Vector3(0.28, 0.2, 0.28), Vector3(0, 1.1, 0), Color("#e9edf2"), MeshMerger.std(0.3, 0.3))
 	var cm := CylinderMesh.new()
 	cm.top_radius = 0.0
 	cm.bottom_radius = 0.06
 	cm.height = 0.3
 	cm.radial_segments = 8
 	cm.rings = 1
-	cap.mesh = cm
-	cap.material_override = theme.mat(Color("#f4c542"), 0.25, 0.9, 1.2)
-	cap.position.y = 1.35
-	b.add_child(cap)
-	var band := _box(Vector3(0.4, 0.04, 0.4), accent, 0.4, 0.0, 0.8)
-	band.position.y = 0.98
-	b.add_child(band)
-	_windows(b, Vector3(0.38, 1.0, 0.38), 0.5, 5)
+	mm.add_mesh(cm, Transform3D(Basis(), Vector3(0, 1.35, 0)), Color("#f4c542"), MeshMerger.glow(1.2, 0.25, 0.9))
+	mm.add_box(Vector3(0.4, 0.04, 0.4), Vector3(0, 0.98, 0), accent, MeshMerger.glow(0.8, 0.4))
+	_windows(mm, Vector3(0.38, 1.0, 0.38), 0.5, 5)
 
 
 ## Warm emissive window strips on the camera-facing sides.
-func _windows(b: Node3D, size: Vector3, center_y: float, rows: int) -> void:
-	var glow := theme.mat(Color("#ffd27a"), 0.3, 0.0, 1.6)
+func _windows(mm: MeshMerger, size: Vector3, center_y: float, rows: int) -> void:
 	for r in rows:
 		var y := center_y - size.y * 0.35 + (size.y * 0.7) * (r + 0.5) / rows
-		for face in [Vector3(0, 0, 1), Vector3(1, 0, 0)]:
-			var w := MeshInstance3D.new()
-			var bm := BoxMesh.new()
-			bm.size = Vector3(size.x * 0.7, size.y * 0.35 / rows, 0.01) if face.z > 0 else Vector3(0.01, size.y * 0.35 / rows, size.z * 0.7)
-			w.mesh = bm
-			w.material_override = glow
-			w.position = Vector3(face.x * (size.x * 0.5 + 0.006), y, face.z * (size.z * 0.5 + 0.006))
-			b.add_child(w)
+		mm.add_box(Vector3(size.x * 0.7, size.y * 0.35 / rows, 0.01), Vector3(0, y, size.z * 0.5 + 0.006), Color("#ffd27a"), MeshMerger.glow(1.6))
+		mm.add_box(Vector3(0.01, size.y * 0.35 / rows, size.z * 0.7), Vector3(size.x * 0.5 + 0.006, y, 0), Color("#ffd27a"), MeshMerger.glow(1.6))
 
 
 func set_highlight(index: int) -> void:
@@ -348,12 +287,3 @@ func pick(camera: Camera3D, screen_pos: Vector2) -> int:
 	if hit.is_empty() or not hit["collider"].has_meta("tile_index"):
 		return -1
 	return hit["collider"].get_meta("tile_index")
-
-
-func _box(size: Vector3, color: Color, roughness := 0.75, metallic := 0.0, emission := 0.0) -> MeshInstance3D:
-	var m := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = size
-	m.mesh = bm
-	m.material_override = theme.mat(color, roughness, metallic, emission)
-	return m

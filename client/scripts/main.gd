@@ -132,6 +132,9 @@ func _build_world() -> void:
 	fill.rotation_degrees = Vector3(-30, 150, 0)
 	add_child(fill)
 	camera = CameraRig.new()
+	if args.has("cam_yaw"):
+		camera.configure(float(args["cam_yaw"]), float(args.get("cam_pitch", "50")),
+			float(args.get("cam_half", "4.6")), float(args.get("cam_tall", "1.6")))
 	add_child(camera)
 	camera.current = true
 	board = BoardView.new()

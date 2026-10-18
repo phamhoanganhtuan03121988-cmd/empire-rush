@@ -14,37 +14,28 @@ func build(p_seat: int, theme: ThemeData) -> void:
 	var c := theme.player_color(seat)
 	_body = Node3D.new()
 	add_child(_body)
-	var base := MeshInstance3D.new()
+	# Base + body + head merged into one mesh (one draw call per pawn).
+	var mm := MeshMerger.new()
 	var bm := CylinderMesh.new()
 	bm.top_radius = 0.13
 	bm.bottom_radius = 0.15
 	bm.height = 0.05
 	bm.radial_segments = 20
 	bm.rings = 1
-	base.mesh = bm
-	base.material_override = theme.mat(c.darkened(0.25), 0.35, 0.5)
-	base.position.y = 0.025
-	_body.add_child(base)
-	var torso := MeshInstance3D.new()
+	mm.add_mesh(bm, Transform3D(Basis(), Vector3(0, 0.025, 0)), c.darkened(0.25), MeshMerger.std(0.4, 0.4))
 	var cm := CapsuleMesh.new()
 	cm.radius = 0.08
 	cm.height = 0.3
 	cm.radial_segments = 16
 	cm.rings = 4
-	torso.mesh = cm
-	torso.material_override = theme.mat(c, 0.35, 0.25)
-	torso.position.y = 0.2
-	_body.add_child(torso)
-	var head := MeshInstance3D.new()
+	mm.add_mesh(cm, Transform3D(Basis(), Vector3(0, 0.2, 0)), c, MeshMerger.std(0.4, 0.4))
 	var sm := SphereMesh.new()
 	sm.radius = 0.075
 	sm.height = 0.15
 	sm.radial_segments = 16
 	sm.rings = 8
-	head.mesh = sm
-	head.material_override = theme.mat(Color("#ffe0bd"), 0.6)
-	head.position.y = 0.41
-	_body.add_child(head)
+	mm.add_mesh(sm, Transform3D(Basis(), Vector3(0, 0.41, 0)), Color("#ffe0bd"), MeshMerger.std(0.6))
+	_body.add_child(mm.instance("Pawn"))
 
 
 ## Hops tile by tile through `points` (world positions). Awaitable.

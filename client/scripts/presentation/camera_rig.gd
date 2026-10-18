@@ -5,23 +5,36 @@
 class_name CameraRig
 extends Camera3D
 
-const YAW := 45.0
-const PITCH := 50.0
-const HALF := 4.6     # board skirt half-size (m)
-const TALL := 1.6     # tallest building height (m)
 const MARGIN := 0.03  # fraction of the free area kept empty around the board
+
+## Framing parameters (presentation tuning; see docs/M2_1_MOBILE_READABILITY_REPORT.md).
+var yaw := 45.0
+var pitch := 58.0
+var half := 4.05  # tile ring half-size (+5 cm): the decorative quay may crop, tiles never
+var tall := 1.3   # towers on the ring stay in frame
 
 var _points: Array[Vector3] = []
 
 
-func _ready() -> void:
-	for x in [-HALF, HALF]:
-		for z in [-HALF, HALF]:
-			_points.append(Vector3(x, -0.4, z))
-			_points.append(Vector3(x, TALL, z))
+func configure(p_yaw: float, p_pitch: float, p_half: float, p_tall: float) -> void:
+	yaw = p_yaw
+	pitch = p_pitch
+	half = p_half
+	tall = p_tall
+	_points.clear()
+
+
+func _build_points() -> void:
+	_points.clear()
+	for x in [-half, half]:
+		for z in [-half, half]:
+			_points.append(Vector3(x, -0.1, z))
+			_points.append(Vector3(x, tall, z))
 
 
 func frame(insets: Dictionary) -> void:
+	if _points.is_empty():
+		_build_points()
 	var vp := get_viewport().get_visible_rect().size
 	keep_aspect = Camera3D.KEEP_WIDTH if vp.y > vp.x else Camera3D.KEEP_HEIGHT
 	fov = 32.0
@@ -43,7 +56,7 @@ func frame(insets: Dictionary) -> void:
 func _place(dist: float, free: Rect2, vp: Vector2) -> Rect2:
 	h_offset = 0.0
 	v_offset = 0.0
-	var dir := Basis.from_euler(Vector3(deg_to_rad(-PITCH), deg_to_rad(YAW), 0)) * Vector3(0, 0, 1)
+	var dir := Basis.from_euler(Vector3(deg_to_rad(-pitch), deg_to_rad(yaw), 0)) * Vector3(0, 0, 1)
 	look_at_from_position(dir * dist, Vector3(0, 0.2, 0))
 	var bb := _bbox()
 	# Shift the frustum so the board's projected box is centred in `free`.
