@@ -19,6 +19,8 @@ func build(p_seat: int, theme: ThemeData) -> void:
 	bm.top_radius = 0.13
 	bm.bottom_radius = 0.15
 	bm.height = 0.05
+	bm.radial_segments = 20
+	bm.rings = 1
 	base.mesh = bm
 	base.material_override = theme.mat(c.darkened(0.25), 0.35, 0.5)
 	base.position.y = 0.025
@@ -27,6 +29,8 @@ func build(p_seat: int, theme: ThemeData) -> void:
 	var cm := CapsuleMesh.new()
 	cm.radius = 0.08
 	cm.height = 0.3
+	cm.radial_segments = 16
+	cm.rings = 4
 	torso.mesh = cm
 	torso.material_override = theme.mat(c, 0.35, 0.25)
 	torso.position.y = 0.2
@@ -35,6 +39,8 @@ func build(p_seat: int, theme: ThemeData) -> void:
 	var sm := SphereMesh.new()
 	sm.radius = 0.075
 	sm.height = 0.15
+	sm.radial_segments = 16
+	sm.rings = 8
 	head.mesh = sm
 	head.material_override = theme.mat(Color("#ffe0bd"), 0.6)
 	head.position.y = 0.41

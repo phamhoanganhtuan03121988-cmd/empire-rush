@@ -33,6 +33,8 @@ func build(p_config: GameConfig, p_theme: ThemeData) -> void:
 	var hm := TorusMesh.new()
 	hm.inner_radius = 0.38
 	hm.outer_radius = 0.46
+	hm.rings = 32
+	hm.ring_segments = 8
 	_highlight.mesh = hm
 	_highlight.material_override = theme.mat(Color(1.0, 0.85, 0.35), 0.3, 0.0, 2.5)
 	_highlight.visible = false
@@ -93,6 +95,8 @@ func _build_center_city() -> void:
 	cm.top_radius = 0.0
 	cm.bottom_radius = 0.42
 	cm.height = 0.6
+	cm.radial_segments = 24
+	cm.rings = 1
 	crown.mesh = cm
 	crown.material_override = theme.mat(Color("#f4c542"), 0.25, 0.8, 0.6)
 	crown.position = Vector3(0, 2.53, 0)
@@ -121,6 +125,8 @@ func _tree(parent: Node3D, pos: Vector3) -> void:
 	tm.top_radius = 0.03
 	tm.bottom_radius = 0.04
 	tm.height = 0.18
+	tm.radial_segments = 6
+	tm.rings = 1
 	trunk.mesh = tm
 	trunk.material_override = theme.mat(Color("#6d4c41"), 0.9)
 	trunk.position = pos + Vector3(0, 0.09, 0)
@@ -129,6 +135,8 @@ func _tree(parent: Node3D, pos: Vector3) -> void:
 	var sm := SphereMesh.new()
 	sm.radius = 0.16
 	sm.height = 0.3
+	sm.radial_segments = 10
+	sm.rings = 5
 	crown.mesh = sm
 	crown.material_override = theme.mat(Color("#4e8f3a").lerp(Color("#7cb342"), _rng.randf()), 0.9)
 	crown.position = pos + Vector3(0, 0.3, 0)
@@ -212,6 +220,8 @@ func show_owner(pid: String, seat: int) -> void:
 	pm.top_radius = 0.012
 	pm.bottom_radius = 0.012
 	pm.height = 0.36
+	pm.radial_segments = 6
+	pm.rings = 1
 	pole.mesh = pm
 	pole.material_override = theme.mat(Color("#eeeeee"), 0.4, 0.6)
 	pole.position = Vector3(0.3, 0.18, 0.3)
@@ -223,6 +233,8 @@ func show_owner(pid: String, seat: int) -> void:
 	var rm := TorusMesh.new()
 	rm.inner_radius = 0.40
 	rm.outer_radius = 0.44
+	rm.rings = 24
+	rm.ring_segments = 6
 	ring.mesh = rm
 	ring.material_override = theme.mat(theme.player_color(seat), 0.4, 0.0, 0.6)
 	ring.position.y = 0.005
@@ -293,6 +305,8 @@ func _tower(b: Node3D, accent: Color) -> void:
 	cm.top_radius = 0.0
 	cm.bottom_radius = 0.06
 	cm.height = 0.3
+	cm.radial_segments = 8
+	cm.rings = 1
 	cap.mesh = cm
 	cap.material_override = theme.mat(Color("#f4c542"), 0.25, 0.9, 1.2)
 	cap.position.y = 1.35

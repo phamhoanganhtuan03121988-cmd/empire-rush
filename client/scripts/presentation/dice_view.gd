@@ -38,6 +38,8 @@ func build(theme: ThemeData) -> void:
 				var sm := SphereMesh.new()
 				sm.radius = 0.032
 				sm.height = 0.02
+				sm.radial_segments = 8
+				sm.rings = 3
 				pip.mesh = sm
 				pip.material_override = pip_mat if v != 1 else theme.mat(Color("#c0392b"), 0.4)
 				pip.position = n * (SIZE * 0.5) + basis[0] * p.x * SIZE * 0.26 + basis[1] * p.y * SIZE * 0.26

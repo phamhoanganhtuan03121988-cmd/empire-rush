@@ -203,6 +203,7 @@ func _process(delta: float) -> void:
 				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
 				rs.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0,
 				Engine.get_frames_per_second(), rs.get_video_adapter_name(), str(get_viewport().get_visible_rect().size)])
+			get_tree().quit()
 	if args.has("shots"):
 		_shot_t += delta
 		if _shot_t >= float(args.get("shot-every", "5")):

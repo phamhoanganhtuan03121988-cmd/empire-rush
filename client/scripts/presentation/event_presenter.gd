@@ -196,6 +196,8 @@ func _coin_flight(from_seat: int, to_seat: int) -> void:
 	cm.top_radius = 0.09
 	cm.bottom_radius = 0.09
 	cm.height = 0.025
+	cm.radial_segments = 16
+	cm.rings = 1
 	coin.mesh = cm
 	coin.material_override = theme.mat(Color("#f4c542"), 0.25, 0.9, 0.5)
 	popup_parent.add_child(coin)

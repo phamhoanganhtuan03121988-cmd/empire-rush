@@ -1,0 +1,526 @@
+{
+  "end_reason": "last_solvent",
+  "engine_duration_s": 328.702,
+  "engine_time_scale": 4.0,
+  "frames": 11271,
+  "max_frame_game_s": 0.6,
+  "mean_frame_game_s": 0.0289,
+  "mean_presentation_s_per_turn": 2.79,
+  "mean_turn_s": {
+    "bot": 5.57,
+    "human": 6.08
+  },
+  "players": 2,
+  "rounds": 28,
+  "seed": 102,
+  "session_game_seconds": 326.2,
+  "session_wall_seconds": 81.4,
+  "source": "autopilot",
+  "turn_log": [
+    {
+      "decision_and_wait_s": 4.00060133333333,
+      "duration_s": 7.05871866666665,
+      "human": true,
+      "presentation_s": 3.05811733333332,
+      "round": 1,
+      "seat": 0,
+      "start": 0.0
+    },
+    {
+      "decision_and_wait_s": 3.67043422222222,
+      "duration_s": 6.099572,
+      "human": false,
+      "presentation_s": 2.42913777777778,
+      "round": 1,
+      "seat": 1,
+      "start": 7.05871866666665
+    },
+    {
+      "decision_and_wait_s": 4.52624800000003,
+      "duration_s": 7.39700577777782,
+      "human": true,
+      "presentation_s": 2.87075777777778,
+      "round": 2,
+      "seat": 0,
+      "start": 13.1582906666667
+    },
+    {
+      "decision_and_wait_s": 2.29041022222224,
+      "duration_s": 4.58148222222226,
+      "human": false,
+      "presentation_s": 2.29107200000002,
+      "round": 2,
+      "seat": 1,
+      "start": 20.5552964444445
+    },
+    {
+      "decision_and_wait_s": 3.42200000000004,
+      "duration_s": 5.96108400000003,
+      "human": true,
+      "presentation_s": 2.53908399999999,
+      "round": 3,
+      "seat": 0,
+      "start": 25.1367786666667
+    },
+    {
+      "decision_and_wait_s": 3.3376639999998,
+      "duration_s": 5.40646399999961,
+      "human": false,
+      "presentation_s": 2.0687999999998,
+      "round": 3,
+      "seat": 1,
+      "start": 31.0978626666668
+    },
+    {
+      "decision_and_wait_s": 3.42041599999968,
+      "duration_s": 6.73049599999936,
+      "human": true,
+      "presentation_s": 3.31007999999969,
+      "round": 4,
+      "seat": 0,
+      "start": 36.5043266666664
+    },
+    {
+      "decision_and_wait_s": 2.20671999999979,
+      "duration_s": 4.60652799999956,
+      "human": false,
+      "presentation_s": 2.39980799999977,
+      "round": 4,
+      "seat": 1,
+      "start": 43.2348226666657
+    },
+    {
+      "decision_and_wait_s": 3.42041599999968,
+      "duration_s": 6.45465599999939,
+      "human": true,
+      "presentation_s": 3.03423999999971,
+      "round": 5,
+      "seat": 0,
+      "start": 47.8413506666653
+    },
+    {
+      "decision_and_wait_s": 2.98972977777768,
+      "duration_s": 5.75064888888858,
+      "human": false,
+      "presentation_s": 2.76091911111089,
+      "round": 5,
+      "seat": 1,
+      "start": 54.2960066666647
+    },
+    {
+      "decision_and_wait_s": 4.36619564983169,
+      "duration_s": 6.86984276094281,
+      "human": true,
+      "presentation_s": 2.50364711111112,
+      "round": 6,
+      "seat": 0,
+      "start": 60.0466555555533
+    },
+    {
+      "decision_and_wait_s": 3.28896701683544,
+      "duration_s": 6.34216835016913,
+      "human": false,
+      "presentation_s": 3.05320133333369,
+      "round": 6,
+      "seat": 1,
+      "start": 66.9164983164961
+    },
+    {
+      "decision_and_wait_s": 2.5363733333335,
+      "duration_s": 4.44692266666701,
+      "human": true,
+      "presentation_s": 1.91054933333351,
+      "round": 7,
+      "seat": 0,
+      "start": 73.2586666666652
+    },
+    {
+      "decision_and_wait_s": 3.02528888888904,
+      "duration_s": 5.96663288888854,
+      "human": false,
+      "presentation_s": 2.9413439999995,
+      "round": 7,
+      "seat": 1,
+      "start": 77.7055893333322
+    },
+    {
+      "decision_and_wait_s": 3.60708044444436,
+      "duration_s": 6.20830177777779,
+      "human": true,
+      "presentation_s": 2.60122133333343,
+      "round": 8,
+      "seat": 0,
+      "start": 83.6722222222207
+    },
+    {
+      "decision_and_wait_s": 4.83627466666711,
+      "duration_s": 7.60453866666701,
+      "human": false,
+      "presentation_s": 2.7682639999999,
+      "round": 8,
+      "seat": 1,
+      "start": 89.8805239999985
+    },
+    {
+      "decision_and_wait_s": 2.357429333333,
+      "duration_s": 4.24631822222146,
+      "human": true,
+      "presentation_s": 1.88888888888846,
+      "round": 9,
+      "seat": 0,
+      "start": 97.4850626666655
+    },
+    {
+      "decision_and_wait_s": 2.02237288894409,
+      "duration_s": 4.67222577777801,
+      "human": false,
+      "presentation_s": 2.64985288883392,
+      "round": 9,
+      "seat": 1,
+      "start": 101.731380888887
+    },
+    {
+      "decision_and_wait_s": 4.73166292063465,
+      "duration_s": 7.52337746031708,
+      "human": true,
+      "presentation_s": 2.79171453968243,
+      "round": 10,
+      "seat": 0,
+      "start": 106.403606666665
+    },
+    {
+      "decision_and_wait_s": 2.12287733333355,
+      "duration_s": 5.20477320634954,
+      "human": false,
+      "presentation_s": 3.08189587301599,
+      "round": 10,
+      "seat": 1,
+      "start": 113.926984126982
+    },
+    {
+      "decision_and_wait_s": 3.58946933333304,
+      "duration_s": 6.33490933333341,
+      "human": true,
+      "presentation_s": 2.74544000000037,
+      "round": 11,
+      "seat": 0,
+      "start": 119.131757333332
+    },
+    {
+      "decision_and_wait_s": 2.19480577777756,
+      "duration_s": 5.88998577777733,
+      "human": false,
+      "presentation_s": 3.69517999999977,
+      "round": 11,
+      "seat": 1,
+      "start": 125.466666666665
+    },
+    {
+      "decision_and_wait_s": 4.34607212698361,
+      "duration_s": 7.3400302222218,
+      "human": true,
+      "presentation_s": 2.99395809523818,
+      "round": 12,
+      "seat": 0,
+      "start": 131.356652444442
+    },
+    {
+      "decision_and_wait_s": 1.8566035555551,
+      "duration_s": 4.80104799999887,
+      "human": false,
+      "presentation_s": 2.94444444444377,
+      "round": 12,
+      "seat": 1,
+      "start": 138.696682666664
+    },
+    {
+      "decision_and_wait_s": 3.46388977777684,
+      "duration_s": 6.38779377777581,
+      "human": true,
+      "presentation_s": 2.92390399999897,
+      "round": 13,
+      "seat": 0,
+      "start": 143.497730666663
+    },
+    {
+      "decision_and_wait_s": 3.86977244444324,
+      "duration_s": 6.99044622221999,
+      "human": false,
+      "presentation_s": 3.12067377777674,
+      "round": 13,
+      "seat": 1,
+      "start": 149.885524444439
+    },
+    {
+      "decision_and_wait_s": 3.3928319999988,
+      "duration_s": 6.04089599999787,
+      "human": true,
+      "presentation_s": 2.64806399999907,
+      "round": 14,
+      "seat": 0,
+      "start": 156.875970666659
+    },
+    {
+      "decision_and_wait_s": 3.39398711111045,
+      "duration_s": 6.82805199999905,
+      "human": false,
+      "presentation_s": 3.4340648888886,
+      "round": 14,
+      "seat": 1,
+      "start": 162.916866666657
+    },
+    {
+      "decision_and_wait_s": 4.61860342857116,
+      "duration_s": 6.36365276190418,
+      "human": true,
+      "presentation_s": 1.74504933333301,
+      "round": 15,
+      "seat": 0,
+      "start": 169.744918666656
+    },
+    {
+      "decision_and_wait_s": 3.12833022222165,
+      "duration_s": 6.42113123809406,
+      "human": false,
+      "presentation_s": 3.29280101587241,
+      "round": 15,
+      "seat": 1,
+      "start": 176.10857142856
+    },
+    {
+      "decision_and_wait_s": 3.20991866666571,
+      "duration_s": 6.86994399999807,
+      "human": true,
+      "presentation_s": 3.66002533333236,
+      "round": 16,
+      "seat": 0,
+      "start": 182.529702666654
+    },
+    {
+      "decision_and_wait_s": 4.00433066666534,
+      "duration_s": 7.78436666666403,
+      "human": false,
+      "presentation_s": 3.78003599999869,
+      "round": 16,
+      "seat": 1,
+      "start": 189.399646666652
+    },
+    {
+      "decision_and_wait_s": 4.06552266666608,
+      "duration_s": 7.71849866666503,
+      "human": true,
+      "presentation_s": 3.65297599999894,
+      "round": 17,
+      "seat": 0,
+      "start": 197.184013333316
+    },
+    {
+      "decision_and_wait_s": 2.23888622222213,
+      "duration_s": 5.53468533333324,
+      "human": false,
+      "presentation_s": 3.29579911111111,
+      "round": 17,
+      "seat": 1,
+      "start": 204.902511999981
+    },
+    {
+      "decision_and_wait_s": 3.30199466666673,
+      "duration_s": 6.31860533333338,
+      "human": true,
+      "presentation_s": 3.01661066666665,
+      "round": 18,
+      "seat": 0,
+      "start": 210.437197333314
+    },
+    {
+      "decision_and_wait_s": 3.75167822216616,
+      "duration_s": 6.0143119999432,
+      "human": false,
+      "presentation_s": 2.26263377777704,
+      "round": 18,
+      "seat": 1,
+      "start": 216.755802666648
+    },
+    {
+      "decision_and_wait_s": 1.7203817778327,
+      "duration_s": 5.02214400005499,
+      "human": true,
+      "presentation_s": 3.30176222222229,
+      "round": 19,
+      "seat": 0,
+      "start": 222.770114666591
+    },
+    {
+      "decision_and_wait_s": 1.73779199999939,
+      "duration_s": 4.83089199999918,
+      "human": false,
+      "presentation_s": 3.09309999999979,
+      "round": 19,
+      "seat": 1,
+      "start": 227.792258666646
+    },
+    {
+      "decision_and_wait_s": 4.14352222222152,
+      "duration_s": 7.15625022222159,
+      "human": true,
+      "presentation_s": 3.01272800000007,
+      "round": 20,
+      "seat": 0,
+      "start": 232.623150666645
+    },
+    {
+      "decision_and_wait_s": 2.32930342857122,
+      "duration_s": 4.61184311111049,
+      "human": false,
+      "presentation_s": 2.28253968253927,
+      "round": 20,
+      "seat": 1,
+      "start": 239.779400888867
+    },
+    {
+      "decision_and_wait_s": 3.75413466666629,
+      "duration_s": 6.56707199999929,
+      "human": true,
+      "presentation_s": 2.812937333333,
+      "round": 21,
+      "seat": 0,
+      "start": 244.391243999977
+    },
+    {
+      "decision_and_wait_s": 1.86695085714257,
+      "duration_s": 4.42127085714245,
+      "human": false,
+      "presentation_s": 2.55431999999988,
+      "round": 21,
+      "seat": 1,
+      "start": 250.958315999976
+    },
+    {
+      "decision_and_wait_s": 1.9749478095234,
+      "duration_s": 3.71003847618917,
+      "human": true,
+      "presentation_s": 1.73509066666577,
+      "round": 22,
+      "seat": 0,
+      "start": 255.379586857119
+    },
+    {
+      "decision_and_wait_s": 2.16666666666617,
+      "duration_s": 4.97544266666551,
+      "human": false,
+      "presentation_s": 2.80877599999934,
+      "round": 22,
+      "seat": 1,
+      "start": 259.089625333308
+    },
+    {
+      "decision_and_wait_s": 2.35856969312192,
+      "duration_s": 4.46826533333274,
+      "human": true,
+      "presentation_s": 2.10969564021082,
+      "round": 23,
+      "seat": 0,
+      "start": 264.065067999974
+    },
+    {
+      "decision_and_wait_s": 2.64914922215922,
+      "duration_s": 5.08333333333263,
+      "human": false,
+      "presentation_s": 2.43418411117341,
+      "round": 23,
+      "seat": 1,
+      "start": 268.533333333306
+    },
+    {
+      "decision_and_wait_s": 2.58122755555502,
+      "duration_s": 5.41721333333163,
+      "human": true,
+      "presentation_s": 2.83598577777661,
+      "round": 24,
+      "seat": 0,
+      "start": 273.616666666639
+    },
+    {
+      "decision_and_wait_s": 2.44695999999897,
+      "duration_s": 4.82431066666459,
+      "human": false,
+      "presentation_s": 2.37735066666562,
+      "round": 24,
+      "seat": 1,
+      "start": 279.033879999971
+    },
+    {
+      "decision_and_wait_s": 3.48209288888751,
+      "duration_s": 6.15422799999806,
+      "human": true,
+      "presentation_s": 2.67213511111055,
+      "round": 25,
+      "seat": 0,
+      "start": 283.858190666635
+    },
+    {
+      "decision_and_wait_s": 2.15155199999924,
+      "duration_s": 5.26854399999814,
+      "human": false,
+      "presentation_s": 3.1169919999989,
+      "round": 25,
+      "seat": 1,
+      "start": 290.012418666633
+    },
+    {
+      "decision_and_wait_s": 2.42739199999914,
+      "duration_s": 5.35129599999811,
+      "human": true,
+      "presentation_s": 2.92390399999897,
+      "round": 26,
+      "seat": 0,
+      "start": 295.280962666631
+    },
+    {
+      "decision_and_wait_s": 1.63365688888842,
+      "duration_s": 3.87329688888769,
+      "human": false,
+      "presentation_s": 2.23963999999927,
+      "round": 26,
+      "seat": 1,
+      "start": 300.63225866663
+    },
+    {
+      "decision_and_wait_s": 2.4827302222219,
+      "duration_s": 5.15495244444361,
+      "human": true,
+      "presentation_s": 2.67222222222171,
+      "round": 27,
+      "seat": 0,
+      "start": 304.505555555517
+    },
+    {
+      "decision_and_wait_s": 1.70776177777657,
+      "duration_s": 4.92384666666447,
+      "human": false,
+      "presentation_s": 3.21608488888791,
+      "round": 27,
+      "seat": 1,
+      "start": 309.660507999961
+    },
+    {
+      "decision_and_wait_s": 1.9861679999994,
+      "duration_s": 5.09620399999835,
+      "human": true,
+      "presentation_s": 3.11003599999896,
+      "round": 28,
+      "seat": 0,
+      "start": 314.584354666625
+    },
+    {
+      "decision_and_wait_s": 3.58591999999874,
+      "duration_s": 6.5374079999977,
+      "human": false,
+      "presentation_s": 2.95148799999896,
+      "round": 28,
+      "seat": 1,
+      "start": 319.680558666624
+    }
+  ],
+  "turns": 56
+}
