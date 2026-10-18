@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 59,
+  "frames_dropped_local": 0,
+  "frames_sent": 303,
+  "invalid_kinds": [],
+  "last_seq": 706,
+  "public_hash": "91251e0a0d05964838acf2757527140838b0c1057813f9aabfc11a9342b83023",
+  "room_code": "WV44B2",
+  "seat": 2,
+  "snapshot_hash": "91251e0a0d05964838acf2757527140838b0c1057813f9aabfc11a9342b83023",
+  "state_version": 243,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 243,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 243
+  }
+}

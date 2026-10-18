@@ -51,6 +51,11 @@ The full step list is in `IPHONE14PRO_TEST_CHECKLIST.md` (§ benchmark table, pa
 
 **Do not** take a desktop or lavapipe number as a phone result. Do not report an FPS for a device that has not been measured.
 
+## Phase 3 notes
+- **Load time:** `perf_bench.gd` records `meta.load_ms` (scene load + instantiate, and time to the first frame).
+- **Shadow map size:** fixed per preset (2048 on Medium and High). The desktop bench therefore renders the same shadow map size that Godot uses on iOS/Android. Before Phase 3, desktop silently used 4096.
+- **Results:** `docs/test-logs/phase3_perf/`.
+
 ## What changed in Phase 2 (the numbers B should confirm or refute)
 
 Triangles went from 77k to 51k, and shadow-pass triangles from 140k to 44k (High). Low uses unshaded water and no detail textures. On tile-based mobile GPUs, shadow-pass bandwidth and fill rate weigh differently from lavapipe. Measure them on the phone before tuning presets further.

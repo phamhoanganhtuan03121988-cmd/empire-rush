@@ -5,4 +5,4 @@ SCRIPT ERROR: Invalid access to property or key 'state_version' on a base object
           GDScript backtrace (most recent call first):
               [0] handle_frame (res://scripts/net/net_client.gd:116)
               [1] _process (res://tools/net/client_main.gd:133)
-[client H77M2P/1] DONE version=247 hash=6ef8a37a7577
+[client E8BTCK/2] DONE version=239 hash=2268f5b2c7cb

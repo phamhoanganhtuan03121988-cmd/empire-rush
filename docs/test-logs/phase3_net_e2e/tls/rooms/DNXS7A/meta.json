@@ -1,0 +1,24 @@
+{
+  "code": "DNXS7A",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1770812340,
+  "token_hashes": [
+    "63863e68aa4c22ce2820b130231379ef2b7c0b39cb0730e62a070317e8bb45c4",
+    "1cad9346c1223ed7960620509586704b0d9b58068d7dd3e1ff84e0ce64643f09"
+  ]
+}

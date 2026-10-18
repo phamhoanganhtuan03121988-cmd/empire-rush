@@ -1,0 +1,24 @@
+{
+  "code": "46WXMC",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 20000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1643508648,
+  "token_hashes": [
+    "3ca471c9e0fe6118df2178c89e2af23082cd7194f710b44fa44e2d18363fbf75",
+    "4f42ed61544b06f03fd56ec48ca3a46f4309379721f27ca1b15af37cc84ee199"
+  ]
+}

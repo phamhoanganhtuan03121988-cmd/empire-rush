@@ -12,78 +12,76 @@
   "pass": true,
   "rooms": [
     {
-      "code": "HYGTPY",
-      "commands_applied": 198,
+      "code": "9JBBAK",
+      "commands_applied": 193,
       "end_reason": "round_cap",
-      "journal_entries": 199,
+      "journal_entries": 193,
       "players": 2,
       "restarts": 0,
       "rounds": 40,
-      "state_version": 200,
+      "state_version": 194,
       "stats": {
         "bot_commands": 0,
         "bot_takeovers": 0,
-        "commands": 198,
+        "commands": 193,
         "duplicates": 0,
         "frame_errors": {},
-        "frames_in": 596,
-        "frames_out": 996,
+        "frames_in": 579,
+        "frames_out": 967,
         "rejected": {},
         "seat_reclaims": 0,
-        "snapshots": 398
+        "snapshots": 386
       }
     },
     {
-      "code": "MNERY4",
-      "commands_applied": 177,
+      "code": "H3QJPK",
+      "commands_applied": 201,
+      "end_reason": "round_cap",
+      "journal_entries": 201,
+      "players": 2,
+      "restarts": 0,
+      "rounds": 40,
+      "state_version": 202,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 201,
+        "duplicates": 0,
+        "frame_errors": {},
+        "frames_in": 603,
+        "frames_out": 1007,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 402
+      }
+    },
+    {
+      "code": "KFADUU",
+      "commands_applied": 127,
       "end_reason": "last_solvent",
-      "journal_entries": 178,
+      "journal_entries": 128,
       "players": 2,
       "restarts": 0,
-      "rounds": 36,
-      "state_version": 179,
+      "rounds": 24,
+      "state_version": 129,
       "stats": {
         "bot_commands": 0,
         "bot_takeovers": 0,
-        "commands": 178,
+        "commands": 127,
         "duplicates": 0,
         "frame_errors": {},
-        "frames_in": 534,
-        "frames_out": 892,
-        "rejected": {
-          "STALE_STATE": 1
-        },
-        "seat_reclaims": 0,
-        "snapshots": 356
-      }
-    },
-    {
-      "code": "ZWXZVE",
-      "commands_applied": 205,
-      "end_reason": "round_cap",
-      "journal_entries": 207,
-      "players": 2,
-      "restarts": 0,
-      "rounds": 40,
-      "state_version": 208,
-      "stats": {
-        "bot_commands": 0,
-        "bot_takeovers": 0,
-        "commands": 205,
-        "duplicates": 0,
-        "frame_errors": {},
-        "frames_in": 619,
-        "frames_out": 1035,
+        "frames_in": 383,
+        "frames_out": 641,
         "rejected": {},
         "seat_reclaims": 0,
-        "snapshots": 414
+        "snapshots": 256
       }
     }
   ],
   "server_meta": {
     "links": 0,
     "objects": 1497,
-    "pid": 5580,
+    "pid": 19711,
     "restarts": 0,
     "rooms": 0,
     "static_mem_mb": 25.4,
@@ -103,15 +101,13 @@
   "server_stats": {
     "bot_commands": 0,
     "bot_takeovers": 0,
-    "commands": 581,
+    "commands": 521,
     "duplicates": 0,
     "frame_errors": {},
-    "frames_in": 1749,
-    "frames_out": 2923,
-    "rejected": {
-      "STALE_STATE": 1
-    },
+    "frames_in": 1565,
+    "frames_out": 2615,
+    "rejected": {},
     "seat_reclaims": 0,
-    "snapshots": 1168
+    "snapshots": 1044
   }
 }

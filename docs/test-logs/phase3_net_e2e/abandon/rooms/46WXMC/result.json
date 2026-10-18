@@ -1,0 +1,46 @@
+{
+  "code": "46WXMC",
+  "end_reason": "round_cap",
+  "public_hash": "1fdcc7c9b916dd10489da69eceb7b1b0c72e11ed5d5ef39226a1b8deac351103",
+  "restarts": 0,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2481,
+      "character_id": "INVESTOR",
+      "districts": 5,
+      "net_worth": 4262,
+      "player_id": "p1",
+      "rank": 1,
+      "seat": 1
+    },
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 437,
+      "character_id": "TYCOON",
+      "districts": 0,
+      "net_worth": 437,
+      "player_id": "p0",
+      "rank": 2,
+      "seat": 0
+    }
+  ],
+  "rounds": 40,
+  "server_ms": 265330,
+  "state_hash": "0aa6b6de8b3b859ce2ffa698374f0b8bb4493caeb9910a9aa7fa277f51b3968a",
+  "state_version": 212,
+  "stats": {
+    "bot_commands": 83,
+    "bot_takeovers": 1,
+    "commands": 127,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 394,
+    "frames_out": 662,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 267
+  }
+}

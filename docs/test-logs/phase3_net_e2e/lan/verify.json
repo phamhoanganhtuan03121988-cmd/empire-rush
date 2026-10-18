@@ -12,35 +12,35 @@
   "pass": true,
   "rooms": [
     {
-      "code": "XYDMTB",
-      "commands_applied": 219,
+      "code": "ZGHMXV",
+      "commands_applied": 214,
       "end_reason": "round_cap",
-      "journal_entries": 220,
+      "journal_entries": 214,
       "players": 3,
       "restarts": 0,
       "rounds": 30,
-      "state_version": 221,
+      "state_version": 215,
       "stats": {
         "bot_commands": 0,
         "bot_takeovers": 0,
-        "commands": 219,
+        "commands": 214,
         "duplicates": 0,
         "frame_errors": {},
-        "frames_in": 879,
-        "frames_out": 1542,
+        "frames_in": 856,
+        "frames_out": 1501,
         "rejected": {},
         "seat_reclaims": 0,
-        "snapshots": 660
+        "snapshots": 642
       }
     }
   ],
   "server_meta": {
     "links": 0,
-    "objects": 1503,
-    "pid": 5109,
+    "objects": 1497,
+    "pid": 20059,
     "restarts": 0,
-    "rooms": 1,
-    "static_mem_mb": 27,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
     "stats": {
       "frame_errors": {},
       "handshake_timeouts": 0,
@@ -49,7 +49,7 @@
       "rate_limited": 0,
       "rooms_created": 1,
       "rooms_ended": 1,
-      "rooms_removed": 0,
+      "rooms_removed": 1,
       "rooms_started": 1
     },
     "tls": false
@@ -57,13 +57,13 @@
   "server_stats": {
     "bot_commands": 0,
     "bot_takeovers": 0,
-    "commands": 219,
+    "commands": 214,
     "duplicates": 0,
     "frame_errors": {},
-    "frames_in": 879,
-    "frames_out": 1542,
+    "frames_in": 856,
+    "frames_out": 1501,
     "rejected": {},
     "seat_reclaims": 0,
-    "snapshots": 660
+    "snapshots": 642
   }
 }

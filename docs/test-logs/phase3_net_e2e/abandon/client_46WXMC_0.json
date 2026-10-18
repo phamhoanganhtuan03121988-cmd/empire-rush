@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 103,
+  "frames_dropped_local": 0,
+  "frames_sent": 316,
+  "invalid_kinds": [],
+  "last_seq": 574,
+  "public_hash": "1fdcc7c9b916dd10489da69eceb7b1b0c72e11ed5d5ef39226a1b8deac351103",
+  "room_code": "46WXMC",
+  "seat": 0,
+  "snapshot_hash": "1fdcc7c9b916dd10489da69eceb7b1b0c72e11ed5d5ef39226a1b8deac351103",
+  "state_version": 212,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 212,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 212
+  }
+}

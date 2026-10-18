@@ -1,0 +1,34 @@
+{
+  "code": "E8BTCK",
+  "format": 1,
+  "players": 4,
+  "policy": {
+    "hold_ms": 20000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    },
+    {
+      "character_id": "TYCOON",
+      "player_id": "p3"
+    }
+  ],
+  "seed": 1288211484,
+  "token_hashes": [
+    "4ba10dad81a2972d6f3d0d0db0df986acfecfd345b974dc48393963538584243",
+    "944a47a386ba81437c836682f0c1ded5b849bd1e7f7110d736d7b095a601adca",
+    "5c2b49cdcad5561e58954770b2dcb67420292028d74b8cace12602d93147b825",
+    "7b0ff2872abe7a72c1065ac2893fce729d9c8fad9b6434c64564351ba8c2528a"
+  ]
+}

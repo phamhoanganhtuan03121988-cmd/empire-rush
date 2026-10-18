@@ -34,6 +34,8 @@ Lần chạy này trùng lúc máy đang chạy test, nên số tuyệt đối b
 | 2. + shadow atlas 2048 rõ ràng cho Medium/High | — | 183.0 (181, 185) · p95 207 | 362.3 (359, 365) · p95 410 |
 | 3. + nước không nhận bóng | — | **167.0** (165, 169) · p95 187 | **351.2** (352, 351) · p95 406 |
 
+| **Mã cuối Phase 3** (`final_*.json`, gồm cả chỉnh chiều cao toà nhà) | 69.0 (68, 70, 69) · p95 83 | **167.3** (166, 173, 162) · p95 190 | **352.6** (350, 363, 345) · p95 394 |
+
 **Tổng cộng:** Medium **−28%**, High **−27%**. Low không đổi, đúng như dự kiến vì Low đã tắt texture chi tiết và bóng.
 
 ### Bước 1 — UV nướng sẵn
@@ -62,7 +64,7 @@ Bóng của bàn cờ trên mặt nước hiện thành các mảng xanh đậm 
 | Draw call | tổng 118 = 3D 43 + bóng 28 + 2D/HUD 47 (HUD = tổng − 3D − bóng) |
 | Tam giác | 3D 52.162, bóng 44.390 (không đổi: bước 1 không thêm tam giác) |
 | Video / texture / buffer | 111,8 / 79,7 / 10,2 MB |
-| Thời gian tải | `perf_bench.gd` hiện ghi `meta.load_ms` (nạp scene → khung hình đầu); xem số cuối ở báo cáo Phase 3 |
+| Thời gian tải (lavapipe, 3 lần) | nạp + khởi tạo scene 170–232 ms; tới khung hình đầu 718–988 ms (`meta.load_ms` trong `final_*.json`) |
 
 ## 4. Chưa làm
 - MSAA 4x của High chưa được đánh giá riêng (nó là một lựa chọn chất lượng có chủ đích của High).

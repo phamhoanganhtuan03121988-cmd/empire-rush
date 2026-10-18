@@ -1,0 +1,29 @@
+{
+  "code": "PU6E78",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 686512605,
+  "token_hashes": [
+    "728a314f10f6077b3596644b1c358cc3456e749986298a7c09ae5e87c3ed8cc8",
+    "adf880e275bd29e9c621ac827c9f699d48db59bdd1e5eac044c8148db6bb8cff",
+    "80f15ba3abacc067544b3b65f29e169c8d5e1b34b1e53068e8fb9ce51eab287b"
+  ]
+}

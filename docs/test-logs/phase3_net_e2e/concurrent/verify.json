@@ -1,7 +1,7 @@
 {
   "client_chaos_total": {
     "connect_attempts": 9,
-    "duplicates": 54,
+    "duplicates": 53,
     "fake_state": 0,
     "invalid": 0,
     "reconnects": 0,
@@ -12,79 +12,79 @@
   "pass": true,
   "rooms": [
     {
-      "code": "BCDCRZ",
-      "commands_applied": 171,
-      "end_reason": "last_solvent",
-      "journal_entries": 172,
-      "players": 2,
-      "restarts": 0,
-      "rounds": 33,
-      "state_version": 173,
-      "stats": {
-        "bot_commands": 0,
-        "bot_takeovers": 0,
-        "commands": 192,
-        "duplicates": 21,
-        "frame_errors": {},
-        "frames_in": 536,
-        "frames_out": 882,
-        "rejected": {},
-        "seat_reclaims": 0,
-        "snapshots": 344
-      }
-    },
-    {
-      "code": "MJB3ZC",
-      "commands_applied": 212,
+      "code": "AGX6WA",
+      "commands_applied": 215,
       "end_reason": "round_cap",
-      "journal_entries": 212,
+      "journal_entries": 215,
       "players": 3,
       "restarts": 0,
       "rounds": 30,
-      "state_version": 213,
+      "state_version": 216,
       "stats": {
         "bot_commands": 0,
         "bot_takeovers": 0,
-        "commands": 230,
+        "commands": 233,
         "duplicates": 18,
         "frame_errors": {},
-        "frames_in": 866,
-        "frames_out": 1505,
+        "frames_in": 878,
+        "frames_out": 1526,
         "rejected": {},
         "seat_reclaims": 0,
-        "snapshots": 636
+        "snapshots": 645
       }
     },
     {
-      "code": "W5P24N",
-      "commands_applied": 237,
-      "end_reason": "round_cap",
-      "journal_entries": 237,
-      "players": 4,
+      "code": "GQBRHU",
+      "commands_applied": 160,
+      "end_reason": "last_solvent",
+      "journal_entries": 160,
+      "players": 2,
       "restarts": 0,
-      "rounds": 25,
-      "state_version": 238,
+      "rounds": 34,
+      "state_version": 161,
       "stats": {
         "bot_commands": 0,
         "bot_takeovers": 0,
-        "commands": 252,
-        "duplicates": 15,
+        "commands": 181,
+        "duplicates": 21,
         "frame_errors": {},
-        "frames_in": 1200,
-        "frames_out": 2152,
+        "frames_in": 501,
+        "frames_out": 823,
         "rejected": {},
         "seat_reclaims": 0,
-        "snapshots": 948
+        "snapshots": 320
+      }
+    },
+    {
+      "code": "WV44B2",
+      "commands_applied": 242,
+      "end_reason": "round_cap",
+      "journal_entries": 242,
+      "players": 4,
+      "restarts": 0,
+      "rounds": 25,
+      "state_version": 243,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 256,
+        "duplicates": 14,
+        "frame_errors": {},
+        "frames_in": 1224,
+        "frames_out": 2196,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 968
       }
     }
   ],
   "server_meta": {
     "links": 0,
-    "objects": 1503,
-    "pid": 4247,
+    "objects": 1497,
+    "pid": 19607,
     "restarts": 0,
-    "rooms": 1,
-    "static_mem_mb": 27.1,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
     "stats": {
       "frame_errors": {},
       "handshake_timeouts": 0,
@@ -93,7 +93,7 @@
       "rate_limited": 0,
       "rooms_created": 3,
       "rooms_ended": 3,
-      "rooms_removed": 2,
+      "rooms_removed": 3,
       "rooms_started": 3
     },
     "tls": false
@@ -101,13 +101,13 @@
   "server_stats": {
     "bot_commands": 0,
     "bot_takeovers": 0,
-    "commands": 674,
-    "duplicates": 54,
+    "commands": 670,
+    "duplicates": 53,
     "frame_errors": {},
-    "frames_in": 2602,
-    "frames_out": 4539,
+    "frames_in": 2603,
+    "frames_out": 4545,
     "rejected": {},
     "seat_reclaims": 0,
-    "snapshots": 1928
+    "snapshots": 1933
   }
 }

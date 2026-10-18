@@ -1,0 +1,29 @@
+{
+  "code": "AGX6WA",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 2105969944,
+  "token_hashes": [
+    "1839d0518a860222623377e1ece42b5e256afcfd5527f4513d29ea5169d100c4",
+    "2e842c520f2c6df8c893c2cc959f508b2de168defeb9fe956db4dca857404606",
+    "7784ebaf63bf56993da0ccf59709ce6c261332ed1460803f41a0fdc80fcfc149"
+  ]
+}

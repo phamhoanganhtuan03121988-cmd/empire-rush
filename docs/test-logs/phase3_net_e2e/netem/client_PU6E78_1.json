@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 14,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 13,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 69,
+  "frames_dropped_local": 0,
+  "frames_sent": 275,
+  "invalid_kinds": [],
+  "last_seq": 593,
+  "public_hash": "399b05e7f137b3413f82e32525a780388de07ca53b79f66c3a9b8144f4579560",
+  "room_code": "PU6E78",
+  "seat": 1,
+  "snapshot_hash": "399b05e7f137b3413f82e32525a780388de07ca53b79f66c3a9b8144f4579560",
+  "state_version": 204,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 200,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 200
+  }
+}

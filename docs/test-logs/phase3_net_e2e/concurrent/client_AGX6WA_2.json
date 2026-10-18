@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 65,
+  "frames_dropped_local": 0,
+  "frames_sent": 282,
+  "invalid_kinds": [],
+  "last_seq": 632,
+  "public_hash": "f7359b3ecde767795adc64f2f6d2ea0b95a23d8693dc33a96c167599be10638b",
+  "room_code": "AGX6WA",
+  "seat": 2,
+  "snapshot_hash": "f7359b3ecde767795adc64f2f6d2ea0b95a23d8693dc33a96c167599be10638b",
+  "state_version": 216,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 216,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 216
+  }
+}

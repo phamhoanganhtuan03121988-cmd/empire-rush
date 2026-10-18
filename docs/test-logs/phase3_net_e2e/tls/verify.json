@@ -12,35 +12,35 @@
   "pass": true,
   "rooms": [
     {
-      "code": "2BJRJZ",
-      "commands_applied": 220,
-      "end_reason": "round_cap",
-      "journal_entries": 220,
+      "code": "DNXS7A",
+      "commands_applied": 134,
+      "end_reason": "last_solvent",
+      "journal_entries": 134,
       "players": 2,
       "restarts": 0,
-      "rounds": 40,
-      "state_version": 221,
+      "rounds": 27,
+      "state_version": 135,
       "stats": {
         "bot_commands": 0,
         "bot_takeovers": 0,
-        "commands": 220,
+        "commands": 134,
         "duplicates": 0,
         "frame_errors": {},
-        "frames_in": 660,
-        "frames_out": 1102,
+        "frames_in": 402,
+        "frames_out": 672,
         "rejected": {},
         "seat_reclaims": 0,
-        "snapshots": 440
+        "snapshots": 268
       }
     }
   ],
   "server_meta": {
     "links": 0,
-    "objects": 1506,
-    "pid": 4957,
+    "objects": 1500,
+    "pid": 19911,
     "restarts": 0,
-    "rooms": 1,
-    "static_mem_mb": 27,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
     "stats": {
       "frame_errors": {},
       "handshake_timeouts": 0,
@@ -49,7 +49,7 @@
       "rate_limited": 0,
       "rooms_created": 1,
       "rooms_ended": 1,
-      "rooms_removed": 0,
+      "rooms_removed": 1,
       "rooms_started": 1
     },
     "tls": true
@@ -57,13 +57,13 @@
   "server_stats": {
     "bot_commands": 0,
     "bot_takeovers": 0,
-    "commands": 220,
+    "commands": 134,
     "duplicates": 0,
     "frame_errors": {},
-    "frames_in": 660,
-    "frames_out": 1102,
+    "frames_in": 402,
+    "frames_out": 672,
     "rejected": {},
     "seat_reclaims": 0,
-    "snapshots": 440
+    "snapshots": 268
   }
 }

@@ -1,0 +1,46 @@
+{
+  "code": "KFADUU",
+  "end_reason": "last_solvent",
+  "public_hash": "2f03108d41400cd39aa15281eddd3e0837a776427d9a92c8edc1a4572fb95a22",
+  "restarts": 0,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2335,
+      "character_id": "TYCOON",
+      "districts": 2,
+      "net_worth": 3546,
+      "player_id": "p0",
+      "rank": 1,
+      "seat": 0
+    },
+    {
+      "bankrupt": true,
+      "bankrupt_turn": 48,
+      "cash": 0,
+      "character_id": "INVESTOR",
+      "districts": 0,
+      "net_worth": 0,
+      "player_id": "p1",
+      "rank": 2,
+      "seat": 1
+    }
+  ],
+  "rounds": 24,
+  "server_ms": 163530,
+  "state_hash": "c1277d946bfd18ec42afe24dc1389fffb549533d8818e5692d12c85de752a9f9",
+  "state_version": 129,
+  "stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 127,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 383,
+    "frames_out": 641,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 256
+  }
+}

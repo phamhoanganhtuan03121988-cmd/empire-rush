@@ -1,0 +1,24 @@
+{
+  "code": "H3QJPK",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 990813909,
+  "token_hashes": [
+    "4cc0163c90d2a5e35643dcc7794c4cad7db85b0bcf6defc675e697b53a22635a",
+    "e70e91ed9bcf16bff8f9248d36f8438d1e14e81b48430292a3847cc2d0e3695a"
+  ]
+}

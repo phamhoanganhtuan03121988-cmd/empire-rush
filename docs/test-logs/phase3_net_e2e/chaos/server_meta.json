@@ -1,23 +1,23 @@
 {
   "links": 0,
-  "objects": 1503.0,
-  "pid": 4229,
+  "objects": 1497.0,
+  "pid": 19584,
   "restarts": 1,
-  "rooms": 1,
-  "static_mem_mb": 27.1,
+  "rooms": 0,
+  "static_mem_mb": 25.4,
   "stats": {
     "frame_errors": {
       "BAD_REQUEST": 1,
       "PAYLOAD_TOO_LARGE": 2,
-      "PROTOCOL_UNSUPPORTED": 1
+      "PROTOCOL_UNSUPPORTED": 2
     },
     "handshake_timeouts": 0,
     "links_refused": 0,
-    "rate_closed": 26,
-    "rate_limited": 75,
+    "rate_closed": 29,
+    "rate_limited": 78,
     "rooms_created": 1,
     "rooms_ended": 1,
-    "rooms_removed": 0,
+    "rooms_removed": 1,
     "rooms_started": 1
   },
   "tls": false

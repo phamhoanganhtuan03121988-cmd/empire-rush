@@ -1,0 +1,34 @@
+{
+  "code": "WV44B2",
+  "format": 1,
+  "players": 4,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    },
+    {
+      "character_id": "TYCOON",
+      "player_id": "p3"
+    }
+  ],
+  "seed": 1276454339,
+  "token_hashes": [
+    "4f5e6d2d4e10f2286da874fe3c21137f9db5d0782894853a584df8348ebbe328",
+    "59b73ede246ec552b18f56a1bea3bb7f17aabead41ee36935c3e56b23e0bb196",
+    "6ad95078ff2db74a6f761f636a12b2990008a4c62397e4f80cb33df358417d45",
+    "2b1e65d85b17c9934b6d596c3cd85c9951cfe4da534a2404dd6acbcc99caa4fd"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 6,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 2,
+    "voluntary_drops": 1
+  },
+  "commands_sent": 47,
+  "frames_dropped_local": 0,
+  "frames_sent": 267,
+  "invalid_kinds": [],
+  "last_seq": 702,
+  "public_hash": "2268f5b2c7cb54a500bb87d6222820c3fc1a24447037ce23909fed3abea560e5",
+  "room_code": "E8BTCK",
+  "seat": 3,
+  "snapshot_hash": "2268f5b2c7cb54a500bb87d6222820c3fc1a24447037ce23909fed3abea560e5",
+  "state_version": 239,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 219,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 219
+  }
+}

@@ -1,10 +1,10 @@
 {
   "links": 0,
-  "objects": 1503.0,
-  "pid": 4836,
+  "objects": 1497.0,
+  "pid": 19791,
   "restarts": 0,
-  "rooms": 1,
-  "static_mem_mb": 26.9,
+  "rooms": 0,
+  "static_mem_mb": 25.4,
   "stats": {
     "frame_errors": {},
     "handshake_timeouts": 0,
@@ -13,7 +13,7 @@
     "rate_limited": 0,
     "rooms_created": 1,
     "rooms_ended": 1,
-    "rooms_removed": 0,
+    "rooms_removed": 1,
     "rooms_started": 1
   },
   "tls": false
