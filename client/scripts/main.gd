@@ -116,6 +116,9 @@ func start_autopilot() -> void:
 ## keeps measuring one app session. Automated tests (args_override) only get
 ## it when they ask for it, so test runs do not write device reports.
 func _setup_device_probe() -> void:
+	# Public release builds never get the tools (BuildFlavor).
+	if not BuildFlavor.device_tools_enabled():
+		return
 	if not args_override.is_empty() and not args.has("probe"):
 		return
 	probe = get_tree().root.get_node_or_null("DeviceProbe") as DeviceProbe
@@ -129,6 +132,7 @@ func _setup_device_probe() -> void:
 	dev_panel.current_quality = func() -> String: return quality
 	hud.add_child(dev_panel)
 	dev_panel.setup(probe)
+	hud.dev_menu_enabled = true
 	hud.dev_menu_requested.connect(dev_panel.open)
 	dev_panel.bench_finished.connect(func(path: String):
 		print("BENCH_REPORT ", ProjectSettings.globalize_path(path))
@@ -226,9 +230,11 @@ func _on_match_ended(d: Dictionary) -> void:
 	summary["seed"] = match_ref.engine.state.seed_value
 	summary["rounds"] = match_ref.engine.state.round
 	summary["engine_duration_s"] = d["duration_ms"] / 1000.0
-	var path: String = args.get("telemetry", "user://telemetry/session_%d.json" % Time.get_unix_time_from_system())
-	telemetry.save(path, summary)
-	print("TELEMETRY ", path, " turns=", summary["turns"], " game_s=", summary["session_game_seconds"])
+	# Public release builds write no telemetry files (BuildFlavor).
+	if BuildFlavor.device_tools_enabled():
+		var path: String = args.get("telemetry", "user://telemetry/session_%d.json" % Time.get_unix_time_from_system())
+		telemetry.save(path, summary)
+		print("TELEMETRY ", path, " turns=", summary["turns"], " game_s=", summary["session_game_seconds"])
 	if args.has("quit-on-end"):
 		await get_tree().create_timer(1.0).timeout
 		_capture("final")

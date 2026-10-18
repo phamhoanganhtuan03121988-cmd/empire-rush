@@ -86,3 +86,44 @@ func test_touch_records_input_latency() -> void:
 		assert_true(ms >= 0.0 and ms < 5000.0, "plausible latency %.2f ms" % ms)
 	await stop_game()
 	_cleanup_probe()
+
+
+## M2.2.1: in a public release build the tools do not exist, the long press
+## is an ordinary press, the start-up flags are ignored and no telemetry file
+## is written.
+func test_public_release_has_no_device_tools() -> void:
+	BuildFlavor.override = 0
+	var tel := "user://test_public_release_telemetry.json"
+	DirAccess.remove_absolute(tel)
+	await start_game(2, 9, {"probe": "1", "perf": "1", "bench": "5", "devpanel": "1", "telemetry": tel})
+	await frames(3)
+	assert_true(main.probe == null and tree.root.get_node_or_null("DeviceProbe") == null, "no probe")
+	assert_true(main.dev_panel == null, "no device panel")
+	assert_true(main.autopilot == null, "--bench did not start anything")
+	var hud: GameHud = main.hud
+	assert_false(hud.dev_menu_enabled, "long press disabled")
+	var btn: Button = hud._quality_btn
+	btn.button_down.emit()
+	hud._quality_down_ms -= GameHud.LONG_PRESS_MS + 500
+	btn.pressed.emit()
+	await frames(2)
+	assert_eq(main.quality, "medium", "a long press just cycles the preset")
+	assert_true(hud.find_children("*", "DevPanel", true, false).is_empty(), "no DevPanel node in the HUD")
+	main._on_match_ended({"reason": "test", "duration_ms": 0})
+	assert_false(FileAccess.file_exists(tel), "no telemetry file written")
+	BuildFlavor.override = -1
+	await stop_game()
+	_cleanup_probe()
+
+
+func test_internal_build_writes_telemetry() -> void:
+	BuildFlavor.override = 1
+	var tel := "user://test_internal_telemetry.json"
+	DirAccess.remove_absolute(tel)
+	await start_game(2, 9, {"telemetry": tel})
+	main._on_match_ended({"reason": "test", "duration_ms": 0})
+	assert_true(FileAccess.file_exists(tel), "internal build writes telemetry")
+	DirAccess.remove_absolute(tel)
+	BuildFlavor.override = -1
+	await stop_game()
+	_cleanup_probe()

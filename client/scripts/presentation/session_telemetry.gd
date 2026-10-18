@@ -6,6 +6,10 @@ class_name SessionTelemetry
 extends Node
 
 var source := "unknown"  # "human", "autopilot" ...
+## Same offline lifecycle rule as the match clock: time spent in the
+## background is not counted as turn or session time.
+var lifecycle := LifecycleGate.new()
+var pause_on_focus_loss := OS.has_feature("mobile")
 var turns: Array = []
 var _turn: Dictionary = {}
 var _presenting_since := -1.0
@@ -19,7 +23,14 @@ func _ready() -> void:
 	_start_wall = Time.get_ticks_msec()
 
 
+func _notification(what: int) -> void:
+	lifecycle.on_notification(what, pause_on_focus_loss)
+
+
 func _process(delta: float) -> void:
+	delta = lifecycle.filter(delta, Engine.time_scale)
+	if lifecycle.is_paused():
+		return
 	_t += delta
 	_frames += 1
 	_max_delta = maxf(_max_delta, delta)
@@ -64,6 +75,9 @@ func summary(match_end_reason: String, n_players: int) -> Dictionary:
 		"session_game_seconds": snappedf(_t, 0.1),
 		"session_wall_seconds": snappedf((Time.get_ticks_msec() - _start_wall) / 1000.0, 0.1),
 		"engine_time_scale": Engine.time_scale,
+		# Offline lifecycle: game time excludes background periods (M2.2.1).
+		"background_pauses": lifecycle.pause_count,
+		"background_withheld_s": snappedf(lifecycle.withheld_s, 0.1),
 		# Measurement resolution: animations shorter than one frame of game
 		# time are stretched, so a valid timing run needs a small frame delta.
 		"frames": _frames, "mean_frame_game_s": snappedf(_t / maxi(1, _frames), 0.0001),

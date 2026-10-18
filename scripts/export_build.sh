@@ -1,26 +1,45 @@
 #!/usr/bin/env bash
-# Exports a device-test build with a build stamp (commit + time) that the
-# in-app device panel and every device report show.
-# Usage: scripts/export_build.sh ios|linux [debug|release]
+# Exports a build with a build stamp (commit + time) that the in-app device
+# panel and every device report show.
+# Usage: scripts/export_build.sh ios|linux internal|public [debug|release]
+#   internal  = "... Internal Test" preset: custom feature "device_tools", so
+#               the device panel, reports and telemetry files exist even in a
+#               release build (for device measurements).
+#   public    = "... Public Release" preset: no device tools. Only allowed
+#               with release mode, because any debug build enables the tools.
 #   GODOT=/path/to/Godot_v4.7.2-stable  (default: godot on PATH)
 #   IOS_TEAM_ID=XXXXXXXXXX               (required for ios; never committed)
 #   IOS_BUNDLE_ID=com.yourteam.empirerush (optional, default from preset)
-# Needs the Godot 4.7.2 export templates installed. On Linux the iOS preset
-# produces an Xcode project only; the .ipa must be built and signed on macOS.
+# Needs the Godot 4.7.2 export templates installed. On Linux the iOS presets
+# produce an Xcode project only; the .ipa must be built and signed on macOS.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GODOT="${GODOT:-godot}"
-TARGET="${1:?usage: export_build.sh ios|linux [debug|release]}"
-MODE="${2:-debug}"
+USAGE="usage: export_build.sh ios|linux internal|public [debug|release]"
+TARGET="${1:?$USAGE}"
+FLAVOR="${2:?$USAGE}"
+MODE="${3:-release}"
 CLIENT="$ROOT/client"
 PRESETS="$CLIENT/export_presets.cfg"
+
+case "$FLAVOR" in
+	internal) flavor_name="Internal Test" ;;
+	public)
+		flavor_name="Public Release"
+		if [ "$MODE" != "release" ]; then
+			echo "public builds must be release builds (debug builds enable the device tools)" >&2
+			exit 2
+		fi ;;
+	*) echo "$USAGE" >&2; exit 2 ;;
+esac
+case "$MODE" in debug|release) ;; *) echo "$USAGE" >&2; exit 2 ;; esac
 
 commit="$(git -C "$ROOT" rev-parse --short HEAD)"
 dirty=""
 git -C "$ROOT" diff --quiet HEAD -- client || dirty="-dirty"
-printf '{"commit": "%s%s", "built_at": "%s", "target": "%s", "mode": "%s"}\n' \
-	"$commit" "$dirty" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TARGET" "$MODE" > "$CLIENT/data/build_info.json"
+printf '{"commit": "%s%s", "built_at": "%s", "target": "%s", "flavor": "%s", "mode": "%s"}\n' \
+	"$commit" "$dirty" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TARGET" "$FLAVOR" "$MODE" > "$CLIENT/data/build_info.json"
 
 cp "$PRESETS" "$PRESETS.bak"
 trap 'mv "$PRESETS.bak" "$PRESETS"' EXIT
@@ -33,10 +52,10 @@ case "$TARGET" in
 			sed -i.tmp "s/^application\/bundle_identifier=.*/application\/bundle_identifier=\"$IOS_BUNDLE_ID\"/" "$PRESETS"
 		fi
 		rm -f "$PRESETS.tmp"
-		preset="iOS"; out="$ROOT/build/ios/EmpireRush.ipa" ;;
+		preset="iOS $flavor_name"; out="$ROOT/build/ios-$FLAVOR/EmpireRush.ipa" ;;
 	linux)
-		preset="Linux"; out="$ROOT/build/linux/EmpireRush.x86_64" ;;
-	*) echo "unknown target $TARGET" >&2; exit 2 ;;
+		preset="Linux $flavor_name"; out="$ROOT/build/linux-$FLAVOR/EmpireRush.x86_64" ;;
+	*) echo "$USAGE" >&2; exit 2 ;;
 esac
 
 mkdir -p "$(dirname "$out")"

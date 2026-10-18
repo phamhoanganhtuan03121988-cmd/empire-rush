@@ -16,6 +16,12 @@ var human_seats: Array[int] = []
 ## visible. It never affects rules or timers (deadlines keep running).
 var can_act: Callable = func(): return true
 var bot_delay_range := Vector2(0.7, 1.5)
+## Offline lifecycle (M2.2.1): while the app is in the background the match
+## clock, bots and timeouts stop; see LifecycleGate and docs/RULES_M1.md §Offline lifecycle.
+var lifecycle := LifecycleGate.new()
+## Losing focus also pauses on phones. On desktop only a real OS suspend
+## does, so alt-tabbing away from a window does not freeze the match.
+var pause_on_focus_loss := OS.has_feature("mobile")
 
 var _bots: Dictionary = {}
 var _bot_wait := 0.0
@@ -57,8 +63,19 @@ func submit(seat: int, type: String, payload: Dictionary = {}) -> Dictionary:
 	return res
 
 
+func _notification(what: int) -> void:
+	lifecycle.on_notification(what, pause_on_focus_loss)
+
+
+func is_suspended() -> bool:
+	return lifecycle.is_paused()
+
+
 func _process(delta: float) -> void:
 	if engine == null:
+		return
+	delta = lifecycle.filter(delta, Engine.time_scale)
+	if lifecycle.is_paused():
 		return
 	clock.tick(delta)
 	var timed := engine.advance()

@@ -29,6 +29,9 @@ var _round_label: Label
 var _turn_label: Label
 var _timer_bar: ProgressBar
 var _quality_btn: Button
+## Set by main only when the device tools exist (BuildFlavor). Otherwise a
+## long press is just a press and cycles the preset.
+var dev_menu_enabled := false
 var _quality_down_ms := 0
 var _quality_down := false
 var _action_panel: PanelContainer
@@ -421,7 +424,7 @@ func _on_match_ended(d: Dictionary) -> void:
 func _on_quality_pressed() -> void:
 	var held := Time.get_ticks_msec() - _quality_down_ms if _quality_down else 0
 	_quality_down = false
-	if held >= LONG_PRESS_MS:
+	if dev_menu_enabled and held >= LONG_PRESS_MS:
 		dev_menu_requested.emit()
 	else:
 		quality_cycle_requested.emit()
