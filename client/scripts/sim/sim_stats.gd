@@ -248,6 +248,12 @@ static func _extended_group(runs: Array, focus_seat_fn: Callable) -> Dictionary:
 	var comebacks := 0
 	var comeback_n := 0
 	var cash_r := {}
+	var rent_lv := {}
+	var max_rent := 0
+	var matches_ge_1000 := 0
+	var rents_ge_1000 := 0
+	var bk_debts: Array = []
+	var bk_debt_ge_1000 := 0
 	for r in runs:
 		minutes.append(r["duration_ms"] / 60000.0)
 		turn_s.append(r["duration_ms"] / 1000.0 / maxi(1, r["turns"]))
@@ -259,6 +265,18 @@ static func _extended_group(runs: Array, focus_seat_fn: Callable) -> Dictionary:
 		bk_total += r["bankruptcies"].size()
 		for b in r["bankruptcies"]:
 			bk_rounds.append(b["round"])
+			bk_debts.append(b["debt"])
+			if b["debt"] >= 1000:
+				bk_debt_ge_1000 += 1
+		for lv in r["rent_by_level"]:
+			if not rent_lv.has(lv):
+				rent_lv[lv] = [0, 0]
+			rent_lv[lv][0] += r["rent_by_level"][lv][0]
+			rent_lv[lv][1] += r["rent_by_level"][lv][1]
+		max_rent = maxi(max_rent, r["max_rent"])
+		rents_ge_1000 += r["rents_ge_1000"]
+		if r["rents_ge_1000"] > 0:
+			matches_ge_1000 += 1
 		var winners: Array = r["results"].filter(func(x): return x["rank"] == 1)
 		var wseats: Array = winners.map(func(x): return x["seat"])
 		for w in winners:
@@ -344,6 +362,7 @@ static func _extended_group(runs: Array, focus_seat_fn: Callable) -> Dictionary:
 			"winner_cash_share_of_nw_pct": snappedf(_mean(winner_cash_share), 0.1),
 			"others_cash_share_of_nw_pct": snappedf(_mean(other_cash_share), 0.1)},
 		"comeback_pct": _pct(comebacks, comeback_n),
+		"rent": _rent_summary(rent_lv, max_rent, rents_ge_1000, matches_ge_1000, n, bk_debts, bk_debt_ge_1000),
 		"avg_cash": cash,
 	}
 	if focus_seat_fn.is_valid():
@@ -351,3 +370,17 @@ static func _extended_group(runs: Array, focus_seat_fn: Callable) -> Dictionary:
 		res["focus_seat_ci95"] = ci95(res["focus_seat_win_pct"], n)
 		res["focus_seat_win_pct_if_ranked_by_book_value"] = _pct(focus_wins_book, n)
 	return res
+
+
+static func _rent_summary(rent_lv: Dictionary, max_rent: int, ge: int, matches_ge: int, n: int,
+		debts: Array, debts_ge: int) -> Dictionary:
+	var total := 0
+	for lv in rent_lv:
+		total += rent_lv[lv][0]
+	var by_level := {}
+	for lv in rent_lv:
+		by_level["L" + lv] = {"share_of_rent_events_pct": _pct(rent_lv[lv][0], total),
+			"avg_rent": int(rent_lv[lv][1] / float(maxi(1, rent_lv[lv][0])))}
+	return {"by_level": by_level, "max_single_rent": max_rent, "rents_ge_1000_per_match": snappedf(ge / float(n), 0.01),
+		"matches_with_rent_ge_1000_pct": _pct(matches_ge, n), "bankruptcy_debt_median": _median(debts),
+		"bankruptcies_from_debt_ge_1000_pct": _pct(debts_ge, debts.size())}

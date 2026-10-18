@@ -59,6 +59,7 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 		"auctions": {"opened": 0, "sold": 0}, "purchases": 0, "upgrades": 0, "rescues": 0,
 		"liquidations": 0, "abilities": 0, "rent_paid": 0, "rent_events": 0,
 		"bankruptcies": [], "round_samples": {}, "stuck": false, "flows": {},
+		"rent_by_level": {}, "max_rent": 0, "rents_ge_1000": 0,
 	}
 	var tracker := {"seq": 0, "tx": 0}
 	# Events emitted by create() (MatchStarted/TurnStarted) are not returned by
@@ -172,8 +173,16 @@ static func _absorb(events: Array, engine: GameEngine, st: Dictionary, tracker: 
 			"RentCharged":
 				st["rent_paid"] += d["amount"]
 				st["rent_events"] += 1
+				var lv: String = str(engine.state.level[d["property_id"]])
+				if not st["rent_by_level"].has(lv):
+					st["rent_by_level"][lv] = [0, 0]
+				st["rent_by_level"][lv][0] += 1
+				st["rent_by_level"][lv][1] += d["amount"]
+				st["max_rent"] = maxi(st["max_rent"], d["amount"])
+				if d["amount"] >= 1000:
+					st["rents_ge_1000"] += 1
 			"PlayerBankrupt":
-				st["bankruptcies"].append({"seat": d["seat"], "turn": engine.state.turn_number,
+				st["bankruptcies"].append({"seat": d["seat"], "turn": engine.state.turn_number, "debt": d["debt"],
 					"round": engine.state.round, "reason": d["reason"],
 					"character": engine.state.player(d["seat"])["character_id"]})
 			"TurnStarted":

@@ -1,0 +1,24 @@
+{
+ "_note": "M1.2: base config is shipped balance v3; 'M1 v2' variants patch the full M1 v2 values back in.",
+ "players": [
+  2,
+  3,
+  4
+ ],
+ "matches": {
+  "2": 1000,
+  "3": 1000,
+  "4": 2000
+ },
+ "seed_base": 800000,
+ "variants": [
+  {
+   "name": "v3 time model m1 (fast)",
+   "time_model": "m1"
+  },
+  {
+   "name": "v3 time model slow",
+   "time_model": "slow"
+  }
+ ]
+}
