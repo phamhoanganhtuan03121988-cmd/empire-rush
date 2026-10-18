@@ -38,6 +38,12 @@ func _shot(name: String) -> void:
 	root.get_viewport().get_texture().get_image().save_png("%s/%s.png" % [out, name])
 	var rs := RenderingServer
 	var m := _board_metrics()
+	var vpv := root.get_viewport()
+	print("CAPTURE3D %s scene_draw_calls=%d scene_objects=%d scene_primitives=%d shadow_draw_calls=%d" % [name,
+		vpv.get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME),
+		vpv.get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_OBJECTS_IN_FRAME),
+		vpv.get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_PRIMITIVES_IN_FRAME),
+		vpv.get_render_info(Viewport.RENDER_INFO_TYPE_SHADOW, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME)])
 	print("CAPTURE %s draw_calls=%d objects=%d primitives=%d board_area_pct=%.1f min_tile_px=%.1f board_w_pct=%.1f board_h_pct=%.1f" % [name,
 		rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
 		rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
@@ -108,6 +114,8 @@ func _run() -> void:
 	main.hud.show_toast("Minh trả 605 RC tiền thuê cho Lan", Color("#ffb3b3"))
 	main.hud.show_toast("Lan nâng Vịnh Cọ lên cấp 3 (60 RC)", Color("#27ae60"))
 	await _shot("01_buy_prompt")
+	if args.has("surfaces"):
+		_surface_report()
 	if args.has("only_first"):
 		quit()
 		return
@@ -141,3 +149,21 @@ func _run() -> void:
 	await _frames(40)
 	await _shot("04_results")
 	quit()
+
+
+## Visible mesh surfaces grouped by owner (≈ opaque draw calls before the
+## shadow pass). Label3D nodes count as one each.
+func _surface_report() -> void:
+	var groups := {}
+	for n in main.find_children("*", "GeometryInstance3D", true, false):
+		if not n.is_visible_in_tree():
+			continue
+		var surf := 1
+		if n is MeshInstance3D and n.mesh:
+			surf = n.mesh.get_surface_count()
+		var key: String = n.name if n is MeshInstance3D else n.get_class()
+		if n.get_parent() and n.get_parent().name == "Building":
+			key = "Building"
+		key = key.rstrip("0123456789").trim_suffix("@")
+		groups[key] = groups.get(key, 0) + surf
+	print("SURFACES ", JSON.stringify(groups))

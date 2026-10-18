@@ -1,0 +1,35 @@
+# Pre-merge (new camera+HUD, unmerged meshes), per preset
+low: CAPTURE 01_buy_prompt draw_calls=301 objects=539 primitives=17968 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+low: CAPTURE 02_auction draw_calls=301 objects=486 primitives=17862 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+low: CAPTURE 03_upgrade_menu draw_calls=306 objects=467 primitives=17612 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+low: CAPTURE 04_results draw_calls=292 objects=483 primitives=16322 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+medium: CAPTURE 01_buy_prompt draw_calls=561 objects=798 primitives=31274 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+medium: CAPTURE 02_auction draw_calls=557 objects=700 primitives=30226 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+medium: CAPTURE 03_upgrade_menu draw_calls=566 objects=726 primitives=30918 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+medium: CAPTURE 04_results draw_calls=551 objects=741 primitives=29116 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+high: CAPTURE 01_buy_prompt draw_calls=561 objects=798 primitives=36578 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+high: CAPTURE 02_auction draw_calls=557 objects=700 primitives=35530 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+high: CAPTURE 03_upgrade_menu draw_calls=566 objects=726 primitives=36222 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+high: CAPTURE 04_results draw_calls=551 objects=741 primitives=33908 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+
+# After (merged meshes, committed code), per preset + landscape
+portrait low: CAPTURE 01_buy_prompt draw_calls=71 objects=309 primitives=18136 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait low: CAPTURE 02_auction draw_calls=71 objects=256 primitives=18030 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait low: CAPTURE 03_upgrade_menu draw_calls=76 objects=237 primitives=17780 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait low: CAPTURE 04_results draw_calls=62 objects=253 primitives=16490 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait medium: CAPTURE 01_buy_prompt draw_calls=101 objects=338 primitives=31610 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait medium: CAPTURE 02_auction draw_calls=97 objects=240 primitives=30562 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait medium: CAPTURE 03_upgrade_menu draw_calls=106 objects=266 primitives=31254 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait medium: CAPTURE 04_results draw_calls=91 objects=281 primitives=29452 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait high: CAPTURE 01_buy_prompt draw_calls=101 objects=338 primitives=40502 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait high: CAPTURE 02_auction draw_calls=97 objects=240 primitives=39454 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait high: CAPTURE 03_upgrade_menu draw_calls=106 objects=266 primitives=40146 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+portrait high: CAPTURE 04_results draw_calls=91 objects=281 primitives=37832 board_area_pct=31.1 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.2
+landscape high: CAPTURE 01_buy_prompt draw_calls=101 objects=338 primitives=31610 board_area_pct=23.4 min_tile_px=37.5 board_w_pct=34.9 board_h_pct=67.0
+landscape high: CAPTURE 02_auction draw_calls=97 objects=240 primitives=30562 board_area_pct=23.4 min_tile_px=37.5 board_w_pct=34.9 board_h_pct=67.0
+landscape high: CAPTURE 03_upgrade_menu draw_calls=106 objects=266 primitives=31254 board_area_pct=23.4 min_tile_px=37.5 board_w_pct=34.9 board_h_pct=67.0
+landscape high: CAPTURE 04_results draw_calls=91 objects=281 primitives=29452 board_area_pct=23.4 min_tile_px=37.5 board_w_pct=34.9 board_h_pct=67.0
+
+# 3D-only viewport counters (01_buy_prompt, 786x1704)
+M2 baseline c8d78c2  low : scene_draw_calls=267 shadow_draw_calls=0   | high: scene_draw_calls=267 shadow_draw_calls=260
+M2.1 merged meshes   low : scene_draw_calls=37  shadow_draw_calls=0   | high: scene_draw_calls=37  shadow_draw_calls=30

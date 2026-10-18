@@ -1,0 +1,16 @@
+# M2 baseline (c8d78c2), 786x1704 portrait (notch) and 1704x786 landscape, high preset
+CAPTURE 01_buy_prompt draw_calls=562 objects=835 primitives=31432 board_area_pct=21.5 min_tile_px=38.4 board_w_pct=77.7 board_h_pct=27.6
+CAPTURE 02_auction draw_calls=558 objects=718 primitives=30346 board_area_pct=21.5 min_tile_px=38.4 board_w_pct=77.7 board_h_pct=27.6
+CAPTURE 03_upgrade_menu draw_calls=567 objects=750 primitives=31050 board_area_pct=21.5 min_tile_px=38.4 board_w_pct=77.7 board_h_pct=27.6
+CAPTURE 04_results draw_calls=552 objects=758 primitives=29234 board_area_pct=21.5 min_tile_px=38.4 board_w_pct=77.7 board_h_pct=27.6
+CAPTURE 01_buy_prompt draw_calls=562 objects=840 primitives=31442 board_area_pct=17.3 min_tile_px=31.4 board_w_pct=31.4 board_h_pct=55.1
+CAPTURE 02_auction draw_calls=558 objects=723 primitives=30356 board_area_pct=17.3 min_tile_px=31.4 board_w_pct=31.4 board_h_pct=55.1
+CAPTURE 03_upgrade_menu draw_calls=567 objects=755 primitives=31060 board_area_pct=17.3 min_tile_px=31.4 board_w_pct=31.4 board_h_pct=55.1
+CAPTURE 04_results draw_calls=552 objects=763 primitives=29244 board_area_pct=17.3 min_tile_px=31.4 board_w_pct=31.4 board_h_pct=55.1
+
+# Camera options (01_buy_prompt, 786x1704, high)
+A_iso45_skirt (M2 camera)   : board_area_pct=21.5 min_tile_px=38.5 board_w_pct=77.7 board_h_pct=27.7
+B_iso45_ring_p58 (chosen)   : board_area_pct=30.8 min_tile_px=45.7 board_w_pct=88.3 board_h_pct=34.9
+C_yaw30_p56                 : board_area_pct=30.0 min_tile_px=43.5 board_w_pct=88.0 board_h_pct=34.0
+D_front0_p56                : board_area_pct=25.4 min_tile_px=47.5 board_w_pct=86.5 board_h_pct=29.4
+(all options captured with the M2 HUD, 01_buy_prompt, 786x1704 portrait, high preset)
