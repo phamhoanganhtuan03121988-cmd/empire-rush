@@ -11,7 +11,9 @@ const RETRY_MS := 1500
 var token := ""
 var player_id := ""
 var seat := -1
-var net: LoopbackNetwork
+## Transport: LoopbackNetwork in tests, a WebSocket link in the multi-process
+## harness. Duck-typed: needs `now_ms` and `send_up(link, text)`.
+var net: Object
 var link := -1
 var connected := false
 ## Known server state.
@@ -21,7 +23,7 @@ var state_version := 0
 var public_hash := ""
 var events: Array = []          # events applied after the latest snapshot
 var all_events_seen := 0
-var stats := {"duplicate_events": 0, "gaps": 0, "snapshots": 0, "resends": 0, "rejections": {}, "hash_checks": 0, "hash_mismatch": 0}
+var stats := {"duplicate_events": 0, "gaps": 0, "snapshots": 0, "resends": 0, "rejections": {}, "hash_checks": 0, "hash_mismatch": 0, "errors": {}}
 var _cmd_n := 0
 var _pending: Dictionary = {}   # command_id -> {cmd, sent_ms}
 
@@ -30,7 +32,7 @@ func _init(p_token: String) -> void:
 	token = p_token
 
 
-func on_connected(p_net: LoopbackNetwork, p_link: int) -> void:
+func on_connected(p_net: Object, p_link: int) -> void:
 	net = p_net
 	link = p_link
 	connected = true
@@ -79,6 +81,8 @@ func handle_frame(text: String) -> void:
 				last_seq = s
 			state_version = m["state_version"]
 			public_hash = m["public_hash"]
+		NetProtocol.ERROR:
+			stats["errors"][m["code"]] = stats["errors"].get(m["code"], 0) + 1
 		NetProtocol.RESULT:
 			var id: String = m["command_id"]
 			_pending.erase(id)

@@ -1,0 +1,149 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 21,
+    "duplicates": 13,
+    "fake_state": 1,
+    "invalid": 10,
+    "reconnects": 5,
+    "voluntary_drops": 1
+  },
+  "client_stats": [
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 13,
+        "fake_state": 0,
+        "invalid": 0,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 69,
+      "seat": 0,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {},
+        "gaps": 0,
+        "hash_checks": 264,
+        "hash_mismatch": 0,
+        "rejections": {
+          "STALE_STATE": 7
+        },
+        "resends": 0,
+        "snapshots": 264
+      }
+    },
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 0,
+        "fake_state": 0,
+        "invalid": 10,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 65,
+      "seat": 1,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {
+          "BAD_REQUEST": 1,
+          "PAYLOAD_TOO_LARGE": 2,
+          "PROTOCOL_UNSUPPORTED": 2
+        },
+        "gaps": 0,
+        "hash_checks": 264,
+        "hash_mismatch": 0,
+        "rejections": {
+          "BAD_REQUEST": 2,
+          "STALE_STATE": 3,
+          "UNAUTHENTICATED": 1
+        },
+        "resends": 0,
+        "snapshots": 264
+      }
+    },
+    {
+      "chaos": {
+        "connect_attempts": 6,
+        "duplicates": 0,
+        "fake_state": 0,
+        "invalid": 0,
+        "reconnects": 2,
+        "voluntary_drops": 1
+      },
+      "commands_sent": 73,
+      "seat": 2,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {},
+        "gaps": 0,
+        "hash_checks": 250,
+        "hash_mismatch": 0,
+        "rejections": {
+          "STALE_STATE": 7
+        },
+        "resends": 0,
+        "snapshots": 250
+      }
+    },
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 0,
+        "fake_state": 1,
+        "invalid": 0,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 58,
+      "seat": 3,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {},
+        "gaps": 0,
+        "hash_checks": 264,
+        "hash_mismatch": 0,
+        "rejections": {
+          "STALE_STATE": 2
+        },
+        "resends": 0,
+        "snapshots": 264
+      }
+    }
+  ],
+  "commands_applied": 251,
+  "failures": [],
+  "journal_entries": 262,
+  "pass": true,
+  "server": {
+    "end_reason": "round_cap",
+    "policy": {
+      "bot_think_ms": 1200,
+      "hold_ms": 20000,
+      "on_expiry": "timers"
+    },
+    "restarts": 1,
+    "rounds": 25,
+    "server_ms": 684330,
+    "state_version": 268,
+    "stats": {
+      "bot_commands": 0,
+      "bot_takeovers": 0,
+      "commands": 284,
+      "duplicates": 12,
+      "frame_errors": {
+        "BAD_REQUEST": 1,
+        "PAYLOAD_TOO_LARGE": 2,
+        "PROTOCOL_UNSUPPORTED": 2
+      },
+      "frames_in": 1332,
+      "frames_out": 2374,
+      "rejected": {
+        "BAD_REQUEST": 2,
+        "STALE_STATE": 19
+      },
+      "seat_reclaims": 0,
+      "snapshots": 1042
+    }
+  }
+}

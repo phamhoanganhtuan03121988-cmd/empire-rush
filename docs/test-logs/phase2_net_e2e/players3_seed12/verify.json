@@ -1,0 +1,121 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 16,
+    "duplicates": 13,
+    "fake_state": 0,
+    "invalid": 12,
+    "reconnects": 4,
+    "voluntary_drops": 1
+  },
+  "client_stats": [
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 13,
+        "fake_state": 0,
+        "invalid": 0,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 66,
+      "seat": 0,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {},
+        "gaps": 0,
+        "hash_checks": 214,
+        "hash_mismatch": 0,
+        "rejections": {},
+        "resends": 0,
+        "snapshots": 214
+      }
+    },
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 0,
+        "fake_state": 0,
+        "invalid": 12,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 74,
+      "seat": 1,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {
+          "BAD_REQUEST": 2,
+          "PAYLOAD_TOO_LARGE": 2,
+          "PROTOCOL_UNSUPPORTED": 2
+        },
+        "gaps": 0,
+        "hash_checks": 215,
+        "hash_mismatch": 0,
+        "rejections": {
+          "BAD_REQUEST": 2,
+          "STALE_STATE": 2,
+          "UNAUTHENTICATED": 2
+        },
+        "resends": 0,
+        "snapshots": 215
+      }
+    },
+    {
+      "chaos": {
+        "connect_attempts": 6,
+        "duplicates": 0,
+        "fake_state": 0,
+        "invalid": 0,
+        "reconnects": 2,
+        "voluntary_drops": 1
+      },
+      "commands_sent": 62,
+      "seat": 2,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {},
+        "gaps": 0,
+        "hash_checks": 180,
+        "hash_mismatch": 0,
+        "rejections": {},
+        "resends": 0,
+        "snapshots": 180
+      }
+    }
+  ],
+  "commands_applied": 213,
+  "failures": [],
+  "journal_entries": 213,
+  "pass": true,
+  "server": {
+    "end_reason": "round_cap",
+    "policy": {
+      "bot_think_ms": 1200,
+      "hold_ms": 20000,
+      "on_expiry": "bot"
+    },
+    "restarts": 1,
+    "rounds": 30,
+    "server_ms": 275960,
+    "state_version": 214,
+    "stats": {
+      "bot_commands": 11,
+      "bot_takeovers": 1,
+      "commands": 213,
+      "duplicates": 12,
+      "frame_errors": {
+        "BAD_REQUEST": 2,
+        "PAYLOAD_TOO_LARGE": 2,
+        "PROTOCOL_UNSUPPORTED": 2
+      },
+      "frames_in": 815,
+      "frames_out": 1410,
+      "rejected": {
+        "BAD_REQUEST": 2,
+        "STALE_STATE": 2
+      },
+      "seat_reclaims": 1,
+      "snapshots": 594
+    }
+  }
+}

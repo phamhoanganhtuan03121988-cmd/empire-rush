@@ -36,7 +36,8 @@ static func encode(kind: String, body: Dictionary) -> String:
 static func decode(text: String) -> Dictionary:
 	if text.to_utf8_buffer().size() > MAX_FRAME:
 		return {"ok": false, "error": E_PAYLOAD_TOO_LARGE}
-	var parsed: Variant = JSON.parse_string(text)
+	var json := JSON.new()  # instance parse: hostile input is not logged as an engine error
+	var parsed: Variant = json.data if json.parse(text) == OK else null
 	if not parsed is Dictionary or not parsed.has("kind"):
 		return {"ok": false, "error": E_BAD_REQUEST}
 	if int(parsed.get("protocol_version", -1)) != VERSION:

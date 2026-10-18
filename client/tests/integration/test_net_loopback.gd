@@ -171,3 +171,86 @@ func test_identity_and_frame_validation() -> void:
 	assert_true(size <= NetProtocol.MAX_FRAME, "snapshot frame %d bytes <= %d" % [size, NetProtocol.MAX_FRAME])
 	print("NET_SPIKE snapshot_frame_bytes=%d" % size)
 	net.teardown()
+
+
+## Phase 2: a state rebuilt from to_dict() is identical (hash), and a client
+## view built from a public snapshot reproduces that snapshot.
+func test_state_round_trips_through_dict_and_public_snapshot() -> void:
+	var h := _setup(3, 77)
+	var host: MatchHost = h["host"]
+	_run(h, 3000, func(_s: int) -> void: pass)
+	var s := host.engine.state
+	assert_eq(GameState.from_dict(s.to_dict()).state_hash(), s.state_hash(), "full state round trip")
+	var view := GameEngine.new()
+	view.config = h["cfg"]
+	var snap := host.engine.public_snapshot()
+	view.state = GameState.from_dict(snap)
+	var again := view.public_snapshot()
+	# The public snapshot only carries the deck SIZE; a view cannot rebuild the order.
+	assert_eq(again["event_deck"], 0, "view holds no event-deck order")
+	again["event_deck"] = snap["event_deck"]
+	assert_eq(NetProtocol.public_hash(again), host.public_hash(), "client view = public snapshot")
+	h["net"].teardown()
+
+
+## Phase 2: a restarted host rebuilt from its journal holds exactly the same
+## state, keeps deduplicating old command ids and plays on to a normal end.
+func test_host_restores_from_journal_and_finishes() -> void:
+	var h := _setup(4, 505)
+	var host: MatchHost = h["host"]
+	_run(h, 2500, func(_s: int) -> void: pass, 6)
+	var journal: Array = []
+	for e in host.take_journal():
+		journal.append(JSON.parse_string(JSON.stringify(e)))  # through text, like the file
+	var restored := MatchHost.new()
+	restored.restore(h["cfg"], h["seats"], 505, h["host"].sessions.keys(), journal, 1)
+	assert_eq(restored.engine.state.state_hash(), host.engine.state.state_hash(), "restored state = live state")
+	var any_cmd: Dictionary = {}
+	for e in host.engine.input_log:
+		if e.has("cmd"):
+			any_cmd = e["cmd"]
+	var res := restored.engine.submit(any_cmd)
+	assert_true(res.get("duplicate", false), "an already applied command id stays deduplicated after restart")
+	# Swap the restored host in; clients reconnect and the match finishes.
+	var net: LoopbackNetwork = h["net"]
+	for i in 4:
+		net.disconnect_client(i)
+	net.host = restored
+	h["host"] = restored
+	for i in 4:
+		net.connect_client(i)
+	h["think"] = {}
+	var steps := _run(h, 400000, func(_s: int) -> void: pass)
+	assert_true(restored.engine.is_ended(), "match ended after the restart (%d steps)" % steps)
+	_final_sync(h)
+	for c in h["clients"]:
+		assert_eq(c.public_hash, restored.public_hash(), "client %d converged after restart" % c.seat)
+	net.teardown()
+
+
+## Phase 2 (C4): with the "bot" policy, a seat whose client stays away longer
+## than the hold time is played by the server bot; the player reclaims it on
+## reconnect. With "timers" the server never moves for the seat itself.
+func test_disconnect_policy_bot_takeover_and_reclaim() -> void:
+	for mode in [DisconnectPolicy.BOT, DisconnectPolicy.TIMERS]:
+		var h := _setup(3, 606)
+		var host: MatchHost = h["host"]
+		host.policy = DisconnectPolicy.from_dict({"hold_ms": 5000, "on_expiry": mode, "bot_think_ms": 300})
+		var net: LoopbackNetwork = h["net"]
+		var plan := {"down": -1}
+		var script := func(step: int) -> void:
+			if step == 600:
+				net.disconnect_client(1)
+				plan["down"] = step
+			elif step == 600 + 800:  # 40 s simulated away (hold is 5 s)
+				net.connect_client(1)
+		_run(h, 400000, script)
+		assert_true(host.engine.is_ended(), "%s: match ended" % mode)
+		assert_true(Invariants.check(host.engine).is_empty(), "%s: invariants" % mode)
+		if mode == DisconnectPolicy.BOT:
+			assert_eq(host.stats["bot_takeovers"], 1, "bot took over the seat once")
+			assert_true(host.stats["bot_commands"] > 0, "bot moved for the seat (%d)" % host.stats["bot_commands"])
+			assert_eq(host.stats["seat_reclaims"], 1, "player reclaimed the seat")
+		else:
+			assert_eq(host.stats["bot_commands"], 0, "timers policy: no server moves")
+		net.teardown()

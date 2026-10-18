@@ -4,6 +4,7 @@
 ## no licensing or version coupling.
 ##
 ## Usage (from repo root): scripts/run_tests.sh
+## Optional user arg `--only=<text>` runs just the files whose path contains it.
 extends SceneTree
 
 const TEST_ROOTS := ["res://tests/unit", "res://tests/integration"]
@@ -17,6 +18,9 @@ func _initialize() -> void:
 	for root in TEST_ROOTS:
 		_collect(root, files)
 	files.sort()
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--only="):
+			files = files.filter(func(p: String) -> bool: return p.contains(a.trim_prefix("--only=")))
 	for path in files:
 		_run_file(path)
 	print("RESULT: %d passed, %d failed" % [_passed, _failures.size()])

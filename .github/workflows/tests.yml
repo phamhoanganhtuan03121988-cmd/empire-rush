@@ -40,6 +40,12 @@ jobs:
           TEST_TIMEOUT_SECS: "600"
         run: scripts/run_tests.sh
 
+      # M3 spike: 1 server + 4 client processes over real localhost WebSockets,
+      # with duplicates, hostile frames, a dropped client, a faked client
+      # state and a SIGKILL + journal restart of the server.
+      - name: Multi-process multiplayer test (scripts/run_net_e2e.sh)
+        run: scripts/run_net_e2e.sh logs/net_e2e
+
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v6

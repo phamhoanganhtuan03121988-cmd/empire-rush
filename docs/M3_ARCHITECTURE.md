@@ -1,9 +1,17 @@
 # EMPIRE RUSH — M3 Online Foundation: Architecture, Spike Results, Plan
 
-Status (2026-10-18):
-- **Architecture proposal + a verified in-process technical spike.**
-- **Not built:** a server process, a real transport (WebSocket/TLS), hosting, accounts or persistence.
-- **Multiplayer is not "done".** The spike proves the rules engine, the protocol shape, idempotency and reconnect logic end to end with four simulated clients.
+Status (2026-10-18, updated in Phase 2):
+- **Architecture proposal + two verified spikes:**
+  - **In-process** (M2.3): `LoopbackNetwork`, simulated time, runs in CI (§3).
+  - **Multi-process** (Phase 2): one headless Godot server process + 2–4 headless Godot client processes over **real WebSockets on 127.0.0.1**, with a server crash/restart (§3b).
+- **Not built:**
+  - TLS;
+  - hosting;
+  - rooms/lobby;
+  - accounts;
+  - a database (the journal is a local file);
+  - a client UI on top of the network path (`RemoteMatch`).
+- **Multiplayer is not "done".** Nothing has run across the internet or on phones.
 
 Inputs: GDD §10–11, `docs/PROTOCOL.md` (v1 draft), IMPLEMENTATION_PLAN §3–4 (M3 scope and the server-runtime decision).
 
@@ -65,16 +73,78 @@ Numbers from the last local run:
 - 9 snapshots;
 - 234 s of simulated match time.
 
-**Spike shortcut (test harness only):** the bots choose moves by reading the host engine. Real clients decide from their own snapshot + event stream. A client-side "view model" (§5 M3-2) is needed for that.
+**Spike shortcut (in-process test only):** the bots choose moves by reading the host engine. The multi-process test below removes this shortcut: each client decides from its own view.
+
+## 3b. Multi-process test over real sockets (Phase 2, C3)
+
+| Part | File |
+|---|---|
+| Server process | `client/tools/net/server_main.gd`: `TCPServer` + `WebSocketPeer`, one `MatchHost`, server clock = wall clock × `time_scale` |
+| Client process | `client/tools/net/client_main.gd`: `NetClient` over `WebSocketPeer`; a bot decides from a read-only `GameEngine` built with `GameState.from_dict(public snapshot)` |
+| Orchestrator | `scripts/run_net_e2e.sh` (server + N clients, chaos schedule, SIGKILL + restart) |
+| Checker | `client/tools/net/verify_e2e.gd` |
+
+Run it with `GODOT=… scripts/run_net_e2e.sh OUT_DIR`. It takes about 30–70 s wall time per match.
+
+**What one run does:**
+- **Client 0:** sends every 5th command twice (same `command_id`).
+- **Client 1:** every 6th command, sends a hostile frame. The kinds are spoofed `player_id`, a stale version, an unknown command type, a 16 KiB+ frame, protocol v99 and non-JSON.
+- **Client 2:** closes its socket at 20 s and stays away 6 s (60 s of match time). That is longer than the 20 s seat hold, so the **server bot takes the seat**. The player **reclaims** it on reconnect.
+- **Client 3:** fakes its local state (cash 999,999, owns every property) and acts on it. It also idles 8% of the time, so server timers act for it.
+- **Server:** killed with **SIGKILL at 12 s** and restarted with `--resume`. It rebuilds the match by replaying its **write-ahead journal**: every accepted input is written and flushed before any frame leaves. Every client reconnects by itself with capped backoff and resends unanswered commands with the same id.
+
+**The checker asserts:**
+- every client's final public hash and `state_version` equal the server's;
+- replaying the journal twice in fresh engines gives the server's exact final `state_hash` (determinism; no command applied twice);
+- invariants hold;
+- duplicates were deduplicated;
+- hostile frames and commands were refused;
+- the restart happened and every client reconnected;
+- the bot took over and the seat was reclaimed.
+
+**Results (local, this branch):** see `docs/test-logs/phase2_net_e2e/`. All runs PASS. They cover:
+- 2, 3 and 4 players;
+- 4 different seeds;
+- both `bot` and `timers` policies.
+
+**What this does not prove yet:**
+- real network conditions (loss, latency, NAT, mobile radio switches);
+- TLS;
+- load (50 matches per vCPU);
+- long soak;
+- a phone client.
+
+The server here runs one match per process.
+
+**Design points proven by the run:**
+1. **Restart recovery = seed + input journal.** No state dump is needed; the engine is deterministic. Server downtime does not count as match time: the clock resumes from the last journaled time.
+2. **Write-ahead ordering.** Because inputs are journaled before results are sent, a command acknowledged to a client can never be lost by a crash. A command lost in flight is retried with the same id and applied once.
+3. **The client never needs rules to stay correct.** A faked local state only produces commands the server rejects (`NOT_OWNER`, `WRONG_PHASE`, …). The next snapshot overwrites the fake view.
+4. **Spike cost to fix in M3-2:** the test client asks for a full snapshot after each event batch (about 1 snapshot per state version, ≤ 16 KiB each). A production client should project events into its view and request snapshots only on gaps and reconnects.
+
+## 3c. Disconnect policy (Phase 2, C4) — configuration, not a rule
+
+`client/scripts/net/disconnect_policy.gd` is read by `MatchHost.policy`. Server flags: `--hold_ms`, `--policy`.
+
+| Option | Behaviour | Status |
+|---|---|---|
+| `timers` | Seat held. Only the engine's own timers act for the absent player: auto-roll, pass → auction, end turn after `turn_timer_ms` (45 s). The table is never paused | Implemented, tested |
+| `bot` | After `hold_ms` a server-side `BotPlayer` plays the seat. Its moves go through `submit()`: validated, journaled and broadcast like any command. On reconnect the player gets the seat back immediately | Implemented, tested (in-process + multi-process) |
+| `forfeit` | Remove the player after the hold | **Not implemented.** The rules do not define what happens to a forfeiting player's cash and properties. This needs an owner rules decision (GDD), so it was not invented here |
+| auto-skip whole turn | Skip the absent player's turns without rolling | Not implemented as a separate mode. The engine already has `timeout_auto_roll=false` (balance flag), which ends an idle turn without rolling. Changing it is a balance change for the owner |
+
+**Proposed default for testing only:** `hold_ms = 60000` (60 s), then `bot`.
+- Reason: with `timers` alone, one absent player costs the table up to 45 s per decision.
+- This replaces the D5 recommendation below until the owner decides.
 
 ## 4. Decisions for the owner
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
-| D1 | Server runtime | (A) headless Godot 4.7.2 reusing `scripts/domain` · (B) Node/TS server with a ported engine | **A first** (spike passes on rules and protocol). Still unproven: hosting cost, memory per match and 24 h soak (exit criteria in IMPLEMENTATION_PLAN §4) |
+| D1 | Server runtime | (A) headless Godot 4.7.2 reusing `scripts/domain` · (B) Node/TS server with a ported engine | **A** — verified in Phase 2: a headless Godot process serves real WebSockets (`TCPServer` + `WebSocketPeer`), runs a full match and recovers from SIGKILL via its journal. Footprint per process is in `docs/test-logs/phase2_net_e2e/`. Still unproven: many matches per process, 24 h soak, hosting cost |
 | D2 | Hosting | Self-managed VM / container service / managed game hosting | Needs owner budget and account; **no paid service chosen, no secrets in the repo** |
 | D3 | Identity | Guest token per device vs accounts | Guest token for private rooms in M3; accounts in M4 |
 | D4 | Persistence | PostgreSQL (plan) | Store seed + input log + results; the replay test shows that is enough to rebuild a match |
-| D5 | Reconnect window | How long a seat is held while disconnected (timers keep running) | 2 min hold, then bot takeover or forfeit — **a product decision** |
+| D5 | Disconnect policy | `timers` / `bot` after a hold / `forfeit` (needs a rule) — §3c | Test default 60 s hold then `bot`; **final choice is a product decision** |
 | D6 | Seed commitment | PROTOCOL §8 (optional for MVP) | Defer to M4 |
 
 ## 5. Milestones for M3
@@ -106,7 +176,7 @@ Numbers from the last local run:
 |---|---|
 | `scripts/net/*` (new, spike) | Promote to production: a `Transport` interface; WebSocket implementation; rate limiting; logging |
 | `scripts/presentation/local_match.gd` | Extract an `Authority` interface (`submit`, `events_emitted`, `seconds_left`, `human_actor`); add `RemoteMatch` |
-| `scripts/domain/*` | **No rule changes.** Possibly a `public_snapshot` restore for client view models |
+| `scripts/domain/*` | **No rule changes.** `GameState.from_dict` added (Phase 2) for client views and tested by round trip |
 | `server/` (new) | Headless entry point, room manager, persistence adapter |
 | `scripts/main.gd` | Choose Local vs Remote authority from a lobby screen (new) |
 | Tests | Loopback test (exists) → socket test → load/soak harness |

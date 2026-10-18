@@ -1,0 +1,23 @@
+{
+  "pid": 2965,
+  "restarts": 1,
+  "stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 229,
+    "duplicates": 20,
+    "frame_errors": {
+      "BAD_REQUEST": 2,
+      "PAYLOAD_TOO_LARGE": 3,
+      "PROTOCOL_UNSUPPORTED": 3
+    },
+    "frames_in": 648,
+    "frames_out": 1058,
+    "rejected": {
+      "BAD_REQUEST": 2,
+      "STALE_STATE": 5
+    },
+    "seat_reclaims": 0,
+    "snapshots": 409
+  }
+}

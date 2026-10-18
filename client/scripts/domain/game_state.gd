@@ -112,3 +112,25 @@ func to_dict() -> Dictionary:
 
 func state_hash() -> String:
 	return JSON.stringify(to_dict(), "", true).sha256_text()
+
+
+## Rebuilds a state from `to_dict()` or from a public snapshot (M3 client
+## view). A public snapshot has no RNG and only the event-deck size, so a
+## state built from one can be queried but must never run rules.
+static func from_dict(d: Dictionary) -> GameState:
+	var s := GameState.new()
+	for k in ["match_id", "state_version", "seq", "phase", "round", "turn_number", "current_seat",
+			"match_start_ms", "turn_deadline_ms", "paused_turn_remaining_ms", "strategy_used",
+			"next_tx_id", "next_aux_id", "bank_net_issued", "end_reason"]:
+		if d.has(k):
+			s.set(k, d[k])
+	s.seed_value = int(d.get("seed", 0))
+	for k in ["players", "last_roll", "modifiers", "pending_payouts", "results"]:
+		s.set(k, (d.get(k, []) as Array).duplicate(true))
+	for k in ["owner", "level", "auction", "trade", "choice", "rescue"]:
+		s.set(k, (d.get(k, {}) as Dictionary).duplicate(true))
+	var deck: Variant = d.get("event_deck", [])
+	s.event_deck = (deck as Array).duplicate() if deck is Array else []
+	if d.has("rng"):
+		s.rng.set_state(d["rng"])
+	return s
