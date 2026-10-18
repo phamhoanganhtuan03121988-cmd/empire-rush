@@ -2,6 +2,8 @@
 
 **M2.3 playtest automation · visual production vertical slice · M3 technical foundation · CI/release readiness**
 
+> **Next:** Phase 2 (visual quality, performance, multi-process multiplayer, playtest kit) is reported in [`docs/PHASE2_REPORT.md`](PHASE2_REPORT.md), branch `claude/visual-performance-multiplayer`. This report stays as the M2.3 record.
+
 Date: 2026-10-18 · Engine: Godot 4.7.2-stable · Branch: **`claude/master-visual-production-m3`** (from `claude/m2-2-1-release-readiness` @ `fa2f165`; no other branch touched, no merge, no PR)
 
 **Not changed:**

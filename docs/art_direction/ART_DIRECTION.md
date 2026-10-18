@@ -1,4 +1,4 @@
-# EMPIRE RUSH — Art Direction & Design System (M2.3)
+# EMPIRE RUSH — Art Direction & Design System (M2.3, updated in Phase 2)
 
 **Style:** premium stylized realism 3D — a miniature city board game.
 - An architectural scale model on a stone quay in a harbour.
@@ -31,7 +31,7 @@ This document is implemented in code and assets:
    - One warm key light, one cool fill and sky ambient.
    - All assets share one material library, so they sit in the same world.
 4. **Cheap on phones.**
-   - The static board is one merged mesh.
+   - The static board is two merged meshes: flat ground (does not cast shadows) and props (Phase 2).
    - Buildings are one mesh each, with shared materials.
    - No SSAO in the Mobile renderer: baked vertex AO and contact-shadow decals replace it.
 
@@ -134,7 +134,8 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
 |---|---|
 | Top bar | Round chip (clock icon), build tag (decorative), graphics button, 4 player cards, turn timer (gold, red under 10 s) |
 | Player card | Avatar badge (character emblem on the seat colour), name (seat colour), character, coin + cash. The active card has a border + glow; bankrupt cards are at 45% |
-| Action panel | Icon + title (gold), muted body, button grid: 1 column for one action, side by side for 2–3, 2 columns above that. Long lists scroll inside the panel |
+| Action panel | Icon + title (gold), muted body, button grid: 1 column for one action, side by side for 2–3, 2 columns above that. Long lists scroll inside the panel. Labels break only at explicit line breaks: name on line 1, "→ cấp N · price" on line 2, joined with non-breaking spaces (UI test measures every line) |
+| Landscape layout (Phase 2) | Board on the left at full height. Player bar, toasts and action panel share the right column (46% of the width) |
 | Toast | At most 2, under the top bar, never over tiles. Icon + text, 3.2 s, fade |
 | Info modal | Gold-framed glass panel, centred, closes with QUAY LẠI |
 | Results sheet | Bottom sheet in portrait (2-column ranking with medal badges), right column in landscape. The board stays visible |
@@ -163,7 +164,18 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
     - enamel (clear-coat);
     - window glow (emissive, 0.85);
     - contact shadow (unshaded alpha).
-- **Textures:** 512 px tileable detail and normal maps from fixed seeds, VRAM-compressed with mipmaps. The **Low preset turns the triplanar detail and normal maps off** (vertex colour only) to save fill rate on weak GPUs.
+- **Planar variants (Phase 2):** marble, paving, asphalt and grass also exist as `*_planar` materials. They use the same textures with world-XZ UVs instead of triplanar mapping, and are used only by flat ground pieces. Triplanar is wasted work on a surface that only faces up.
+- **Textures:** 512 px tileable detail and normal maps from fixed seeds, VRAM-compressed with mipmaps. The **Low preset turns the triplanar detail and normal maps off** (vertex colour only) to save fill rate on weak GPUs. Anisotropic filtering is used on **High only**; Low and Medium use trilinear mipmaps.
+- **Preset summary (Phase 2):**
+
+| | Low | Medium | High |
+|---|---|---|---|
+| Shadows | off | orthogonal | 2 splits |
+| Detail/normal maps | off | on | on |
+| Texture filter | trilinear | trilinear | anisotropic |
+| Water | `water_lite` (unshaded, 1 ripple + foam) | full | full |
+
+  Benchmarks: `docs/test-logs/phase2_perf/`.
 - **Light:**
   - Key: sun `#ffe2b8` at 1.45, −48° pitch, shadows on medium and high.
   - Fill: `#9cc3ff` at 0.35.
@@ -172,7 +184,8 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
 - **Depth cues without SSAO:**
   - Baked ground AO on every model (bottom 12–14 cm darkened to 68–70%).
   - Contact-shadow quads under buildings and props.
-- **Water:** depth tint, layered ripples that fade with distance (no moiré), foam hugging the quay, fresnel sky tint.
+- **Water:** depth tint, layered ripples that fade with distance (no moiré), foam hugging the quay, fresnel sky tint. Low uses `water_lite.gdshader`: same colours and foam, no lighting, fresnel or normal map.
+- **Geometry budget (Phase 2):** windows are 3 quads (pane + sill top + sill front; 6 triangles). Small props use 6–8 segments. Board scene: about 51k triangles visible, 44k in the shadow pass.
 
 ## 8. Readability rules for 3D at phone size
 - **Ownership** = a 5 cm frame in the owner colour around the slab + a flag on the lot corner. The tile and building keep their materials; identity colour never floods the tile.
@@ -182,6 +195,7 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
   - amber gavel: under auction;
   - green arrow: you can upgrade this now.
 - **Active tile:** a warm emissive frame.
+- **Pawns (Phase 2):** each pawn stands on a ring in its seat colour. Other players' rings are at 55% opacity. The active player's ring is opaque and slightly larger, and breathes (static with reduced motion). From the portrait camera a pawn is about 13 px wide; the ring carries the "whose pawn" information.
 - **Animation budget:**
   - Token hop 0.16 s per tile.
   - Building pop 0.5 s.
