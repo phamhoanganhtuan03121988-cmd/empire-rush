@@ -140,8 +140,8 @@ func _build_streets(st: MeshMerger) -> void:
 	_ubox(st, "paving", Vector3(0.36, 0.012, 5.1), Vector3(0, 0.054, 0), walk)
 	_ubox(st, "paving", Vector3(1.6, 0.014, 1.6), Vector3(0, 0.056, 0), Color("#e2dacb"), PI * 0.25)
 	# Lamps along the inner sidewalk.
-	for k in 7:
-		var t := -2.4 + k * 0.8
+	for k in 5:
+		var t := -1.6 + k * 0.8  # corners stay clear (no doubled lamps)
 		for side in 4:
 			_place(st, "streetlight", _edge_point(side, t, 2.52), _edge_rot(side) + PI)
 
@@ -182,7 +182,9 @@ func _build_tile(i: int, st: MeshMerger) -> void:
 	_tiles.append(root)
 	var sp: Dictionary = config.spaces[i]
 	var stype: String = sp["space_type"]
-	var inward := BoardLayout.inward(i)
+	# Corner tiles point diagonally inwards; orient their band like the next
+	# tile on the ring so it stays axis-aligned.
+	var inward := BoardLayout.inward((i + 1) % config.board_size() if BoardLayout.is_corner(i) else i)
 	var flat_in := Vector3(signf(inward.x) if absf(inward.x) > 0.5 else 0.0, 0, signf(inward.z) if absf(inward.z) > 0.5 else 0.0)
 	var rot := atan2(flat_in.x, flat_in.z) if flat_in != Vector3.ZERO else 0.0
 	st.add_kit(kit("tile_base"), Transform3D(Basis(), root.position))

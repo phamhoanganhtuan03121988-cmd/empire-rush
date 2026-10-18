@@ -78,6 +78,23 @@ func _board_metrics() -> Dictionary:
 		"w": 100.0 * bb.size.x / vp.x, "h": 100.0 * bb.size.y / vp.y}
 
 
+## Art review: HUD hidden, camera close to two board edges (same build,
+## same scene; only the camera moves).
+func _closeup() -> void:
+	main.hud.visible = false
+	var cam: Camera3D = main.camera
+	cam.h_offset = 0.0
+	cam.v_offset = 0.0
+	var spots := {"a": [Vector3(5.6, 3.2, 1.6), Vector3(2.6, 0.2, -1.2)], "b": [Vector3(-1.2, 3.0, 6.0), Vector3(-1.6, 0.25, 2.4)]}
+	for k in spots:
+		cam.position = spots[k][0]
+		cam.look_at(spots[k][1])
+		await _frames(10)
+		root.get_viewport().get_texture().get_image().save_png("%s/00_closeup_%s.png" % [out, k])
+		print("CAPTURE closeup_", k)
+	quit()
+
+
 func _run() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	var a := {"players": "4", "seed": "7", "quality": args.get("quality", "high")}
@@ -111,8 +128,11 @@ func _run() -> void:
 	e._resolve_landing(0)
 	main.match_ref.events_emitted.emit(e._commit())
 	await _settle()
-	main.hud.show_toast("Minh trả 605 RC tiền thuê cho Lan", Color("#ffb3b3"))
-	main.hud.show_toast("Lan nâng Vịnh Cọ lên cấp 3 (60 RC)", Color("#27ae60"))
+	if args.has("closeup"):
+		await _closeup()
+		return
+	main.hud.show_toast("Minh trả 605 RC tiền thuê cho Lan", Color("#ffb3b3"), "coin")
+	main.hud.show_toast("Lan nâng Vịnh Cọ lên cấp 3 (60 RC)", Color("#27ae60"), "build")
 	await _shot("01_buy_prompt")
 	if args.has("surfaces"):
 		_surface_report()

@@ -33,13 +33,17 @@ Game rules and balance are **not changed** based on these results. Record them a
 - [ ] Copy `telemetry/session_*.json` and `device_validation/run_*.json` (Files app → On My iPhone → Empire Rush). The telemetry file records **match length, per-turn length, human turns vs bot turns (waiting time), and animation time**.
 - [ ] Do not change rules or balance because of a single session.
 
-## 3. Six questions after the match (scale 1–5 plus one sentence)
+## 3. Questions after the match (scale 1–5 plus one sentence)
 1. How clear was it what you needed to do on each turn?
 2. Was waiting for the other players' (bots') turns too long?
 3. Was the text, the land and the money easy to read on the phone?
 4. Were the buttons easy to tap and placed well?
 5. Which moment was the most fun? Which was the most boring?
 6. Would you play another match? Why or why not?
+7. Were auctions exciting or tedious? (M2.3)
+8. Was upgrading worth it, and could you tell the building level on the board? (M2.3)
+9. Which rule did you not understand? (open answer; note the screen)
+10. At what point did you start to lose interest, if at all? (round / event)
 
 ## 4. Summary after several sessions
 | Metric | Source | Target / notes |
@@ -51,3 +55,10 @@ Game rules and balance are **not changed** based on these results. Record them a
 | Confusion points | `CONFUSED` count by spot | Group by screen / action |
 | Input errors | `MISTAP` count by button | Compare with the device checklist C1–C2 |
 | Stopped early | number of sessions, round, reason | |
+| Auction / upgrade appeal | questions 7–8; `DELIGHT` / `BORED` near auctions and upgrades | Compare with bot rates in `docs/test-logs/m2_3_playtest_batch/summary.md` (auctions and upgrades per match) |
+| Unclear rules | question 9 + `CONFUSED` | One row per rule; never change rules from a single session |
+| Disengagement point | question 10 + first `BORED` | Round number vs match length |
+
+The log template `playtest_log_template.csv` has a `phase` column: roll, buy, auction, upgrade, event, trade, rescue or results.
+
+Bot baseline: `scripts/run_playtest_batch.sh --out=/abs/dir` (2/3/4 players, reproducible seeds, CSV + JSON + summary). The bots are a pacing and flow baseline only. **Never fill this sheet with bot or invented data.**

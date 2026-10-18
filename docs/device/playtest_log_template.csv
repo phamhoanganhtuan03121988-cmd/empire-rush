@@ -1,1 +1,1 @@
-session_id,tester_code,device,ios_version,build_commit,orientation,bots,clock_mm_ss,round,event_code,screen_or_action,what_happened,quote,severity_1_3
+session_id,tester_code,device,ios_version,build_commit,orientation,bots,clock_mm_ss,round,event_code,phase,screen_or_action,what_happened,quote,severity_1_3

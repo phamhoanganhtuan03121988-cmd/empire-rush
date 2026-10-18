@@ -107,3 +107,13 @@ func test_owned_tiles_show_owner_tint() -> void:
 	assert_true(mark != null, "owner mark exists")
 	var mi := mark as MeshInstance3D
 	assert_true(mi != null and mi.mesh.get_surface_count() >= 1, "owner mark is a single merged mesh")
+
+
+## Every property lot (corners included) is aligned to the board grid, so
+## district bands, owner frames and buildings never sit diagonally (M2.3).
+func test_lots_are_axis_aligned() -> void:
+	await start_game(2, 3)
+	for pid in main.board._lots:
+		var r: float = main.board._lots[pid].rotation.y
+		var k := fposmod(r, PI * 0.5)
+		assert_true(k < 0.001 or k > PI * 0.5 - 0.001, "%s lot rotation %.3f rad is a multiple of 90 degrees" % [pid, r])
