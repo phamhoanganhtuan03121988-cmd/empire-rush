@@ -30,15 +30,15 @@ static func tile_base() -> ModelKit:
 static func tile_top() -> ModelKit:
 	var k := ModelKit.new()
 	# Two stacked slabs = a small chamfer that catches light at phone size.
-	k.box(Vector3(0.9, 0.02, 0.9), Vector3(0, 0.1, 0), Color.WHITE, "marble")
-	k.box(Vector3(0.86, 0.012, 0.86), Vector3(0, 0.114, 0), Color.WHITE, "marble")
+	k.box(Vector3(0.9, 0.02, 0.9), Vector3(0, 0.1, 0), Color.WHITE, "marble_planar")
+	k.box(Vector3(0.86, 0.012, 0.86), Vector3(0, 0.114, 0), Color.WHITE, "marble_planar")
 	return k
 
 
 ## Empty building lot: paved pad with a planted edge.
 static func lot_plaza() -> ModelKit:
 	var k := ModelKit.new()
-	k.box(Vector3(0.6, 0.006, 0.6), Vector3(0, 0.003, 0), Color("#e4ddcf"), "paving")
+	k.box(Vector3(0.6, 0.006, 0.6), Vector3(0, 0.003, 0), Color("#e4ddcf"), "paving_planar")
 	# Two small shrubs on the front corners (life on empty lots, no outline).
 	for x in [-0.24, 0.24]:
 		k.sphere(0.035, Vector3(x, 0.03, 0.24), Color("#4f8a3c"), "foliage", 8, 0.8)
@@ -47,10 +47,10 @@ static func lot_plaza() -> ModelKit:
 
 static func streetlight() -> ModelKit:
 	var k := ModelKit.new()
-	k.cylinder(0.008, 0.011, 0.3, Vector3(0, 0.15, 0), METAL_DARK, "metal", 8)
+	k.cylinder(0.008, 0.011, 0.3, Vector3(0, 0.15, 0), METAL_DARK, "metal", 6)
 	k.box(Vector3(0.06, 0.008, 0.008), Vector3(0.025, 0.3, 0), METAL_DARK, "metal")
 	k.box(Vector3(0.04, 0.012, 0.024), Vector3(0.05, 0.293, 0), Color("#ffe3a3"), "window_glow")
-	k.cylinder(0.016, 0.02, 0.012, Vector3(0, 0.006, 0), METAL_DARK, "metal", 8)
+	k.cylinder(0.016, 0.02, 0.012, Vector3(0, 0.006, 0), METAL_DARK, "metal", 6)
 	return k
 
 
@@ -94,8 +94,7 @@ static func planter() -> ModelKit:
 
 static func bollard() -> ModelKit:
 	var k := ModelKit.new()
-	k.cylinder(0.014, 0.018, 0.05, Vector3(0, 0.025, 0), METAL_DARK, "metal", 8)
-	k.sphere(0.015, Vector3(0, 0.05, 0), METAL_DARK, "metal", 8)
+	k.cylinder(0.012, 0.018, 0.055, Vector3(0, 0.0275, 0), METAL_DARK, "metal", 6)
 	return k
 
 

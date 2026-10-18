@@ -141,15 +141,23 @@ func windows(w: float, d: float, cx: float, cz: float, y0: float, y1: float, flo
 				var p: Vector3 = c0 + along * off + Vector3(0, yc, 0) + n * 0.004
 				var ww := cw * 0.58
 				var wh := fh * tall
-				var sz := Vector3(ww, wh, 0.008) if absf(n.z) > 0.5 else Vector3(0.008, wh, ww)
+				# Pane, sill top and sill front are single quads (6 triangles
+				# per window instead of 24 with boxes: Phase 2 profiling showed
+				# windows dominate the kit's triangle count).
+				var facing := Basis.looking_at(-n, Vector3.UP)
 				var is_lit := rng.randf() < lit
-				if is_lit:
-					box(sz, p, Color("#ffd58a"), "window_glow")
-				else:
-					box(sz, p, glass, "glass")
-				# Sill under each window (reads as depth from the iso camera).
-				var sill := Vector3(ww * 1.15, 0.008, 0.016) if absf(n.z) > 0.5 else Vector3(0.016, 0.008, ww * 1.15)
-				box(sill, p + Vector3(0, -wh * 0.5 - 0.004, 0) + n * 0.004, frame, "concrete")
+				quad(Vector2(ww, wh), p, facing, Color("#ffd58a") if is_lit else glass, "window_glow" if is_lit else "glass")
+				var sill_y := p.y - wh * 0.5 - 0.002
+				var sill_c := c0 + along * off + n * 0.01
+				quad(Vector2(ww * 1.15, 0.016), Vector3(sill_c.x, sill_y, sill_c.z), facing * Basis(Vector3.RIGHT, -PI * 0.5), frame, "concrete")
+				quad(Vector2(ww * 1.15, 0.006), Vector3(sill_c.x, sill_y - 0.003, sill_c.z) + n * 0.008, facing, frame.darkened(0.15), "concrete")
+
+
+## Single quad (2 triangles); `basis` maps the quad's +Z normal into place.
+func quad(size: Vector2, pos: Vector3, basis: Basis, color: Color, material: String) -> void:
+	var qm := QuadMesh.new()
+	qm.size = size
+	m.add_mesh(qm, Transform3D(basis, pos), color, mat(material))
 
 
 ## Horizontal band (cornice / floor slab edge) around a block.
@@ -172,9 +180,9 @@ func awning(width: float, pos: Vector3, normal: Vector3, c1: Color, c2: Color, s
 
 func tree_round(pos: Vector3, scale := 1.0, leaf := Color("#4f8a3c")) -> void:
 	cylinder(0.018 * scale, 0.026 * scale, 0.16 * scale, pos + Vector3(0, 0.08 * scale, 0), Color("#6b4a32"), "wood", 6)
-	sphere(0.12 * scale, pos + Vector3(0, 0.24 * scale, 0), leaf, "foliage", 10, 0.9)
-	sphere(0.085 * scale, pos + Vector3(0.05 * scale, 0.32 * scale, 0.03 * scale), leaf.lightened(0.12), "foliage", 8, 0.9)
-	sphere(0.07 * scale, pos + Vector3(-0.06 * scale, 0.29 * scale, -0.04 * scale), leaf.darkened(0.08), "foliage", 8, 0.9)
+	sphere(0.12 * scale, pos + Vector3(0, 0.24 * scale, 0), leaf, "foliage", 8, 0.9)
+	sphere(0.085 * scale, pos + Vector3(0.05 * scale, 0.32 * scale, 0.03 * scale), leaf.lightened(0.12), "foliage", 7, 0.9)
+	sphere(0.07 * scale, pos + Vector3(-0.06 * scale, 0.29 * scale, -0.04 * scale), leaf.darkened(0.08), "foliage", 6, 0.9)
 
 
 func tree_cone(pos: Vector3, scale := 1.0, leaf := Color("#2f6b45")) -> void:

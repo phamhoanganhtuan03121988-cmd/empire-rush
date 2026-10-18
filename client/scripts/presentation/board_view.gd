@@ -31,6 +31,15 @@ var _markers: Dictionary = {}     # "kind:index" -> Sprite3D
 var _highlight: Node3D
 var _rng := RandomNumberGenerator.new()  # decoration only, never rules
 var _kit_cache: Dictionary = {}
+var _water: MeshInstance3D
+## Static geometry is merged into two meshes: flat ground (slabs, roads,
+## quay, tile tops) that only RECEIVES shadows, and upright props (trees,
+## lamps, blocks, boats) that also CAST them. The shadow pass then skips
+## ~two thirds of the board's triangles (Phase 2 profiling).
+var _ground: MeshMerger
+var _props: MeshMerger
+## Pieces that lie flat on the board: merged into the ground mesh.
+const GROUND_PIECES := ["tile_base", "tile_top", "lot_plaza", "pier"]
 
 
 func kit(name: String) -> Mesh:
@@ -44,13 +53,19 @@ func build(p_config: GameConfig, p_theme: ThemeData) -> void:
 	theme = p_theme
 	_rng.seed = 2026
 	_build_water()
-	var st := MeshMerger.new()
-	_build_quay(st)
-	_build_streets(st)
-	_build_center_city(st)
+	_ground = MeshMerger.new()
+	_props = MeshMerger.new()
+	_build_quay(_ground)
+	_build_streets(_ground)
+	_build_center_city(_ground)
 	for i in config.board_size():
-		_build_tile(i, st)
-	add_child(st.instance("StaticBoard"))
+		_build_tile(i, _ground)
+	var ground := _ground.instance("StaticBoard")
+	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(ground)
+	add_child(_props.instance("StaticProps"))
+	_ground = null
+	_props = null
 	_build_highlight()
 
 
@@ -62,6 +77,8 @@ func _ubox(st: MeshMerger, material: String, size: Vector3, pos: Vector3, tint :
 
 
 func _place(st: MeshMerger, piece: String, pos: Vector3, rot_y := 0.0, scale := 1.0, tint := Color.WHITE) -> void:
+	if not piece in GROUND_PIECES and _props != null:
+		st = _props
 	st.add_kit(kit(piece), Transform3D(Basis(Vector3.UP, rot_y) * Basis.from_scale(Vector3.ONE * scale), pos), tint)
 
 
@@ -76,6 +93,8 @@ func _build_water() -> void:
 	var sh := ShaderMaterial.new()
 	sh.shader = load("res://scripts/presentation/water.gdshader")
 	w.material_override = sh
+	w.name = "Water"
+	_water = w
 	w.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(w)
 
@@ -327,6 +346,12 @@ func show_level(pid: String, level: int, seat: int, animate := true) -> void:
 	if animate:
 		b.scale = Vector3(BUILDING_SCALE, 0.01, BUILDING_SCALE)
 		create_tween().tween_property(b, "scale", Vector3.ONE * BUILDING_SCALE, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+
+## Low preset: cheaper water shader (no foam, fresnel or normal map).
+func set_water_lite(lite: bool) -> void:
+	var path := "res://scripts/presentation/water_lite.gdshader" if lite else "res://scripts/presentation/water.gdshader"
+	(_water.material_override as ShaderMaterial).shader = load(path)
 
 
 func set_highlight(index: int) -> void:

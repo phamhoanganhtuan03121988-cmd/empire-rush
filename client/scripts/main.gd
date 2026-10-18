@@ -198,6 +198,7 @@ func _build_world() -> void:
 func set_quality(name: String) -> void:
 	quality = name
 	QualitySettings.apply(name, get_viewport(), sun, env)
+	board.set_water_lite(name == "low")
 	hud.set_quality_label(name)
 	if probe and not (dev_panel and dev_panel.is_benchmarking()):
 		probe.begin_segment(name)

@@ -96,10 +96,14 @@ func _append(arr: Array, xform: Transform3D, color: Color, key: String, multiply
 	var nb := xform.basis.inverse().transposed()
 	var has_uv: bool = uvs != null and uvs.size() == verts.size()
 	var has_c: bool = multiply and cols != null and cols.size() == verts.size()
+	# "*_planar" materials are mapped by world X/Z (flat ground pieces), so
+	# textures line up across merged pieces with a single fetch.
+	var planar := key.contains("_planar")
 	for k in verts.size():
-		s["v"].append(xform * verts[k])
+		var wv := xform * verts[k]
+		s["v"].append(wv)
 		s["n"].append((nb * norms[k]).normalized())
-		s["uv"].append(uvs[k] if has_uv else Vector2.ZERO)
+		s["uv"].append(Vector2(wv.x, wv.z) if planar else (uvs[k] if has_uv else Vector2.ZERO))
 		s["c"].append(cols[k] * color if has_c else color)
 	if idx == null or idx.is_empty():
 		for k in verts.size():

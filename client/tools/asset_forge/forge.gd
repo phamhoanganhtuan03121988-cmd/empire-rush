@@ -23,6 +23,12 @@ const MATERIALS := {
 	"wood": ["wood_albedo", "wood_normal", 0.7, 0.0, 3.0, {}],
 	"foliage": ["foliage_albedo", "foliage_normal", 0.9, 0.0, 5.0, {}],
 	"marble": ["marble_albedo", "", 0.32, 0.0, 0.9, {}],
+	# Planar variants for flat ground pieces: MeshMerger writes world-XZ UVs,
+	# so one texture fetch replaces three triplanar ones (Phase 2 profiling).
+	"paving_planar": ["paving_albedo", "paving_normal", 0.82, 0.0, 2.0, {"planar": true}],
+	"asphalt_planar": ["asphalt_albedo", "asphalt_normal", 0.92, 0.0, 2.0, {"planar": true}],
+	"grass_planar": ["grass_albedo", "", 0.95, 0.0, 1.2, {"planar": true}],
+	"marble_planar": ["marble_albedo", "", 0.32, 0.0, 0.9, {"planar": true}],
 	"glass": ["", "", 0.06, 0.45, 1.0, {"specular": 0.8}],
 	"metal": ["", "", 0.38, 0.6, 1.0, {}],
 	"gold": ["", "", 0.3, 0.75, 1.0, {}],
@@ -58,10 +64,22 @@ func _save_png(img: Image, name: String, normal := false) -> void:
 	img.save_png(ProjectSettings.globalize_path(path))
 	# Import settings: VRAM-compressed with mipmaps (ETC2/ASTC on phones),
 	# normal maps flagged so they use the right compression.
-	var imp := FileAccess.open(ProjectSettings.globalize_path(path + ".import"), FileAccess.WRITE)
-	imp.store_string('[remap]\n\nimporter="texture"\ntype="CompressedTexture2D"\n\n[params]\n\ncompress/mode=2\ncompress/normal_map=%d\nmipmaps/generate=true\n' % (1 if normal else 2))
-	imp.close()
+	_write_import(path, 'compress/mode=2\ncompress/normal_map=%d\nmipmaps/generate=true\n' % (1 if normal else 2))
 	print("TEX ", path)
+
+
+## Writes import settings. Keeps an existing uid so re-forging does not churn
+## the .import files (the editor would otherwise assign a new uid each time).
+func _write_import(path: String, params: String) -> void:
+	var file := ProjectSettings.globalize_path(path + ".import")
+	var uid := ""
+	if FileAccess.file_exists(file):
+		for line in FileAccess.get_file_as_string(file).split("\n"):
+			if line.begins_with("uid="):
+				uid = line + "\n"
+	var imp := FileAccess.open(file, FileAccess.WRITE)
+	imp.store_string('[remap]\n\nimporter="texture"\ntype="CompressedTexture2D"\n%s\n[params]\n\n%s' % [uid, params])
+	imp.close()
 
 
 func _textures() -> void:
@@ -91,9 +109,7 @@ func _ui() -> void:
 		var path: String = dir + name + ".png"
 		skins[name].save_png(ProjectSettings.globalize_path(path))
 		# 2D UI: lossless, no mipmaps (drawn 1:1 or 9-sliced).
-		var imp := FileAccess.open(ProjectSettings.globalize_path(path + ".import"), FileAccess.WRITE)
-		imp.store_string('[remap]\n\nimporter="texture"\ntype="CompressedTexture2D"\n\n[params]\n\ncompress/mode=0\nmipmaps/generate=false\n')
-		imp.close()
+		_write_import(path, 'compress/mode=0\nmipmaps/generate=false\n')
 		print("UI ", path)
 
 
@@ -110,7 +126,10 @@ func _materials() -> void:
 		m.roughness = d[2]
 		m.metallic = d[3]
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-		if d[0] != "" or d[1] != "":
+		var planar: bool = d[5].get("planar", false)
+		if planar:
+			m.uv1_scale = Vector3.ONE * float(d[4])
+		elif d[0] != "" or d[1] != "":
 			# World-space triplanar mapping: constant texel density on every
 			# kit piece without hand-made UVs, and textures line up across
 			# merged pieces.
@@ -182,8 +201,11 @@ func _models() -> void:
 			var k := Buildings.build(did, lv, Color(districts[did]["color"]), seed_value)
 			_save_model(k, MODELS + "buildings/%s_l%d.res" % [did.to_lower(), lv])
 	var kit := MODELS + "kit/"
-	for mat_name in ["marble", "paving", "asphalt", "grass", "stone_wall", "metal", "gold", "paint", "plaster", "window_glow", "foliage", "wood"]:
+	for mat_name in ["stone_wall", "metal", "gold", "paint", "plaster", "window_glow", "foliage", "wood"]:
 		_save_model(Props.unit_box(mat_name), kit + "unit_%s.res" % mat_name)
+	# Flat ground strips use the planar material variants.
+	for mat_name in ["marble", "paving", "asphalt", "grass"]:
+		_save_model(Props.unit_box(mat_name + "_planar"), kit + "unit_%s.res" % mat_name)
 	_save_model(Props.tile_base(), kit + "tile_base.res")
 	_save_model(Props.tile_top(), kit + "tile_top.res")
 	_save_model(Props.lot_plaza(), kit + "lot_plaza.res")
