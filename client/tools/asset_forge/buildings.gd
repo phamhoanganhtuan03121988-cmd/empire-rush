@@ -83,12 +83,15 @@ func market_l3(k: ModelKit, accent: Color) -> void:
 	k.gable(0.54, 0.12, 0.4, Vector3(0, 0.265, 0.02), TERRA, true)
 	k.awning(0.42, Vector3(0, 0.12, 0.2), Vector3(0, 0, 1), accent, WHITE, 7)
 	# Clock tower.
-	k.block(0.13, 0.55, 0.13, 0.16, 0, -0.14, CREAM)
-	k.band(0.13, 0.13, 0.16, -0.14, 0.54, 0.03, WARM, 0.015)
-	k.cylinder(0.035, 0.035, 0.008, Vector3(0.16, 0.46, -0.07), GOLD, "gold", 16)
-	k.box(Vector3(0.008, 0.07, 0.07), Vector3(0.226, 0.46, -0.14), GOLD, "gold")
-	k.pyramid(0.16, 0.16, 0.16, Vector3(0.16, 0.57, -0.14), TERRA.darkened(0.1))
-	k.cylinder(0.0, 0.012, 0.06, Vector3(0.16, 0.76, -0.14), GOLD, "gold", 6)
+	# Phase 3: tower raised so L3 reads clearly above L2 (art direction 1.0-1.3 m).
+	var th := 0.82
+	k.block(0.13, th, 0.13, 0.16, 0, -0.14, CREAM)
+	k.windows(0.13, 0.13, 0.16, -0.14, 0.3, th - 0.16, 2, 1, 1, GLASS, 0.25, WARM)
+	k.band(0.13, 0.13, 0.16, -0.14, th - 0.01, 0.03, WARM, 0.015)
+	k.cylinder(0.035, 0.035, 0.008, Vector3(0.16, th - 0.09, -0.07), GOLD, "gold", 16)
+	k.box(Vector3(0.008, 0.07, 0.07), Vector3(0.226, th - 0.09, -0.14), GOLD, "gold")
+	k.pyramid(0.16, 0.16, 0.16, Vector3(0.16, th + 0.02, -0.14), TERRA.darkened(0.1))
+	k.cylinder(0.0, 0.012, 0.06, Vector3(0.16, th + 0.21, -0.14), GOLD, "gold", 6)
 
 
 # --- D2 Cang Bien: harbour ------------------------------------------------------------
@@ -156,7 +159,7 @@ func river_l2(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.56, 0.46)
 	for i in 2:
 		var x := -0.12 + i * 0.24
-		var h := 0.42 + 0.08 * i
+		var h := 0.48 + 0.08 * i
 		k.block(0.22, h, 0.28, x, 0, -0.02, [CREAM, Color("#e8efe0")][i])
 		k.windows(0.22, 0.28, x, -0.02, 0.03, h - 0.02, 3 + i, 2, 2, GLASS, 0.35, WARM)
 		k.block(0.24, 0.02, 0.3, x, h, -0.02, accent.darkened(0.2), "concrete")
@@ -188,9 +191,9 @@ func river_l3(k: ModelKit, accent: Color) -> void:
 
 func flower_l1(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.52, 0.46)
-	k.block(0.3, 0.16, 0.22, 0, 0, -0.06, Color("#f7e8ec"))
-	k.windows(0.3, 0.22, 0, -0.06, 0.02, 0.14, 1, 3, 2, GLASS, 0.6, WARM, 0.62)
-	k.block(0.34, 0.02, 0.26, 0, 0.16, -0.06, accent, "concrete")
+	k.block(0.3, 0.28, 0.22, 0, 0, -0.06, Color("#f7e8ec"))
+	k.windows(0.3, 0.22, 0, -0.06, 0.02, 0.26, 2, 3, 2, GLASS, 0.6, WARM, 0.62)
+	k.block(0.34, 0.02, 0.26, 0, 0.28, -0.06, accent, "concrete")
 	# Pergola cafe terrace.
 	for x in [-0.14, 0.14]:
 		k.block(0.012, 0.13, 0.012, x, 0, 0.18, WOOD, "wood")
@@ -204,34 +207,36 @@ func flower_l1(k: ModelKit, accent: Color) -> void:
 
 func flower_l2(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.54, 0.46)
-	k.block(0.4, 0.5, 0.3, 0, 0, -0.03, Color("#f9efe9"))
-	k.windows(0.4, 0.3, 0, -0.03, 0.03, 0.48, 3, 3, 2, GLASS, 0.4, WARM, 0.62)
+	k.block(0.4, 0.56, 0.3, 0, 0, -0.03, Color("#f9efe9"))
+	k.windows(0.4, 0.3, 0, -0.03, 0.03, 0.54, 3, 3, 2, GLASS, 0.4, WARM, 0.62)
 	for f in 2:
 		var y := 0.17 + f * 0.16
 		k.box(Vector3(0.36, 0.02, 0.035), Vector3(0, y, 0.135), accent.darkened(0.1), "concrete")
 		k.flowers(Vector3(0, y + 0.01, 0.135), 8, 0.16, [accent.lightened(0.25), Color("#ffd6e5"), Color("#fff0a8")])
-	k.band(0.4, 0.3, 0, -0.03, 0.48, 0.03, WARM, 0.02)
-	k.gable(0.36, 0.08, 0.26, Vector3(0, 0.51, -0.03), Color("#7b5d6e"), true)
+	k.band(0.4, 0.3, 0, -0.03, 0.54, 0.03, WARM, 0.02)
+	k.gable(0.36, 0.08, 0.26, Vector3(0, 0.57, -0.03), Color("#7b5d6e"), true)
 	k.awning(0.34, Vector3(0, 0.12, 0.12), Vector3(0, 0, 1), accent, WHITE, 6)
 
 
 func flower_l3(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.56, 0.56)
 	# Botanical mall: stone base + glass dome greenhouse.
-	k.block(0.5, 0.22, 0.48, 0, 0, 0, WARM)
-	k.windows(0.5, 0.48, 0, 0, 0.03, 0.2, 1, 4, 4, GLASS, 0.6, WARM, 0.7)
-	k.band(0.5, 0.48, 0, 0, 0.21, 0.025, accent, 0.02)
+	# Phase 3: two-storey base and a taller dome so L3 clearly tops L2.
+	var b := 0.5
+	k.block(0.5, b, 0.48, 0, 0, 0, WARM)
+	k.windows(0.5, 0.48, 0, 0, 0.03, b - 0.02, 2, 4, 4, GLASS, 0.6, WARM, 0.7)
+	k.band(0.5, 0.48, 0, 0, b - 0.01, 0.025, accent, 0.02)
 	var dome := PackedVector2Array()
 	for i in 9:
 		var a := PI * 0.5 * i / 8.0
-		dome.append(Vector2(0.21 * cos(a), 0.235 + 0.3 * sin(a)))
+		dome.append(Vector2(0.21 * cos(a), b + 0.015 + 0.45 * sin(a)))
 	k.lathe(dome, Vector3.ZERO, Color("#9fd3c7"), "glass", 24)
 	for i in 6:
 		var ang := TAU * i / 6.0
-		k.box(Vector3(0.008, 0.3, 0.008), Vector3(cos(ang) * 0.15, 0.36, sin(ang) * 0.15), WHITE, "metal")
-	k.sphere(0.13, Vector3(0, 0.3, 0), Color("#5d9f4e"), "foliage", 10, 0.7)
-	k.cylinder(0.0, 0.03, 0.08, Vector3(0, 0.57, 0), GOLD, "gold", 8)
-	k.flowers(Vector3(0, 0.235, 0.2), 8, 0.03, [accent.lightened(0.2), Color("#ffe08a")])
+		k.box(Vector3(0.008, 0.42, 0.008), Vector3(cos(ang) * 0.15, b + 0.22, sin(ang) * 0.15), WHITE, "metal")
+	k.sphere(0.13, Vector3(0, b + 0.08, 0), Color("#5d9f4e"), "foliage", 10, 0.7)
+	k.cylinder(0.0, 0.03, 0.08, Vector3(0, b + 0.48, 0), GOLD, "gold", 8)
+	k.flowers(Vector3(0, b + 0.015, 0.2), 8, 0.03, [accent.lightened(0.2), Color("#ffe08a")])
 
 
 # --- D5 Khu Nghi Duong: resort ---------------------------------------------------------
@@ -241,7 +246,7 @@ func resort_l1(k: ModelKit, accent: Color) -> void:
 	k.block(0.28, 0.02, 0.26, -0.04, 0, -0.03, WOOD, "wood")
 	k.block(0.22, 0.13, 0.2, -0.04, 0.02, -0.04, Color("#f6ecd9"))
 	k.windows(0.22, 0.2, -0.04, -0.04, 0.03, 0.14, 1, 2, 2, GLASS, 0.6, WARM, 0.6)
-	k.pyramid(0.32, 0.14, 0.3, Vector3(-0.04, 0.15, -0.04), Color("#c9a66b"))
+	k.pyramid(0.32, 0.17, 0.3, Vector3(-0.04, 0.15, -0.04), Color("#c9a66b"))
 	k.palm(Vector3(0.17, 0, 0.12), 0.8)
 	k.box(Vector3(0.12, 0.006, 0.08), Vector3(-0.08, 0.004, 0.17), Color("#5fc3d9"), "glass")
 
@@ -249,12 +254,12 @@ func resort_l1(k: ModelKit, accent: Color) -> void:
 func resort_l2(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.56, 0.5)
 	# Three-storey resort wing with balconies over a pool deck.
-	k.block(0.46, 0.38, 0.22, 0, 0, -0.12, WHITE)
-	for f in 3:
+	k.block(0.46, 0.58, 0.22, 0, 0, -0.12, WHITE)
+	for f in 4:
 		k.box(Vector3(0.46, 0.012, 0.05), Vector3(0, 0.11 + f * 0.12, 0.012), WHITE, "concrete")
 		k.box(Vector3(0.46, 0.025, 0.004), Vector3(0, 0.125 + f * 0.12, 0.036), Color("#a9d6e5"), "glass")
-	k.windows(0.46, 0.22, 0, -0.12, 0.02, 0.37, 3, 4, 2, GLASS, 0.4, WARM, 0.6)
-	k.block(0.48, 0.02, 0.24, 0, 0.38, -0.12, accent, "concrete")
+	k.windows(0.46, 0.22, 0, -0.12, 0.02, 0.57, 4, 4, 2, GLASS, 0.4, WARM, 0.6)
+	k.block(0.48, 0.02, 0.24, 0, 0.58, -0.12, accent, "concrete")
 	# Pool deck.
 	k.block(0.4, 0.015, 0.16, 0, 0, 0.14, WOOD, "wood")
 	k.box(Vector3(0.28, 0.006, 0.1), Vector3(0, 0.018, 0.14), Color("#4fc1d6"), "glass")
@@ -336,10 +341,10 @@ func elite_l1(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.54, 0.5)
 	# Modern villa: two offset volumes, cantilever and pool.
 	k.block(0.34, 0.13, 0.22, -0.03, 0, -0.08, WHITE)
-	k.block(0.26, 0.11, 0.24, 0.04, 0.13, -0.04, Color("#2f3238"), "concrete")
-	k.box(Vector3(0.24, 0.07, 0.008), Vector3(0.04, 0.185, 0.084), Color("#ffd58a"), "window_glow")
+	k.block(0.26, 0.14, 0.24, 0.04, 0.13, -0.04, Color("#2f3238"), "concrete")
+	k.box(Vector3(0.24, 0.09, 0.008), Vector3(0.04, 0.2, 0.084), Color("#ffd58a"), "window_glow")
 	k.box(Vector3(0.28, 0.08, 0.008), Vector3(-0.03, 0.065, 0.034), GLASS, "glass")
-	k.block(0.28, 0.012, 0.26, 0.04, 0.24, -0.04, accent, "concrete")
+	k.block(0.28, 0.012, 0.26, 0.04, 0.27, -0.04, accent, "concrete")
 	k.box(Vector3(0.3, 0.008, 0.1), Vector3(0, 0.006, 0.18), Color("#4fc1d6"), "glass")
 	k.tree_cone(Vector3(-0.2, 0, 0.18), 0.8)
 
@@ -348,19 +353,20 @@ func elite_l2(k: ModelKit, accent: Color) -> void:
 	k.contact_shadow(0.56, 0.52)
 	# Neoclassical mansion: columns, pediment, dome.
 	k.block(0.46, 0.04, 0.38, 0, 0, 0, Color("#e8e2d6"), "marble")
-	k.block(0.4, 0.3, 0.28, 0, 0.04, -0.04, WARM)
-	k.windows(0.4, 0.28, 0, -0.04, 0.06, 0.32, 2, 4, 3, GLASS, 0.5, WARM, 0.6)
+	var lift := 0.13  # Phase 3: taller body so L2 reads between L1 and L3
+	k.block(0.4, 0.3 + lift, 0.28, 0, 0.04, -0.04, WARM)
+	k.windows(0.4, 0.28, 0, -0.04, 0.06, 0.32 + lift, 3, 4, 3, GLASS, 0.5, WARM, 0.6)
 	for i in 6:
-		k.cylinder(0.014, 0.016, 0.26, Vector3(-0.15 + i * 0.06, 0.17, 0.13), WHITE, "marble", 10)
-	k.block(0.4, 0.03, 0.08, 0, 0.3, 0.12, WHITE, "marble")
-	k.gable(0.42, 0.07, 0.1, Vector3(0, 0.33, 0.12), WHITE, true, "marble")
-	k.band(0.4, 0.28, 0, -0.04, 0.33, 0.02, Color("#ddd5c6"), 0.015, "marble")
+		k.cylinder(0.014, 0.016, 0.26 + lift, Vector3(-0.15 + i * 0.06, 0.17 + lift * 0.5, 0.13), WHITE, "marble", 10)
+	k.block(0.4, 0.03, 0.08, 0, 0.3 + lift, 0.12, WHITE, "marble")
+	k.gable(0.42, 0.07, 0.1, Vector3(0, 0.33 + lift, 0.12), WHITE, true, "marble")
+	k.band(0.4, 0.28, 0, -0.04, 0.33 + lift, 0.02, Color("#ddd5c6"), 0.015, "marble")
 	var dome := PackedVector2Array()
 	for i in 7:
 		var a := PI * 0.5 * i / 6.0
-		dome.append(Vector2(0.1 * cos(a), 0.35 + 0.1 * sin(a)))
+		dome.append(Vector2(0.1 * cos(a), 0.35 + lift + 0.1 * sin(a)))
 	k.lathe(dome, Vector3(0, 0, -0.06), accent.darkened(0.2), "metal", 20)
-	k.cylinder(0.0, 0.012, 0.06, Vector3(0, 0.48, -0.06), GOLD, "gold", 6)
+	k.cylinder(0.0, 0.012, 0.06, Vector3(0, 0.48 + lift, -0.06), GOLD, "gold", 6)
 
 
 func elite_l3(k: ModelKit, accent: Color) -> void:

@@ -51,6 +51,17 @@ func test_upgrade_levels_grow_and_districts_differ() -> void:
 		assert_true(h[0] < h[1] and h[1] < h[2], "%s levels grow in height %s" % [d, str(h)])
 		assert_true(h[2] - h[0] >= 0.35, "%s L3 clearly taller than L1" % d)
 		l3_heights[snappedf(h[2], 0.01)] = true
+	# Phase 3: every level sits in the art-direction height band (L1 0.3-0.45,
+	# L2 0.6-0.8, L3 1.0-1.3 m, +-0.03 m) and steps up clearly, so the
+	# upgrade reads at phone size (D4 L2/L3 were 0.59/0.61 m before).
+	var bands := [[0.27, 0.48], [0.57, 0.83], [0.97, 1.33]]
+	for d in ["D1", "D2", "D3", "D4", "D5", "D6", "D7"]:
+		var hs: Array = []
+		for lv in 3:
+			var m: Mesh = load("res://assets/models/buildings/%s_l%d.res" % [d.to_lower(), lv + 1])
+			hs.append(m.get_aabb().end.y)
+			assert_true(hs[lv] >= bands[lv][0] and hs[lv] <= bands[lv][1], "%s L%d height %.2f in %s" % [d, lv + 1, hs[lv], str(bands[lv])])
+		assert_true(hs[1] - hs[0] >= 0.2 and hs[2] - hs[1] >= 0.3, "%s level steps %.2f / %.2f" % [d, hs[1] - hs[0], hs[2] - hs[1]])
 	# Distinct silhouettes: the L3 landmarks do not share one height.
 	assert_true(l3_heights.size() >= 6, "L3 buildings differ (%d distinct heights)" % l3_heights.size())
 

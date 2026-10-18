@@ -185,12 +185,14 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
   - Baked ground AO on every model (bottom 12–14 cm darkened to 68–70%).
   - Contact-shadow quads under buildings and props.
 - **Water:** depth tint, layered ripples that fade with distance (no moiré), foam hugging the quay, fresnel sky tint. Low uses `water_lite.gdshader`: same colours and foam, no lighting, fresnel or normal map.
+- **Static meshes (Phase 3):** merged static pieces bake the world triplanar projection into UVs (per-triangle dominant axis) and use non-triplanar copies of the library materials. This is one texture fetch instead of three, with no visible change (`docs/media/phase3/closeup_*`). Moving meshes (buildings, pawns, dice) keep live triplanar.
+- **Water** receives no shadows (Phase 3): shadow-map artifacts showed as dark blotches on it.
 - **Geometry budget (Phase 2):** windows are 3 quads (pane + sill top + sill front; 6 triangles). Small props use 6–8 segments. Board scene: about 51k triangles visible, 44k in the shadow pass.
 
 ## 8. Readability rules for 3D at phone size
 - **Ownership** = a 5 cm frame in the owner colour around the slab + a flag on the lot corner. The tile and building keep their materials; identity colour never floods the tile.
 - **District** = a coloured band with a gold trim on the street edge of the tile.
-- **Level** = building mass. Every district's L3 is at least 0.35 m taller than its L1 (tested). Silhouettes differ per district (tested: at least 6 distinct L3 heights).
+- **Level** = building mass. Every building sits in its level band (L1 0.30–0.45, L2 0.60–0.80, L3 1.00–1.30 m, ±0.03), with steps of at least 0.2 m (L1→L2) and 0.3 m (L2→L3). Tested since Phase 3; D4's L2 and L3 were nearly the same height before. Silhouettes differ per district (tested: at least 6 distinct L3 heights).
 - **State markers** float over tiles (billboards, always on top):
   - amber gavel: under auction;
   - green arrow: you can upgrade this now.

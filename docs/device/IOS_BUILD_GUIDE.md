@@ -49,6 +49,32 @@ The preset has `application/export_project_only=true`, so the output is an Xcode
 - `build/ios-internal/EmpireRush/EmpireRush-Info.plist` contains `UIFileSharingEnabled` = true and the four orientations (the public build has it false).
 - `EmpireRush.pck` contains `data/rules/*.json` and `data/presentation/*.json` and no `tests/`. A unit test guards this (`test_device_validation.gd`).
 
+### Phase 3 re-check (2026-10-18, commit `c973a60`, Linux container)
+
+Command used, with a clearly fake Team ID that never leaves the temp copy: `IOS_TEAM_ID=ABCDE12345 scripts/export_build.sh ios internal|public release` in a throw-away worktree. It produced Xcode projects for both flavours.
+
+| Check | Internal Test | Public Release |
+|---|---|---|
+| `UISupportedInterfaceOrientations` | Portrait, PortraitUpsideDown, LandscapeLeft, LandscapeRight | same |
+| `UIFileSharingEnabled` / `LSSupportsOpeningDocumentsInPlace` | true / true (reports reachable in Files) | false / false |
+| `UIRequiredDeviceCapabilities` | A12 minimum | same |
+| Xcode settings | `IPHONEOS_DEPLOYMENT_TARGET = 16.0`, `TARGETED_DEVICE_FAMILY = 1` (iPhone), `PRODUCT_BUNDLE_IDENTIFIER = com.example.empirerush` (placeholder), `PROVISIONING_PROFILE = ""` | same |
+| `PrivacyInfo.xcprivacy` | present. `NSPrivacyTracking = false`; declares the file-timestamp, boot-time and disk-space API categories that Godot uses | same |
+| `EmpireRush.pck` | `data/rules/*.json` included; no `res://tests/` or `res://tools/` (the network test server/client are not shipped) | same |
+| Repository after export | `export_presets.cfg` restored: no Team ID left (also checked in CI by `scripts/ci/check_repo_readiness.py`) | |
+
+**Still not done:**
+- signing;
+- building the `.ipa`;
+- installing on a device.
+
+Steps 4–7 need a Mac, Xcode, an Apple account and the iPhone.
+
+**Owner inputs needed:**
+- the real Team ID (passed as an environment variable, never committed);
+- the final bundle ID;
+- the app icon (`GEN-002` is a placeholder).
+
 ## 4. Sign and run in Xcode (Mac — not yet done)
 1. Open `build/ios-internal/EmpireRush.xcodeproj`.
 2. Target **EmpireRush** → Signing & Capabilities: tick *Automatically manage signing* and select the team. Fix the bundle ID if Xcode reports it is taken.
