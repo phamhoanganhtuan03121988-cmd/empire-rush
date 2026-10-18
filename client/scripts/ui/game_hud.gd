@@ -234,8 +234,8 @@ func _layout() -> void:
 		_width(_top, top_w - m * 2)
 		_action_panel.position = Vector2(s.position.x + s.size.x * 0.58, s.position.y + m)
 		_width(_action_panel, s.size.x * 0.42 - m)
-		_toasts.position = s.position + Vector2(m, s.size.y * 0.55)
-		_width(_toasts, top_w - m * 2)
+		_toasts.position = Vector2(s.position.x + s.size.x * 0.58, s.position.y + s.size.y * 0.62)
+		_width(_toasts, s.size.x * 0.42 - m)
 	else:
 		_top.position = s.position + Vector2(m, m)
 		_width(_top, s.size.x - m * 2)
@@ -278,11 +278,12 @@ func _place_bottom() -> void:
 func board_insets() -> Dictionary:
 	var vp := get_viewport_rect().size
 	if _landscape:
-		return {"top": 0.0, "bottom": 0.0, "right": 1.0 - (_action_panel.position.x / vp.x) + 0.02, "left": 0.0}
+		var s0 := safe_rect()
+		return {"top": (_top.position.y + _top.size.y) / vp.y, "bottom": (vp.y - s0.end.y) / vp.y, "right": 1.0 - (_action_panel.position.x / vp.x) + 0.01, "left": 0.0}
 	# Reserve a fixed band for the action panel so the board does not jump
 	# every time the panel height changes.
 	var s := safe_rect()
-	return {"top": (_top.position.y + _top.size.y) / vp.y, "bottom": (vp.y - s.end.y) / vp.y + 0.27, "left": 0.0, "right": 0.0}
+	return {"top": (_top.position.y + _top.size.y) / vp.y, "bottom": (vp.y - s.end.y) / vp.y + 0.21, "left": 0.0, "right": 0.0}
 
 
 # --- live updates ---------------------------------------------------------------

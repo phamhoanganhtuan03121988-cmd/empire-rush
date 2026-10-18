@@ -4,6 +4,7 @@
 ##   --players=N --seed=S --quality=low|medium|high --notch (emulate iPhone
 ##   safe area) --autoplay (HUD autopilot plays seat 0) --timescale=X
 ##   --telemetry=PATH --shots=DIR --shot-every=SECONDS --quit-on-end
+##   --stats=FRAMES (print render statistics once after N frames)
 extends Node3D
 
 const CHARACTERS := ["TYCOON", "INVESTOR", "NEGOTIATOR", "TYCOON"]
@@ -186,7 +187,22 @@ func _on_match_ended(d: Dictionary) -> void:
 		get_tree().quit()
 
 
+var _stats_t := 0.0
+var _stats_done := false
+
+
 func _process(delta: float) -> void:
+	if args.has("stats") and not _stats_done:
+		_stats_t += 1.0
+		if _stats_t > float(args["stats"]):
+			_stats_done = true
+			var rs := RenderingServer
+			print("RENDER_STATS draw_calls=%d objects=%d primitives=%d video_mem_mb=%.1f fps=%.1f adapter=%s resolution=%s" % [
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0,
+				Engine.get_frames_per_second(), rs.get_video_adapter_name(), str(get_viewport().get_visible_rect().size)])
 	if args.has("shots"):
 		_shot_t += delta
 		if _shot_t >= float(args.get("shot-every", "5")):
