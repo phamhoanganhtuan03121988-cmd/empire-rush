@@ -52,6 +52,9 @@ var _placeholder_tag: Label
 const TOAST_MAX := 2
 const TOAST_BAND := 104.0   # px reserved under the top panel for toasts (portrait)
 const ACTION_BAND := 0.235  # fraction of height reserved for the action panel (portrait)
+## Landscape: the board gets the full height on the left; player bar, toasts
+## and the action panel share the right column (Phase 2, A4).
+const LANDSCAPE_SPLIT := 0.54
 const LONG_PRESS_MS := 900
 
 var _presented_turn := 0
@@ -326,13 +329,14 @@ func _layout() -> void:
 	# Widths go through custom_minimum_size: containers with autowrapping
 	# labels otherwise collapse to their narrowest width.
 	if _landscape:
-		var top_w := s.size.x * 0.56
-		_top.position = s.position + Vector2(m, m)
-		_width(_top, top_w - m * 2)
-		_action_panel.position = Vector2(s.position.x + s.size.x * 0.58, s.position.y + m)
-		_width(_action_panel, s.size.x * 0.42 - m)
-		_toasts.position = Vector2(s.position.x + s.size.x * 0.58, s.position.y + s.size.y * 0.62)
-		_width(_toasts, s.size.x * 0.42 - m)
+		var cx := s.position.x + s.size.x * LANDSCAPE_SPLIT
+		var cw := s.size.x * (1.0 - LANDSCAPE_SPLIT) - m
+		_top.position = Vector2(cx, s.position.y + m)
+		_width(_top, cw)
+		_action_panel.position = Vector2(cx, s.position.y + m)
+		_width(_action_panel, cw)
+		_toasts.position = Vector2(cx, s.position.y + m)
+		_width(_toasts, cw)
 	else:
 		_top.position = s.position + Vector2(m, m)
 		_width(_top, s.size.x - m * 2)
@@ -340,7 +344,7 @@ func _layout() -> void:
 		_width(_toasts, s.size.x - m * 2)
 	_width(_info, minf(s.size.x - m * 4, 620))
 	if _landscape:
-		_width(_results, s.size.x * 0.42 - m)
+		_width(_results, s.size.x * (1.0 - LANDSCAPE_SPLIT) - m)
 	else:
 		_width(_results, s.size.x - m * 2)
 	_place_bottom.call_deferred()
@@ -384,9 +388,15 @@ func _place_bottom() -> void:
 		_results.reset_size()
 		_results.position = Vector2(s.position.x + m, s.end.y - _results.size.y - m)
 	else:
+		# Right column: player bar on top, toasts under it, action panel and
+		# results anchored to the bottom.
+		_top.reset_size()
+		_toasts.position = Vector2(_top.position.x, _top.position.y + _top.size.y + 8)
+		_action_panel.size.y = 0
 		_action_panel.reset_size()
+		_action_panel.position = Vector2(_top.position.x, s.end.y - _action_panel.size.y - m)
 		_results.reset_size()
-		_results.position = _action_panel.position
+		_results.position = Vector2(_top.position.x, s.end.y - _results.size.y - m)
 	_info.reset_size()
 	_info.position = s.get_center() - _info.size * 0.5
 
@@ -397,7 +407,7 @@ func board_insets() -> Dictionary:
 	var vp := get_viewport_rect().size
 	if _landscape:
 		var s0 := safe_rect()
-		return {"top": (_top.position.y + _top.size.y) / vp.y, "bottom": (vp.y - s0.end.y) / vp.y, "right": 1.0 - (_action_panel.position.x / vp.x) + 0.01, "left": 0.0}
+		return {"top": s0.position.y / vp.y, "bottom": (vp.y - s0.end.y) / vp.y, "right": 1.0 - (_top.position.x / vp.x) + 0.01, "left": s0.position.x / vp.x}
 	# Reserve a fixed band for the action panel so the board does not jump
 	# every time the panel height changes.
 	var s := safe_rect()
@@ -612,7 +622,7 @@ func _add_button(text: String, type: String, payload := {}, style := "", enabled
 ## (portrait: ACTION_BAND of the height; landscape: the right column).
 func _fit_button_scroll(s: Rect2) -> void:
 	var vp := get_viewport_rect().size
-	var max_panel := (vp.y * ACTION_BAND - 14.0) if not _landscape else (s.size.y - 28.0)
+	var max_panel := (vp.y * ACTION_BAND - 14.0) if not _landscape else (s.end.y - (_top.position.y + _top.size.y) - TOAST_BAND - 28.0)
 	_action_body.visible = _action_body.text != ""
 	# Everything in the panel except the scroll area, measured, not guessed.
 	var fixed := _action_panel.get_combined_minimum_size().y - _buttons_scroll.get_combined_minimum_size().y + 4.0

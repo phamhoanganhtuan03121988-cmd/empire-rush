@@ -120,6 +120,15 @@ func test_landscape_layout_keeps_panels_on_screen() -> void:
 	assert_true(vp.grow(1).encloses(top), "top panel on screen")
 	assert_true(vp.grow(1).encloses(act), "action panel on screen")
 	assert_false(top.intersects(act), "panels do not overlap in landscape")
+	# Phase 2: the board has the left side to itself; no tile under a panel.
+	var cam: Camera3D = main.camera
+	var vp_scale: float = vp.size.x / float(tree.root.get_visible_rect().size.x)
+	for i in 28:
+		var c: Vector3 = BoardLayout.position_of(i)
+		for d in [Vector3(-0.45, 0.12, -0.45), Vector3(0.45, 0.12, -0.45), Vector3(0.45, 0.12, 0.45), Vector3(-0.45, 0.12, 0.45)]:
+			var p: Vector2 = cam.unproject_position(c + d) * vp_scale
+			assert_true(vp.has_point(p), "tile %d corner %s on screen" % [i, str(p)])
+			assert_false(top.has_point(p) or act.has_point(p), "tile %d corner %s is not under a panel" % [i, str(p)])
 	tree.root.content_scale_size = Vector2i(720, 1280)
 	tree.root.size = Vector2i(405, 720)
 
