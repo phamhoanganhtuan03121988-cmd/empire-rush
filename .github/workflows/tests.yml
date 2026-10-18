@@ -1,0 +1,47 @@
+# Runs the full headless test suite (scripts/run_tests.sh) on every push and
+# pull request. Godot 4.7.2-stable (Linux x86_64 editor binary) is downloaded
+# from the official release and checked against its published SHA-512 by
+# scripts/ci/install_godot.sh. No export templates, no rendering device and no
+# iOS/macOS steps: iOS builds need macOS + Xcode (docs/device/IOS_BUILD_GUIDE.md).
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  godot-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot 4.7.2-stable
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/godot/4.7.2-stable
+          key: godot-4.7.2-stable-linux-x86_64-${{ hashFiles('scripts/ci/install_godot.sh') }}
+
+      - name: Install Godot (pinned, SHA-512 verified)
+        run: echo "GODOT=$(scripts/ci/install_godot.sh | tail -n 1)" >> "$GITHUB_ENV"
+
+      - name: Run scripts/run_tests.sh
+        env:
+          TEST_TIMEOUT_SECS: "600"
+        run: scripts/run_tests.sh
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: logs/
+          if-no-files-found: warn
