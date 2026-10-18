@@ -24,7 +24,8 @@ const CSV_COLUMNS := ["players", "seed", "characters", "end_reason", "rounds", "
 	"game_duration_s", "game_duration_min", "cpu_ms", "winner_seats", "winner_characters",
 	"bankruptcies", "bankrupt_seats", "first_bankruptcy_round", "auctions_opened", "auctions_sold",
 	"purchases", "upgrades", "trades_proposed", "trades_accepted", "abilities", "timeouts",
-	"rescues", "liquidations", "max_rent", "stuck", "invariant_errors", "rejections", "state_hash"]
+	"rescues", "liquidations", "max_rent", "stuck", "invariant_errors", "rejections", "state_hash",
+	"final_cash_by_seat", "final_net_worth_by_seat", "rules"]
 
 
 func _initialize() -> void:
@@ -138,7 +139,29 @@ static func row_from_run(r: Dictionary, cpu_ms: float) -> Dictionary:
 		"liquidations": r["liquidations"], "max_rent": r["max_rent"],
 		"stuck": r["stuck"], "invariant_errors": r["invariant_errors"].size(),
 		"rejections": r["rejections"].size(), "state_hash": r["state_hash"],
+		"final_cash_by_seat": "|".join(_by_seat(r["results"], "cash")),
+		"final_net_worth_by_seat": "|".join(_by_seat(r["results"], "net_worth")),
+		# Every row carries the rules fingerprint so batches of different
+		# balance versions can never be mixed silently.
+		"rules": _rules_short(),
 	}
+
+
+static var _rules_cache := ""
+
+
+static func _rules_short() -> String:
+	if _rules_cache == "":
+		_rules_cache = str(rules_fingerprint()["combined_sha256"]).substr(0, 16)
+	return _rules_cache
+
+
+static func _by_seat(results: Array, key: String) -> Array:
+	var out: Array = []
+	out.resize(results.size())
+	for res in results:
+		out[int(res["seat"])] = str(res[key])
+	return out
 
 
 func _reproducibility(cfg: GameConfig, counts: Array[int], seed0: int, k: int, idle: int, rows: Array) -> Dictionary:

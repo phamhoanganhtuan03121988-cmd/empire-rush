@@ -254,3 +254,18 @@ func test_disconnect_policy_bot_takeover_and_reclaim() -> void:
 		else:
 			assert_eq(host.stats["bot_commands"], 0, "timers policy: no server moves")
 		net.teardown()
+
+
+## Phase 2 (B3): a replay record survives a JSON round trip and rebuilds the
+## exact final state; a partial replay stops where asked.
+func test_match_replay_record_reproduces_the_match() -> void:
+	var h := _setup(3, 808)
+	_run(h, 400000, func(_s: int) -> void: pass)
+	var host: MatchHost = h["host"]
+	var rec: Dictionary = JSON.parse_string(JSON.stringify(MatchReplay.record(host.engine)))
+	var r := MatchReplay.replay(h["cfg"], rec)
+	assert_true(r["ok"], "replay ok: %s" % r["error"])
+	assert_eq(r["engine"].state.state_hash(), host.engine.state.state_hash(), "replay = original final state")
+	var part := MatchReplay.replay(h["cfg"], rec, 10)
+	assert_eq(part["applied"], 10, "partial replay stops after 10 inputs")
+	h["net"].teardown()

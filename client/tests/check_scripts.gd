@@ -1,11 +1,11 @@
-## Compiles every script under res://scripts and res://tests and reports
+## Compiles every script under res://scripts, res://tests and res://tools and reports
 ## parse errors (GDScript only reports them when a script is loaded).
 extends SceneTree
 
 
 func _initialize() -> void:
 	var files: Array[String] = []
-	for root in ["res://scripts", "res://tests"]:
+	for root in ["res://scripts", "res://tests", "res://tools"]:
 		_collect(root, files)
 	var bad := 0
 	for f in files:

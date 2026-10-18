@@ -1,0 +1,290 @@
+{
+  "rules_versions": [
+    [
+      "d5e3a9a877afe932",
+      15000
+    ]
+  ],
+  "by_players": {
+    "2": {
+      "n": 5000,
+      "missing_seeds": [],
+      "missing_count": 0,
+      "duration_min": {
+        "min": 4.98,
+        "p10": 10.66,
+        "p25": 12.85,
+        "median": 14.54,
+        "median_ci95": [
+          14.47,
+          14.61
+        ],
+        "p75": 15.88,
+        "p90": 17.11,
+        "p95": 17.79,
+        "max": 21.79,
+        "mean": 14.21,
+        "over_35": 0
+      },
+      "end_reasons_pct": {
+        "round_cap": 55.9,
+        "last_solvent": 44.1
+      },
+      "bankruptcy_match_pct": 44.1,
+      "bankruptcies_per_match": 0.441,
+      "turns_per_match": 73.03,
+      "turns_per_player": {
+        "mean": 36.52,
+        "min": 14,
+        "max": 40
+      },
+      "rounds_mean": 36.62,
+      "auctions_opened": 1.906,
+      "auctions_sold": 1.906,
+      "upgrades": 24.07,
+      "purchases": 19.12,
+      "trades_proposed_accepted": [
+        5.14,
+        2.12
+      ],
+      "timeouts": 11.06,
+      "seat_win_pct": [
+        {
+          "seat": 0,
+          "pct": 52.88,
+          "ci95": [
+            51.49,
+            54.26
+          ]
+        },
+        {
+          "seat": 1,
+          "pct": 47.12,
+          "ci95": [
+            45.74,
+            48.51
+          ]
+        }
+      ],
+      "seat_chi2": 16.59,
+      "seat_chi2_df": 1,
+      "seat_chi2_p": 4.6424371841052755e-05,
+      "abnormal": [],
+      "final_cash_mean_by_seat": [
+        1392.3,
+        1248.4
+      ],
+      "final_net_worth_mean_by_seat": [
+        2265.4,
+        2046.0
+      ],
+      "final_net_worth": {
+        "p10": 0,
+        "median": 2381,
+        "p90": 4179
+      },
+      "winner_margin_rc": {
+        "p25": 1675,
+        "median": 3112,
+        "p75": 3839
+      }
+    },
+    "3": {
+      "n": 5000,
+      "missing_seeds": [],
+      "missing_count": 0,
+      "duration_min": {
+        "min": 9.37,
+        "p10": 14.37,
+        "p25": 15.46,
+        "median": 16.64,
+        "median_ci95": [
+          16.58,
+          16.71
+        ],
+        "p75": 17.85,
+        "p90": 19.04,
+        "p95": 19.7,
+        "max": 24.11,
+        "mean": 16.67,
+        "over_35": 0
+      },
+      "end_reasons_pct": {
+        "round_cap": 92.9,
+        "last_solvent": 7.1
+      },
+      "bankruptcy_match_pct": 40.6,
+      "bankruptcies_per_match": 0.477,
+      "turns_per_match": 87.6,
+      "turns_per_player": {
+        "mean": 29.2,
+        "min": 15,
+        "max": 30
+      },
+      "rounds_mean": 29.79,
+      "auctions_opened": 1.629,
+      "auctions_sold": 1.629,
+      "upgrades": 20.91,
+      "purchases": 20.02,
+      "trades_proposed_accepted": [
+        5.89,
+        2.5
+      ],
+      "timeouts": 12.36,
+      "seat_win_pct": [
+        {
+          "seat": 0,
+          "pct": 37.94,
+          "ci95": [
+            36.6,
+            39.29
+          ]
+        },
+        {
+          "seat": 1,
+          "pct": 32.5,
+          "ci95": [
+            31.22,
+            33.81
+          ]
+        },
+        {
+          "seat": 2,
+          "pct": 29.56,
+          "ci95": [
+            28.31,
+            30.84
+          ]
+        }
+      ],
+      "seat_chi2": 54.23,
+      "seat_chi2_df": 2,
+      "seat_chi2_p": 1.674678348228792e-12,
+      "abnormal": [],
+      "final_cash_mean_by_seat": [
+        1691.6,
+        1524.2,
+        1404.8
+      ],
+      "final_net_worth_mean_by_seat": [
+        2341.5,
+        2131.8,
+        1959.0
+      ],
+      "final_net_worth": {
+        "p10": 0,
+        "median": 2075,
+        "p90": 4537
+      },
+      "winner_margin_rc": {
+        "p25": 687,
+        "median": 1815,
+        "p75": 3550
+      }
+    },
+    "4": {
+      "n": 5000,
+      "missing_seeds": [],
+      "missing_count": 0,
+      "duration_min": {
+        "min": 11.87,
+        "p10": 15.95,
+        "p25": 17.03,
+        "median": 18.21,
+        "median_ci95": [
+          18.14,
+          18.28
+        ],
+        "p75": 19.39,
+        "p90": 20.58,
+        "p95": 21.4,
+        "max": 25.38,
+        "mean": 18.26,
+        "over_35": 0
+      },
+      "end_reasons_pct": {
+        "round_cap": 99.1,
+        "last_solvent": 0.9
+      },
+      "bankruptcy_match_pct": 32.4,
+      "bankruptcies_per_match": 0.429,
+      "turns_per_match": 98.68,
+      "turns_per_player": {
+        "mean": 24.67,
+        "min": 11,
+        "max": 25
+      },
+      "rounds_mean": 24.98,
+      "auctions_opened": 1.407,
+      "auctions_sold": 1.407,
+      "upgrades": 16.85,
+      "purchases": 20.02,
+      "trades_proposed_accepted": [
+        5.19,
+        2.2
+      ],
+      "timeouts": 12.98,
+      "seat_win_pct": [
+        {
+          "seat": 0,
+          "pct": 30.9,
+          "ci95": [
+            29.63,
+            32.2
+          ]
+        },
+        {
+          "seat": 1,
+          "pct": 26.12,
+          "ci95": [
+            24.92,
+            27.36
+          ]
+        },
+        {
+          "seat": 2,
+          "pct": 22.96,
+          "ci95": [
+            21.82,
+            24.15
+          ]
+        },
+        {
+          "seat": 3,
+          "pct": 20.02,
+          "ci95": [
+            18.93,
+            21.15
+          ]
+        }
+      ],
+      "seat_chi2": 130.05,
+      "seat_chi2_df": 3,
+      "seat_chi2_p": 5.268596011882913e-28,
+      "abnormal": [],
+      "final_cash_mean_by_seat": [
+        1860.9,
+        1722.4,
+        1605.8,
+        1519.9
+      ],
+      "final_net_worth_mean_by_seat": [
+        2374.5,
+        2194.8,
+        2044.2,
+        1924.7
+      ],
+      "final_net_worth": {
+        "p10": 0,
+        "median": 2017,
+        "p90": 4360
+      },
+      "winner_margin_rc": {
+        "p25": 460,
+        "median": 1449,
+        "p75": 2943
+      }
+    }
+  },
+  "duplicate_rows": []
+}

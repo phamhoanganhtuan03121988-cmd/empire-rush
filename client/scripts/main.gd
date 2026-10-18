@@ -235,6 +235,8 @@ func _on_match_ended(d: Dictionary) -> void:
 	summary["engine_duration_s"] = d["duration_ms"] / 1000.0
 	# Public release builds write no telemetry files (BuildFlavor).
 	if BuildFlavor.device_tools_enabled():
+		# Exact replay record for bug reports (tools/replay_match.gd).
+		summary["replay"] = MatchReplay.record(match_ref.engine)
 		var path: String = args.get("telemetry", "user://telemetry/session_%d.json" % Time.get_unix_time_from_system())
 		telemetry.save(path, summary)
 		print("TELEMETRY ", path, " turns=", summary["turns"], " game_s=", summary["session_game_seconds"])

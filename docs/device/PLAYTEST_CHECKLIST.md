@@ -1,4 +1,4 @@
-# EMPIRE RUSH — Playtest checklist (M2.2)
+# EMPIRE RUSH — Playtest checklist (M2.2, kit completed in Phase 2)
 
 **Current build limits (tell testers before they start):**
 - Offline only: **1 person plays against 1–3 bots**. Online play or several people on one phone is not available yet (M3).
@@ -34,6 +34,11 @@ Game rules and balance are **not changed** based on these results. Record them a
 - [ ] Do not change rules or balance because of a single session.
 
 ## 3. Questions after the match (scale 1–5 plus one sentence)
+Write the answers in `feedback_form_template.csv`, one row per session.
+- Columns `q1`–`q4` and `q6`–`q8` hold a number from 1 to 5.
+- `q5`, `q9` and `q10` are short text.
+- `finished` is yes/no. If no, also fill `stopped_round` and `stopped_reason`.
+
 1. How clear was it what you needed to do on each turn?
 2. Was waiting for the other players' (bots') turns too long?
 3. Was the text, the land and the money easy to read on the phone?
@@ -62,3 +67,40 @@ Game rules and balance are **not changed** based on these results. Record them a
 The log template `playtest_log_template.csv` has a `phase` column: roll, buy, auction, upgrade, event, trade, rescue or results.
 
 Bot baseline: `scripts/run_playtest_batch.sh --out=/abs/dir` (2/3/4 players, reproducible seeds, CSV + JSON + summary). The bots are a pacing and flow baseline only. **Never fill this sheet with bot or invented data.**
+
+## 5. Bug reproduction (Phase 2)
+**Internal builds** (debug or `device_tools`) save a `replay` record inside each `telemetry/session_*.json` at match end:
+- seed;
+- seats;
+- every accepted command and timer step, with its match time.
+
+On a desktop:
+```
+godot --headless --path client --script res://tools/replay_match.gd -- --file=/abs/session_123.json            # whole match: must say MATCHES
+godot --headless --path client --script res://tools/replay_match.gd -- --file=/abs/session_123.json --until=N --events=1   # stop at input N, print events + state
+```
+
+A bug report needs:
+1. `session_id` + the clock time from the event log (`BUG` row) + a screenshot.
+2. The telemetry file, plus build commit and preset.
+3. Steps in words: what the tester did, what they expected, what happened.
+4. Whether it repeats when replayed. Run the steps above:
+   - If the replay **matches** and the state at the reported moment is correct, the bug is in **presentation/UI**. Check the screenshot against the printed state.
+   - If the state itself is wrong, it is a **rules** bug. Add a regression test in `client/tests/unit/test_regressions.gd`.
+
+Limits:
+- **The record is written only when the match ends.** A crash or force-quit mid-match leaves only the seed (device panel) and the event log. Force quit = no match recovery, by design; the replay record is a debug log, not a save.
+- **Public release builds write no telemetry at all** (BuildFlavor lock, checked in CI).
+
+## 6. Anonymous aggregation (Phase 2)
+```
+python3 scripts/analysis/aggregate_playtest.py --logs logs/*.csv --forms forms/*.csv --telemetry telemetry/*.json --md summary.md
+```
+
+What the tool does:
+- Replaces tester codes with T01, T02, …
+- Drops device and free-text quotes unless `--include-quotes` is given.
+- Excludes autopilot/bench telemetry from human metrics.
+- Warns on unknown event codes and on answers outside 1–5.
+
+`--self-test` checks the tool with generated data held in memory only. **Never commit invented sessions.** Real results go in `docs/test-logs/playtest/` only after a real session.
