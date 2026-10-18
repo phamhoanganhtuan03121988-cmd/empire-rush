@@ -7,7 +7,7 @@ class_name EventPresenter
 extends Node
 
 signal busy_changed(busy: bool)
-signal toast(text: String, color: Color)
+signal toast(text: String, color: Color, icon: String)
 signal cash_presented(seat: int, cash: int)
 signal turn_presented(seat: int, round: int)
 signal card_presented(card_id: String, seat: int)
@@ -22,9 +22,12 @@ var match_ref: LocalMatch
 var popup_parent: Node3D
 ## Multiplies every animation duration (tests use a small value).
 var speed := 1.0
+## Accessibility / slow devices: no particle effects, faster token moves.
+var reduced_motion := false
 
 var presented_cash: Dictionary = {}
 var presented_pos: Dictionary = {}
+var _auction_bidders: Dictionary = {}  # seats that bid in the open auction
 var _queue: Array = []
 var _running := false
 
@@ -73,7 +76,7 @@ func _present(ev: Dictionary) -> void:
 			dice.hide_dice()
 		"DiceRolled":
 			await dice.roll_to(d["d1"], d["d2"], Vector3(0, 0.06, 1.2), 0.9 * speed)
-			toast.emit(UiText.t("rolled") % [_name(d["seat"]), d["d1"], d["d2"], d["d1"] + d["d2"]], theme.player_color(d["seat"]))
+			toast.emit(UiText.t("rolled") % [_name(d["seat"]), d["d1"], d["d2"], d["d1"] + d["d2"]], theme.player_color(d["seat"]), "dice")
 		"TokenMoved":
 			await _move_token(d["seat"], d["from"], d["to"], d["via"])
 		"CashChanged":
@@ -85,27 +88,37 @@ func _present(ev: Dictionary) -> void:
 					_popup(seat, d["amount"] * side[2])
 		"PropertyBought":
 			board.show_owner(d["property_id"], d["seat"])
-			toast.emit(UiText.t("bought") % [_name(d["seat"]), _prop(d["property_id"]), d["price"]], theme.player_color(d["seat"]))
+			_fx_burst(d["property_id"], theme.player_color(d["seat"]))
+			toast.emit(UiText.t("bought") % [_name(d["seat"]), _prop(d["property_id"]), d["price"]], theme.player_color(d["seat"]), "coin")
 			await _wait(0.35)
 		"PropertyPassed":
-			toast.emit(UiText.t("passed") % [_name(d["seat"]), _prop(d["property_id"])], Color.WHITE)
+			toast.emit(UiText.t("passed") % [_name(d["seat"]), _prop(d["property_id"])], Color.WHITE, "skip")
 		"AuctionOpened":
-			toast.emit(UiText.t("auction_open") % [_prop(d["property_id"]), d["min_bid"]], Color("#f2b134"))
+			_auction_bidders.clear()
+			toast.emit(UiText.t("auction_open") % [_prop(d["property_id"]), d["min_bid"]], Color("#f2b134"), "gavel")
 		"BidPlaced":
-			toast.emit(UiText.t("bid") % [_name(d["seat"]), d["amount"]], theme.player_color(d["seat"]))
+			_auction_bidders[d["seat"]] = true
+			toast.emit(UiText.t("bid") % [_name(d["seat"]), d["amount"]], theme.player_color(d["seat"]), "gavel")
 		"AuctionClosed":
+			# Clear feedback for the human: won (gold burst) or outbid.
+			for h in _auction_bidders:
+				if match_ref.is_human(h) and d["winner"] != h:
+					toast.emit(UiText.t("auction_lost_you") % _prop(d["property_id"]), Color("#ff8a80"), "close")
 			if d["winner"] >= 0:
 				board.show_owner(d["property_id"], d["winner"])
-				toast.emit(UiText.t("auction_won") % [_name(d["winner"]), _prop(d["property_id"]), d["price"]], theme.player_color(d["winner"]))
+				_fx_burst(d["property_id"], Color("#ffd36b") if match_ref.is_human(d["winner"]) else theme.player_color(d["winner"]))
+				toast.emit(UiText.t("auction_won") % [_name(d["winner"]), _prop(d["property_id"]), d["price"]], theme.player_color(d["winner"]), "gavel")
 			else:
-				toast.emit(UiText.t("auction_none") % _prop(d["property_id"]), Color.WHITE)
+				toast.emit(UiText.t("auction_none") % _prop(d["property_id"]), Color.WHITE, "gavel")
 			await _wait(0.3)
 		"RentCharged":
 			await _coin_flight(d["payer"], d["owner"])
-			toast.emit(UiText.t("rent") % [_name(d["payer"]), d["amount"], _name(d["owner"])], Color("#ffb3b3"))
+			toast.emit(UiText.t("rent") % [_name(d["payer"]), d["amount"], _name(d["owner"])], Color("#ffb3b3"), "coin")
 		"UpgradeBuilt":
 			board.show_level(d["property_id"], d["level"], d["seat"])
-			toast.emit(UiText.t("upgraded") % [_name(d["seat"]), _prop(d["property_id"]), d["level"], d["cost"]], theme.player_color(d["seat"]))
+			_fx_dust(d["property_id"])
+			_fx_burst(d["property_id"], theme.player_color(d["seat"]))
+			toast.emit(UiText.t("upgraded") % [_name(d["seat"]), _prop(d["property_id"]), d["level"], d["cost"]], theme.player_color(d["seat"]), "build")
 			await _wait(0.55)
 		"PropertyTransferred":
 			board.show_owner(d["property_id"], d["to"])
@@ -114,31 +127,45 @@ func _present(ev: Dictionary) -> void:
 		"PropertyLiquidated":
 			board.show_owner(d["property_id"], -1)
 			board.show_level(d["property_id"], 0, -1, false)
-			toast.emit(UiText.t("liquidated") % [_name(d["seat"]), _prop(d["property_id"]), d["value"]], Color("#ffb3b3"))
+			toast.emit(UiText.t("liquidated") % [_name(d["seat"]), _prop(d["property_id"]), d["value"]], Color("#ffb3b3"), "coin")
 		"EventCardDrawn":
 			card_presented.emit(d["card_id"], d["seat"])
-			toast.emit(UiText.t("card") % [_name(d["seat"]), theme.loc(d["card_id"], "title", config.cards[d["card_id"]]["title"])], Color("#e05d5d"))
+			toast.emit(UiText.t("card") % [_name(d["seat"]), theme.loc(d["card_id"], "title", config.cards[d["card_id"]]["title"])], Color("#e05d5d"), "event")
 			await _wait(0.6)
 		"WealthTaxCharged":
-			toast.emit(UiText.t("tax") % [_name(d["seat"]), d["amount"]], Color("#d4a017"))
+			toast.emit(UiText.t("tax") % [_name(d["seat"]), d["amount"]], Color("#d4a017"), "tax")
 		"RescueStarted":
-			toast.emit(UiText.t("rescue") % [_name(d["debtor"]), d["amount"]], Color("#ff6b6b"))
+			toast.emit(UiText.t("rescue") % [_name(d["debtor"]), d["amount"]], Color("#ff6b6b"), "warning")
 		"PlayerBankrupt":
-			toast.emit(UiText.t("bankrupt") % _name(d["seat"]), Color("#ff6b6b"))
+			toast.emit(UiText.t("bankrupt") % _name(d["seat"]), Color("#ff6b6b"), "bankrupt")
+			if not reduced_motion and popup_parent:
+				Vfx.dust(popup_parent, tokens[d["seat"]].position + Vector3(0, 0.1, 0), Color(0.35, 0.35, 0.38), 30)
 			await tokens[d["seat"]].fade_out()
 		"TradeProposed":
-			toast.emit(UiText.t("trade_proposed") % [_name(d["from"]), _name(d["to"])], Color("#9ad0ff"))
+			toast.emit(UiText.t("trade_proposed") % [_name(d["from"]), _name(d["to"])], Color("#9ad0ff"), "handshake")
 		"TradeResolved":
-			toast.emit(UiText.t("trade_" + d["status"]), Color("#9ad0ff"))
+			toast.emit(UiText.t("trade_" + d["status"]), Color("#9ad0ff"), "handshake")
 		"AbilityUsed":
-			toast.emit(UiText.t("ability") % _name(d["seat"]), theme.player_color(d["seat"]))
+			toast.emit(UiText.t("ability") % _name(d["seat"]), theme.player_color(d["seat"]), "bolt")
 		"DeadlineExpired":
 			if match_ref.is_human(d["seat"]) and d["phase"] != GameState.AUCTION:
-				toast.emit(UiText.t("timeout"), Color("#ffcc66"))
+				toast.emit(UiText.t("timeout"), Color("#ffcc66"), "clock")
 		"MatchEnded":
 			board.set_highlight(-1)
 			await _wait(0.6)
 			match_ended_presented.emit(d)
+
+
+func _fx_burst(pid: String, color: Color) -> void:
+	if reduced_motion or popup_parent == null or speed < 0.2:
+		return
+	Vfx.burst(popup_parent, board.tile_position(config.property_index[pid]) + Vector3(0, 0.25, 0), color)
+
+
+func _fx_dust(pid: String) -> void:
+	if reduced_motion or popup_parent == null or speed < 0.2:
+		return
+	Vfx.dust(popup_parent, board.tile_position(config.property_index[pid]) + Vector3(0, 0.03, 0))
 
 
 func _prop(pid: String) -> String:
@@ -164,7 +191,8 @@ func _move_token(seat: int, from: int, to: int, via: String) -> void:
 	for k in range(1, steps + 1):
 		points.append(board.tile_position((from + k) % n) + _token_offset(seat))
 	board.set_highlight(-1)
-	await tokens[seat].hop_along(points, TokenView.HOP_TIME * speed * (0.6 if via == "card" else 1.0))
+	var hop := TokenView.HOP_TIME * speed * (0.6 if via == "card" else 1.0) * (0.5 if reduced_motion else 1.0)
+	await tokens[seat].hop_along(points, hop)
 	presented_pos[seat] = to
 	board.set_highlight(to)
 

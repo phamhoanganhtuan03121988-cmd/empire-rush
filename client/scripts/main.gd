@@ -8,6 +8,7 @@
 ##   --perf (show the device-validation overlay) --bench=SECONDS (run the
 ##   low/medium/high benchmark at start, SECONDS per preset) --bench-quit
 ##   --devpanel (open the device panel at start)
+##   --reduced-motion (no particle effects, faster token moves)
 extends Node3D
 
 const CHARACTERS := ["TYCOON", "INVESTOR", "NEGOTIATOR", "TYCOON"]
@@ -69,6 +70,7 @@ func _ready() -> void:
 	presenter.config = config
 	presenter.match_ref = match_ref
 	presenter.popup_parent = self
+	presenter.reduced_motion = args.has("reduced-motion")
 	add_child(presenter)
 	match_ref.can_act = presenter.is_idle
 	match_ref.events_emitted.connect(presenter.enqueue)
@@ -153,13 +155,13 @@ func _build_world() -> void:
 	sky.sky_material = sm
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.9
+	env.ambient_light_energy = 0.8
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_exposure = 1.05
 	env.glow_enabled = true
-	env.glow_intensity = 0.6
-	env.glow_bloom = 0.05
-	env.glow_hdr_threshold = 1.1
+	env.glow_intensity = 0.45
+	env.glow_bloom = 0.04
+	env.glow_hdr_threshold = 1.0
 	env.adjustment_enabled = true
 	env.adjustment_saturation = 1.12
 	env.adjustment_contrast = 1.05
@@ -168,7 +170,7 @@ func _build_world() -> void:
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.light_color = Color("#ffe2b8")
-	sun.light_energy = 1.35
+	sun.light_energy = 1.45
 	sun.rotation_degrees = Vector3(-48, -35, 0)
 	sun.shadow_enabled = true
 	sun.shadow_blur = 1.5

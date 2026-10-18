@@ -28,6 +28,7 @@ var _cards: Array = []
 var _round_label: Label
 var _turn_label: Label
 var _timer_bar: ProgressBar
+var _timer_fill: StyleBoxFlat
 var _quality_btn: Button
 ## Set by main only when the device tools exist (BuildFlavor). Otherwise a
 ## long press is just a press and cycles the preset.
@@ -36,6 +37,7 @@ var _quality_down_ms := 0
 var _quality_down := false
 var _action_panel: PanelContainer
 var _action_title: Label
+var _action_icon: TextureRect
 var _action_body: Label
 var _buttons: GridContainer
 var _buttons_scroll: ScrollContainer
@@ -44,6 +46,7 @@ var _info: PanelContainer
 var _info_label: Label
 var _results: PanelContainer
 var _results_label: Label
+var _results_rows: GridContainer
 var _placeholder_tag: Label
 
 const TOAST_MAX := 2
@@ -94,15 +97,18 @@ func _label(size: int, color := UiTheme.TEXT, align := HORIZONTAL_ALIGNMENT_LEFT
 
 func _build_top() -> void:
 	_top = PanelContainer.new()
-	_top.add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.NAVY, Color(1, 1, 1, 0.1), 24, 0.82))
+	_top.add_theme_stylebox_override("panel", UiTheme.glass_panel())
 	add_child(_top)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 6)
+	v.add_theme_constant_override("separation", 8)
 	_top.add_child(v)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
-	_round_label = _label(24, UiTheme.GOLD)
+	row.add_child(_icon_rect("clock", 30, UiTheme.GOLD))
+	_round_label = _label(UiTheme.FS_LABEL, UiTheme.GOLD)
+	_round_label.add_theme_font_override("font", UiTheme.font("ExtraBold"))
 	_round_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_round_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	row.add_child(_round_label)
@@ -115,14 +121,16 @@ func _build_top() -> void:
 	# 82 px ≈ 44 pt (Apple's minimum) for this secondary control.
 	_quality_btn.custom_minimum_size = Vector2(UiTheme.MIN_TOUCH * 1.4, 82)
 	_quality_btn.add_theme_font_size_override("font_size", 20)
-	UiTheme.secondary(_quality_btn)
+	_quality_btn.icon = UiTheme.icon("gear")
+	_quality_btn.add_theme_constant_override("icon_max_width", 26)
+	UiTheme.neutral(_quality_btn)
 	_quality_btn.button_down.connect(func():
 		_quality_down = true
 		_quality_down_ms = Time.get_ticks_msec())
 	_quality_btn.pressed.connect(_on_quality_pressed)
 	row.add_child(_quality_btn)
 	_cards_box = HBoxContainer.new()
-	_cards_box.add_theme_constant_override("separation", 8)
+	_cards_box.add_theme_constant_override("separation", 6)
 	v.add_child(_cards_box)
 	for seat in match_ref.engine.state.players.size():
 		_cards.append(_build_card(seat))
@@ -140,6 +148,7 @@ func _build_top() -> void:
 	var fg := StyleBoxFlat.new()
 	fg.bg_color = UiTheme.GOLD
 	fg.set_corner_radius_all(5)
+	_timer_fill = fg
 	_timer_bar.add_theme_stylebox_override("background", bg)
 	_timer_bar.add_theme_stylebox_override("fill", fg)
 	v.add_child(_timer_bar)
@@ -147,6 +156,7 @@ func _build_top() -> void:
 
 func _build_card(seat: int) -> Dictionary:
 	var p := match_ref.engine.state.player(seat)
+	var pc := theme_data.player_color(seat)
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
@@ -154,20 +164,51 @@ func _build_card(seat: int) -> Dictionary:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 0)
 	panel.add_child(v)
-	var name := _label(22, theme_data.player_color(seat).lightened(0.25))
+	# Avatar badge (character emblem on the seat colour) + name.
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 6)
+	v.add_child(head)
+	var avatar := PanelContainer.new()
+	avatar.add_theme_stylebox_override("panel", UiTheme.badge(pc.darkened(0.15), pc.lightened(0.45)))
+	avatar.custom_minimum_size = Vector2(34, 34)
+	var emblem := _icon_rect(theme_data.character_icon(p["character_id"]), 24, Color.WHITE)
+	avatar.add_child(emblem)
+	head.add_child(avatar)
+	var name := _label(22, pc.lightened(0.35))
+	name.add_theme_font_override("font", UiTheme.font("Bold"))
 	name.autowrap_mode = TextServer.AUTOWRAP_OFF
 	name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name.text = theme_data.player_name(seat)
-	v.add_child(name)
-	var ch := _label(20, Color(1, 1, 1, 0.72))
+	head.add_child(name)
+	var ch := _label(20, UiTheme.TEXT_MUTED)
 	ch.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ch.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	ch.text = theme_data.loc(p["character_id"], "short", theme_data.character_name(p["character_id"], config))
 	v.add_child(ch)
-	var cash := _label(30, UiTheme.TEXT)
+	var money := HBoxContainer.new()
+	money.add_theme_constant_override("separation", 4)
+	v.add_child(money)
+	money.add_child(_icon_rect("coin", 22, UiTheme.GOLD))
+	var cash := _label(26, UiTheme.TEXT)
+	cash.add_theme_font_override("font", UiTheme.font("ExtraBold"))
 	cash.autowrap_mode = TextServer.AUTOWRAP_OFF
-	v.add_child(cash)
-	return {"panel": panel, "name": name, "cash": cash, "seat": seat}
+	cash.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	cash.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	money.add_child(cash)
+	return {"panel": panel, "name": name, "cash": cash, "seat": seat, "avatar": avatar}
+
+
+func _icon_rect(name: String, size: int, tint: Color) -> TextureRect:
+	var t := TextureRect.new()
+	t.texture = UiTheme.icon(name)
+	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	t.custom_minimum_size = Vector2(size, size)
+	t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	t.modulate = tint
+	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return t
 
 
 func _build_action_panel() -> void:
@@ -176,9 +217,16 @@ func _build_action_panel() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 10)
 	_action_panel.add_child(v)
-	_action_title = _label(29, UiTheme.GOLD)
-	v.add_child(_action_title)
-	_action_body = _label(24)
+	var title_row := HBoxContainer.new()
+	title_row.add_theme_constant_override("separation", 10)
+	v.add_child(title_row)
+	_action_icon = _icon_rect("user", 34, UiTheme.GOLD)
+	title_row.add_child(_action_icon)
+	_action_title = _label(UiTheme.FS_TITLE, UiTheme.GOLD)
+	_action_title.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+	_action_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_row.add_child(_action_title)
+	_action_body = _label(UiTheme.FS_BODY, UiTheme.TEXT_MUTED.lightened(0.2))
 	v.add_child(_action_body)
 	# Grid: binary choices and long lists use two columns so the panel stays
 	# within the band the camera reserves for it.
@@ -206,15 +254,18 @@ func _build_toasts() -> void:
 func _build_info() -> void:
 	_info = PanelContainer.new()
 	_info.visible = false
+	_info.add_theme_stylebox_override("panel", UiTheme.glass_panel(true))
 	add_child(_info)
 	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 12)
 	_info.add_child(v)
 	_info_label = _label(24)
 	v.add_child(_info_label)
 	var close := Button.new()
 	close.text = UiText.t("back")
+	close.icon = UiTheme.icon("close")
 	close.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
-	UiTheme.secondary(close)
+	UiTheme.neutral(close)
 	close.pressed.connect(func(): _info.visible = false)
 	v.add_child(close)
 
@@ -222,15 +273,29 @@ func _build_info() -> void:
 func _build_results() -> void:
 	_results = PanelContainer.new()
 	_results.visible = false
-	_results.add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.NAVY, UiTheme.GOLD, 28, 0.96))
+	_results.add_theme_stylebox_override("panel", UiTheme.glass_panel(true))
 	add_child(_results)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 14)
+	v.add_theme_constant_override("separation", 12)
 	_results.add_child(v)
-	_results_label = _label(25)
-	v.add_child(_results_label)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 10)
+	v.add_child(head)
+	head.add_child(_icon_rect("trophy", 36, UiTheme.GOLD))
+	_results_label = _label(UiTheme.FS_LABEL, UiTheme.GOLD)
+	_results_label.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+	_results_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(_results_label)
+	# Ranking in a 2-column grid in portrait so the sheet stays inside the
+	# band reserved under the board.
+	_results_rows = GridContainer.new()
+	_results_rows.columns = 2
+	_results_rows.add_theme_constant_override("h_separation", 14)
+	_results_rows.add_theme_constant_override("v_separation", 6)
+	v.add_child(_results_rows)
 	var again := Button.new()
 	again.text = UiText.t("play_again")
+	again.icon = UiTheme.icon("dice")
 	again.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
 	again.pressed.connect(func(): restart_requested.emit())
 	v.add_child(again)
@@ -286,9 +351,21 @@ func _width(c: Control, w: float) -> void:
 	c.size = Vector2(w, 0)
 	# Autowrapping labels compute their minimum height from their current
 	# width; give them the final width up front or panels grow to full height.
+	var pad := 44.0  # panel content margins (20 + 20) + slack
 	for l in c.find_children("*", "Label", true, false):
 		if l.autowrap_mode != TextServer.AUTOWRAP_OFF:
-			l.custom_minimum_size.x = w - 40.0
+			var avail := w - pad
+			# Labels sharing a row with icons/badges get what the row leaves.
+			var row := l.get_parent() as HBoxContainer
+			if row:
+				var others := 0.0
+				var n := 0
+				for sib in row.get_children():
+					if sib != l and sib is Control and sib.visible:
+						others += sib.get_combined_minimum_size().x
+						n += 1
+				avail -= others + n * row.get_theme_constant("separation")
+			l.custom_minimum_size.x = maxf(avail, 40.0)
 	c.reset_size()
 
 
@@ -346,8 +423,18 @@ func _refresh_cards() -> void:
 		var seat: int = c["seat"]
 		var active: bool = seat == _presented_turn
 		var bankrupt: bool = s.player(seat)["bankrupt"]
-		var border: Color = theme_data.player_color(seat) if active else Color(1, 1, 1, 0.08)
-		c["panel"].add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.NAVY_SOFT if active else UiTheme.NAVY, border, 16, 0.95))
+		var pc: Color = theme_data.player_color(seat)
+		var style := UiTheme.panel(UiTheme.NAVY_SOFT if active else Color("#0f1626"), pc if active else Color(1, 1, 1, 0.08), 16, 0.95)
+		style.content_margin_left = 10
+		style.content_margin_right = 8
+		style.content_margin_top = 8
+		style.content_margin_bottom = 8
+		if active:
+			# Active player: coloured border plus a soft glow in their colour.
+			style.set_border_width_all(3)
+			style.shadow_color = Color(pc, 0.45)
+			style.shadow_size = 10
+		c["panel"].add_theme_stylebox_override("panel", style)
 		c["panel"].modulate = Color(1, 1, 1, 0.45) if bankrupt else Color.WHITE
 	var cap := config.max_rounds_for(s.players.size())
 	_round_label.text = UiText.t("round") % [_presented_round, cap]
@@ -355,22 +442,37 @@ func _refresh_cards() -> void:
 	_turn_label.text = UiText.t("your_turn") if match_ref.is_human(_presented_turn) else UiText.t("turn_of") % who
 
 
-func show_toast(text: String, color := Color.WHITE) -> void:
+func show_toast(text: String, color := Color.WHITE, icon := "info") -> void:
 	var p := PanelContainer.new()
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	p.add_theme_stylebox_override("panel", UiTheme.panel(Color(0.05, 0.07, 0.12), color.darkened(0.2), 14, 0.78))
-	var l := _label(22, color.lightened(0.35))
+	var st := UiTheme.panel(Color("#0c1220"), Color(1, 1, 1, 0.08), 14, 0.86)
+	st.border_width_left = 6
+	st.border_color = color
+	st.content_margin_top = 8
+	st.content_margin_bottom = 8
+	st.content_margin_left = 14
+	p.add_theme_stylebox_override("panel", st)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.add_child(row)
+	row.add_child(_icon_rect(icon if icon != "" else "info", 26, color.lightened(0.25)))
+	var l := _label(22, Color(1, 1, 1, 0.95))
 	l.autowrap_mode = TextServer.AUTOWRAP_OFF
 	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	l.text = text
-	p.add_child(l)
+	row.add_child(l)
 	_toasts.add_child(p)
 	while _toasts.get_child_count() > TOAST_MAX:
 		var old := _toasts.get_child(0)
 		_toasts.remove_child(old)
 		old.queue_free()
+	# Slide in from the left, hold, fade.
+	p.modulate.a = 0.0
 	var t := p.create_tween()
-	t.tween_interval(3.2)
+	t.tween_property(p, "modulate:a", 1.0, 0.15)
+	t.tween_interval(3.0)
 	t.tween_property(p, "modulate:a", 0.0, 0.5)
 	t.tween_callback(p.queue_free)
 
@@ -380,6 +482,7 @@ func _process(_delta: float) -> void:
 		return
 	var left := match_ref.seconds_left()
 	_timer_bar.value = 100.0 * left / maxf(_timer_total, 0.001)
+	_timer_fill.bg_color = UiTheme.RED if left < 10.0 and match_ref.human_actor() >= 0 else UiTheme.GOLD
 	var s := match_ref.engine.state
 	var key := "%d|%s|%s|%s" % [s.state_version, presenter.is_idle(), _sub_view, s.phase]
 	if key != _last_key:
@@ -408,14 +511,44 @@ func open_tile_info(index: int) -> void:
 
 
 func _on_match_ended(d: Dictionary) -> void:
-	var rows: Array[String] = [UiText.t("results") + " · " + UiText.t("end_reason_" + d["reason"])]
 	var human_won := false
 	for r in d["results"]:
-		rows.append(UiText.t("result_row") % [r["rank"], theme_data.player_name(r["seat"]), r["net_worth"], UiText.t("bankrupt_tag") if r["bankrupt"] else ""])
 		if r["rank"] == 1 and match_ref.is_human(r["seat"]):
 			human_won = true
-	rows.insert(1, UiText.t("you_won") if human_won else UiText.t("you_lost"))
-	_results_label.text = "\n".join(rows)
+	_results_label.text = (UiText.t("you_won") if human_won else UiText.t("you_lost")) + " · " + UiText.t("end_reason_" + d["reason"])
+	_results_rows.columns = 1 if _landscape or d["results"].size() <= 2 else 2
+	for c in _results_rows.get_children():
+		c.queue_free()
+	var medals := [Color("#f5c542"), Color("#c9d2dc"), Color("#d08a4e"), Color("#5c6680")]
+	for r in d["results"]:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		var badge := PanelContainer.new()
+		var rank: int = r["rank"]
+		badge.add_theme_stylebox_override("panel", UiTheme.badge(medals[clampi(rank - 1, 0, 3)], Color(1, 1, 1, 0.6)))
+		badge.custom_minimum_size = Vector2(36, 36)
+		var num := _label(22, UiTheme.INK, HORIZONTAL_ALIGNMENT_CENTER)
+		num.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+		num.autowrap_mode = TextServer.AUTOWRAP_OFF
+		num.text = str(rank)
+		badge.add_child(num)
+		row.add_child(badge)
+		var name := _label(22, theme_data.player_color(r["seat"]).lightened(0.35))
+		name.add_theme_font_override("font", UiTheme.font("Bold"))
+		name.autowrap_mode = TextServer.AUTOWRAP_OFF
+		name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		name.custom_minimum_size.x = 60
+		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name.text = theme_data.player_name(r["seat"]) + (UiText.t("bankrupt_tag") if r["bankrupt"] else "")
+		row.add_child(name)
+		row.add_child(_icon_rect("coin", 22, UiTheme.GOLD))
+		var nw := _label(22, UiTheme.TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
+		nw.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+		nw.autowrap_mode = TextServer.AUTOWRAP_OFF
+		nw.text = "%d RC" % r["net_worth"]
+		row.add_child(nw)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_results_rows.add_child(row)
 	_results.visible = true
 	_action_panel.visible = false
 	_place_bottom.call_deferred()
@@ -443,9 +576,22 @@ func _clear_buttons() -> void:
 	actions = []
 
 
-func _add_button(text: String, type: String, payload := {}, style := "", enabled := true, local_action := Callable()) -> Button:
+## Default icon per command type (art direction: every action has an icon).
+const ACTION_ICONS := {
+	"RollDice": "dice", "BuyProperty": "coin", "PassProperty": "gavel", "PlaceBid": "gavel",
+	"ChooseOption": "star", "Upgrade": "build", "UseAbility": "bolt", "EndTurn": "flag",
+	"Liquidate": "coin", "DeclareBankruptcy": "bankrupt",
+}
+
+
+func _add_button(text: String, type: String, payload := {}, style := "", enabled := true, local_action := Callable(), icon := "") -> Button:
 	var b := Button.new()
 	b.text = text
+	var icon_name: String = icon if icon != "" else ACTION_ICONS.get(type, "")
+	if type == ErCommand.RESPOND_TRADE:
+		icon_name = "check" if payload.get("accept", false) else "close"
+	if icon_name != "":
+		b.icon = UiTheme.icon(icon_name)
 	b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -492,10 +638,37 @@ func _send(type: String, payload: Dictionary) -> void:
 	match_ref.submit(seat, type, payload)
 
 
+func _set_title(text: String, icon: String, tint := UiTheme.GOLD) -> void:
+	_action_title.text = text
+	_action_icon.texture = UiTheme.icon(icon)
+	_action_icon.modulate = tint
+
+
+## Board state markers: the property under auction, and (on the human's
+## strategy step) every property they can upgrade. Read-only engine queries.
+func _sync_board_markers(seat: int) -> void:
+	var board: BoardView = presenter.board if presenter else null
+	if board == null:
+		return
+	var e := match_ref.engine
+	var s := e.state
+	board.clear_tile_markers("auction")
+	board.clear_tile_markers("upgrade")
+	if e.is_ended():
+		return
+	if s.phase == GameState.AUCTION:
+		board.set_tile_marker(config.property_index[s.auction["property_id"]], "auction", true)
+	elif s.phase == GameState.STRATEGY and seat >= 0 and presenter.is_idle():
+		for pid in s.properties_of(seat):
+			if e.can_upgrade(seat, pid) == "":
+				board.set_tile_marker(config.property_index[pid], "upgrade", true)
+
+
 func _rebuild_actions() -> void:
 	_clear_buttons()
 	var e := match_ref.engine
 	var s := e.state
+	_sync_board_markers(match_ref.human_actor())
 	if e.is_ended():
 		_action_panel.visible = false
 		action_buttons_changed.emit()
@@ -505,7 +678,8 @@ func _rebuild_actions() -> void:
 	_action_body.text = ""
 	if seat < 0 or not presenter.is_idle():
 		var actor := s.current_seat
-		_action_title.text = UiText.t("turn_of") % theme_data.player_name(actor) if not match_ref.is_human(actor) else UiText.t("your_turn")
+		_set_title(UiText.t("turn_of") % theme_data.player_name(actor) if not match_ref.is_human(actor) else UiText.t("your_turn"),
+			"user", theme_data.player_color(actor).lightened(0.3))
 		if seat < 0 and presenter.is_idle():
 			_action_body.text = UiText.t("waiting") % theme_data.player_name(actor)
 		_place_bottom.call_deferred()
@@ -514,14 +688,14 @@ func _rebuild_actions() -> void:
 	var cash: int = s.player(seat)["cash"]
 	match s.phase:
 		GameState.AWAIT_ROLL:
-			_action_title.text = UiText.t("your_turn")
+			_set_title(UiText.t("your_turn"), "dice")
 			_add_button(UiText.t("roll"), ErCommand.ROLL_DICE)
 		GameState.AWAIT_BUY:
 			var pid := e.property_at(s.player(seat)["position"])
 			var price: int = config.tier_of(pid)["price"]
 			var sp: Dictionary = config.spaces[s.player(seat)["position"]]
 			var lad := e.rent_ladder(pid)
-			_action_title.text = "%s · %s" % [_prop_name(pid), theme_data.districts[sp["district_id"]]["label"]]
+			_set_title("%s · %s" % [_prop_name(pid), theme_data.districts[sp["district_id"]]["label"]], "tag", theme_data.district_color(sp["district_id"]).lightened(0.35))
 			_action_body.text = (UiText.t("price_rent") % [price, lad[0]]) + "\n" + (UiText.t("rent_table") % lad)
 			if price > cash:
 				_action_body.text += "\n" + UiText.t("cant_afford") % price
@@ -530,7 +704,7 @@ func _rebuild_actions() -> void:
 		GameState.AUCTION:
 			var a := s.auction
 			var need := e.min_next_bid()
-			_action_title.text = UiText.t("auction_title") % _prop_name(a["property_id"])
+			_set_title(UiText.t("auction_title") % _prop_name(a["property_id"]), "gavel", UiTheme.AMBER)
 			var leader: String = "—" if a["high_seat"] < 0 else theme_data.player_name(a["high_seat"])
 			_action_body.text = UiText.t("auction_state") % [a["high_bid"], leader, need]
 			if a["high_seat"] == seat:
@@ -543,7 +717,7 @@ func _rebuild_actions() -> void:
 		GameState.AWAIT_CHOICE:
 			var c := s.choice
 			var def: Dictionary = config.cards[c["ref_id"]] if c["source"] == "event" else _opp(c["ref_id"])
-			_action_title.text = theme_data.loc(c["ref_id"], "title", def["title"])
+			_set_title(theme_data.loc(c["ref_id"], "title", def["title"]), "event" if c["source"] == "event" else "opportunity")
 			_action_body.text = theme_data.loc(c["ref_id"], "text", def.get("text", ""))
 			for o in c["options"]:
 				var olabel: String = theme_data.loc(c["ref_id"] + "." + o["option_id"], "label", o["label"])
@@ -553,13 +727,13 @@ func _rebuild_actions() -> void:
 			_build_strategy(seat)
 		GameState.TRADE_PENDING:
 			var t := s.trade
-			_action_title.text = UiText.t("trade_title") % theme_data.player_name(t["from"])
+			_set_title(UiText.t("trade_title") % theme_data.player_name(t["from"]), "handshake")
 			_action_body.text = UiText.t("trade_terms") % [_side_text(t["give"]), _side_text(t["take"])]
 			_add_button(UiText.t("accept"), ErCommand.RESPOND_TRADE, {"trade_id": t["trade_id"], "accept": true})
 			_add_button(UiText.t("reject"), ErCommand.RESPOND_TRADE, {"trade_id": t["trade_id"], "accept": false}, "danger")
 		GameState.RESCUE:
 			var r := s.rescue
-			_action_title.text = UiText.t("rescue_title") % r["amount"]
+			_set_title(UiText.t("rescue_title") % r["amount"], "warning", UiTheme.RED.lightened(0.2))
 			_action_body.text = UiText.t("rescue_body") % cash
 			for pid in s.properties_of(seat):
 				_add_button(UiText.t("liquidate_item") % [_prop_name(pid), e.liquidation_value(pid)], ErCommand.LIQUIDATE, {"property_ids": [pid]}, "secondary")
@@ -572,7 +746,7 @@ func _rebuild_actions() -> void:
 func _build_strategy(seat: int) -> void:
 	var e := match_ref.engine
 	var s := e.state
-	_action_title.text = UiText.t("strategy_title")
+	_set_title(UiText.t("strategy_title"), "build")
 	var upgradable: Array = []
 	for pid in s.properties_of(seat):
 		if e.can_upgrade(seat, pid) == "":
@@ -580,11 +754,11 @@ func _build_strategy(seat: int) -> void:
 	if _sub_view == "upgrade":
 		for pid in upgradable:
 			_add_button(UiText.t("upgrade_item") % [_prop_name(pid), s.level[pid] + 1, e.upgrade_quote(seat, pid)["amount"]], ErCommand.UPGRADE, {"property_id": pid})
-		_add_button(UiText.t("back"), "", {}, "secondary", true, func(): _sub_view = "")
+		_add_button(UiText.t("back"), "", {}, "secondary", true, func(): _sub_view = "", "close")
 		return
 	if upgradable.is_empty():
 		_action_body.text = UiText.t("no_upgrades")
-	var up := _add_button(UiText.t("upgrade"), "", {}, "", not upgradable.is_empty(), func(): _sub_view = "upgrade")
+	var up := _add_button(UiText.t("upgrade"), "", {}, "", not upgradable.is_empty(), func(): _sub_view = "upgrade", "build")
 	up.set_meta("opens", "upgrade")
 	if e.ability_available(seat):
 		var ab: Dictionary = config.character_by_id[s.player(seat)["character_id"]]["ability"]

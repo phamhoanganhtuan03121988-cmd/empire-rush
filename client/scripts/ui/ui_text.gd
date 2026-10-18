@@ -68,9 +68,10 @@ const T := {
 	"settings": "Cài đặt",
 	"quality": "Đồ họa: %s",
 	"quality_low": "Thấp", "quality_medium": "Vừa", "quality_high": "Cao",
-	"placeholder": "Bản thử nghiệm — đồ họa tạm",
+	"placeholder": "Bản thử nghiệm",
 	"bankrupt_tag": " (phá sản)",
 	"seconds": "%ds",
+	"auction_lost_you": "Bạn đã thua đấu giá %s",
 	# Device-validation panel (opened by holding the graphics button ~1 s).
 	"dev_title": "Đo trên thiết bị",
 	"dev_overlay_on": "HIỆN SỐ ĐO",

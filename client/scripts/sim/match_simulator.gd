@@ -60,6 +60,8 @@ static func run(config: GameConfig, seed_value: int, n_players: int, opts: Dicti
 		"liquidations": 0, "abilities": 0, "rent_paid": 0, "rent_events": 0,
 		"bankruptcies": [], "round_samples": {}, "stuck": false, "flows": {},
 		"rent_by_level": {}, "max_rent": 0, "rents_ge_1000": 0,
+		# Turns started per seat (seat 0's first turn comes from create()).
+		"turns_by_seat": [1] + range(n_players - 1).map(func(_i): return 0),
 	}
 	var tracker := {"seq": 0, "tx": 0}
 	# Events emitted by create() (MatchStarted/TurnStarted) are not returned by
@@ -186,6 +188,7 @@ static func _absorb(events: Array, engine: GameEngine, st: Dictionary, tracker: 
 					"round": engine.state.round, "reason": d["reason"],
 					"character": engine.state.player(d["seat"])["character_id"]})
 			"TurnStarted":
+				st["turns_by_seat"][d["seat"]] += 1
 				_sample_round(engine, st)
 	if check_inv:
 		var errs := Invariants.check(engine)

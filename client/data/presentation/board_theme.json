@@ -34,27 +34,32 @@
     "START": {
       "color": "#e8c35a",
       "label": "XUẤT\nPHÁT",
-      "glyph": "XUẤT\nPHÁT"
+      "glyph": "XUẤT\nPHÁT",
+      "icon": "arrow_start"
     },
     "CITY_EVENT": {
       "color": "#e05d5d",
       "label": "SỰ\nKIỆN",
-      "glyph": "!"
+      "glyph": "!",
+      "icon": "event"
     },
     "OPPORTUNITY": {
       "color": "#4fb3e8",
       "label": "CƠ\nHỘI",
-      "glyph": "?"
+      "glyph": "?",
+      "icon": "opportunity"
     },
     "REST": {
       "color": "#9aa5b1",
       "label": "NGHỈ",
-      "glyph": "NGHỈ"
+      "glyph": "NGHỈ",
+      "icon": "rest"
     },
     "SPECIAL": {
       "color": "#d4a017",
       "label": "THUẾ",
-      "glyph": "%"
+      "glyph": "%",
+      "icon": "tax"
     }
   },
   "players": [
@@ -74,5 +79,10 @@
       "color": "#f2994a",
       "name": "Huy"
     }
-  ]
+  ],
+  "character_icons": {
+    "TYCOON": "briefcase",
+    "INVESTOR": "chart",
+    "NEGOTIATOR": "handshake"
+  }
 }

@@ -4,20 +4,27 @@
 ## Material keys:
 ##   "std|<roughness>|<metallic>"   StandardMaterial3D using vertex colour
 ##   "glow|<energy>|<roughness>|<metallic>"  emissive vertex-colour shader
+##   "res://...tres"                 a material asset from client/assets/materials
+##                                   (production kit, M2.3); vertex colour tints it
+## UVs are carried through, so textured kit materials work after merging.
 class_name MeshMerger
 extends RefCounted
 
 static var _materials: Dictionary = {}
 static var _box_cache: Dictionary = {}
 
-var _surfaces: Dictionary = {}  # key -> {v, n, c, i}
+var _surfaces: Dictionary = {}  # key -> {v, n, uv, c, i}
 
 
 static func material_for(key: String) -> Material:
 	if _materials.has(key):
 		return _materials[key]
-	var parts := key.split("|")
 	var m: Material
+	if key.begins_with("res://"):
+		m = load(key)
+		_materials[key] = m
+		return m
+	var parts := key.split("|")
 	if parts[0] == "glow":
 		var sm := ShaderMaterial.new()
 		sm.shader = load("res://scripts/presentation/vertex_glow.gdshader")
@@ -63,25 +70,51 @@ func add_box(size: Vector3, pos: Vector3, color: Color, key: String) -> void:
 
 
 func add_mesh(mesh: Mesh, xform: Transform3D, color: Color, key: String) -> void:
-	var arr := mesh.surface_get_arrays(0)
+	_append(mesh.surface_get_arrays(0), xform, color, key, false)
+
+
+## Adds every surface of a kit asset (an ArrayMesh whose surfaces carry
+## material assets and baked vertex colours). `tint` multiplies the baked
+## colours (e.g. the owner's colour on a white flag cloth).
+func add_kit(mesh: Mesh, xform: Transform3D, tint := Color.WHITE) -> void:
+	for si in mesh.get_surface_count():
+		var mat := mesh.surface_get_material(si)
+		var key: String = mat.resource_path if mat and mat.resource_path != "" else std(0.7)
+		_append(mesh.surface_get_arrays(si), xform, tint, key, true)
+
+
+func _append(arr: Array, xform: Transform3D, color: Color, key: String, multiply: bool) -> void:
 	var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
 	var norms: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+	var uvs = arr[Mesh.ARRAY_TEX_UV]
+	var cols = arr[Mesh.ARRAY_COLOR]
 	var idx = arr[Mesh.ARRAY_INDEX]
 	if not _surfaces.has(key):
-		_surfaces[key] = {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray(), "i": PackedInt32Array()}
+		_surfaces[key] = {"v": PackedVector3Array(), "n": PackedVector3Array(), "uv": PackedVector2Array(), "c": PackedColorArray(), "i": PackedInt32Array()}
 	var s: Dictionary = _surfaces[key]
 	var base: int = s["v"].size()
 	var nb := xform.basis.inverse().transposed()
+	var has_uv: bool = uvs != null and uvs.size() == verts.size()
+	var has_c: bool = multiply and cols != null and cols.size() == verts.size()
 	for k in verts.size():
 		s["v"].append(xform * verts[k])
 		s["n"].append((nb * norms[k]).normalized())
-		s["c"].append(color)
+		s["uv"].append(uvs[k] if has_uv else Vector2.ZERO)
+		s["c"].append(cols[k] * color if has_c else color)
 	if idx == null or idx.is_empty():
 		for k in verts.size():
 			s["i"].append(base + k)
 	else:
 		for k in idx:
 			s["i"].append(base + k)
+
+
+## Number of vertices added so far (asset budgets / tests).
+func vertex_count() -> int:
+	var n := 0
+	for k in _surfaces:
+		n += _surfaces[k]["v"].size()
+	return n
 
 
 func build() -> ArrayMesh:
@@ -94,6 +127,7 @@ func build() -> ArrayMesh:
 		arrays.resize(Mesh.ARRAY_MAX)
 		arrays[Mesh.ARRAY_VERTEX] = s["v"]
 		arrays[Mesh.ARRAY_NORMAL] = s["n"]
+		arrays[Mesh.ARRAY_TEX_UV] = s["uv"]
 		arrays[Mesh.ARRAY_COLOR] = s["c"]
 		arrays[Mesh.ARRAY_INDEX] = s["i"]
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)

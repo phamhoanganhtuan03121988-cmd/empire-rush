@@ -1,4 +1,4 @@
-## Player pawn (placeholder: base disc + body + head in the player colour).
+## Player pawn: baked production model per seat (M2.3 kit).
 class_name TokenView
 extends Node3D
 
@@ -11,31 +11,14 @@ var _body: Node3D
 
 func build(p_seat: int, theme: ThemeData) -> void:
 	seat = p_seat
-	var c := theme.player_color(seat)
 	_body = Node3D.new()
 	add_child(_body)
-	# Base + body + head merged into one mesh (one draw call per pawn).
-	var mm := MeshMerger.new()
-	var bm := CylinderMesh.new()
-	bm.top_radius = 0.13
-	bm.bottom_radius = 0.15
-	bm.height = 0.05
-	bm.radial_segments = 20
-	bm.rings = 1
-	mm.add_mesh(bm, Transform3D(Basis(), Vector3(0, 0.025, 0)), c.darkened(0.25), MeshMerger.std(0.4, 0.4))
-	var cm := CapsuleMesh.new()
-	cm.radius = 0.08
-	cm.height = 0.3
-	cm.radial_segments = 16
-	cm.rings = 4
-	mm.add_mesh(cm, Transform3D(Basis(), Vector3(0, 0.2, 0)), c, MeshMerger.std(0.4, 0.4))
-	var sm := SphereMesh.new()
-	sm.radius = 0.075
-	sm.height = 0.15
-	sm.radial_segments = 16
-	sm.rings = 8
-	mm.add_mesh(sm, Transform3D(Basis(), Vector3(0, 0.41, 0)), Color("#ffe0bd"), MeshMerger.std(0.6))
-	_body.add_child(mm.instance("Pawn"))
+	# Baked pawn (assets/models/tokens): turned base + a head shape unique to
+	# the seat (crown, top hat, rook, gem) in the seat colour.
+	var mi := MeshInstance3D.new()
+	mi.name = "Pawn"
+	mi.mesh = load("res://assets/models/tokens/pawn_%d.res" % (seat % 4))
+	_body.add_child(mi)
 
 
 ## Hops tile by tile through `points` (world positions). Awaitable.

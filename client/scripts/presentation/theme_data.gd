@@ -6,6 +6,7 @@ extends RefCounted
 var districts: Dictionary
 var special: Dictionary
 var players: Array
+var character_icons: Dictionary = {}
 var strings: Dictionary = {}
 var _mats: Dictionary = {}
 
@@ -16,6 +17,7 @@ static func load_default() -> ThemeData:
 	t.districts = d["districts"]
 	t.special = d["special_tiles"]
 	t.players = d["players"]
+	t.character_icons = d.get("character_icons", {})
 	var vi = JSON.parse_string(FileAccess.get_file_as_string("res://data/presentation/strings_vi.json"))
 	if typeof(vi) == TYPE_DICTIONARY:
 		t.strings = vi
@@ -30,6 +32,11 @@ func loc(id: String, field: String, fallback: String) -> String:
 
 func character_name(character_id: String, config: GameConfig) -> String:
 	return loc(character_id, "name", config.character_by_id[character_id]["name"])
+
+
+## SVG icon name (assets/ui/icons) used as the character's emblem.
+func character_icon(character_id: String) -> String:
+	return character_icons.get(character_id, "user")
 
 
 func district_color(did: String) -> Color:
