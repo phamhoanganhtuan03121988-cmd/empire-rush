@@ -3,7 +3,7 @@
 Mobile-first online strategy-party board game. 2–4 players, 20–30 minute matches, stylized-realism 3D miniature city.
 Godot 4.7.2 / GDScript, server-authoritative multiplayer.
 
-**Status: M1 (offline rules prototype) awaiting owner review.** Full MVP rules run headless with tests and simulations. There is no UI yet.
+**Status: M1.2 (balance DRAFT v3) awaiting owner review.** Full MVP rules run headless with tests and simulations. There is no UI yet. Balance values are trial values until real per-turn timing is measured after M2.
 
 ## Documents
 - [Game rules & GDD](docs/GAME_RULES_AND_GDD.md): the product baseline

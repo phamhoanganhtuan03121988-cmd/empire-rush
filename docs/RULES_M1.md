@@ -1,6 +1,6 @@
 # EMPIRE RUSH — Implemented Rules Specification (M1)
 
-Status: **implemented in `client/scripts/domain/`, balance values are DRAFT** (owner review pending).
+Status: **implemented in `client/scripts/domain/`, balance values are DRAFT v3** (M1.2, owner-approved trial values, not locked; see `M1_2_BALANCE_V3_REPORT.md`). Rule mechanics are unchanged since M1; only the round cap became per-player-count and the rent/upgrade numbers changed.
 Baseline: `GAME_RULES_AND_GDD.md` v1.0 plus the owner's approved decisions G1–G12 (M0 approval).
 This document records how every rule was made precise enough to code and test. Items marked **[REVIEW]** are interpretations the owner should confirm; the full list is in `M1_REPORT.md` §7.
 
@@ -44,7 +44,7 @@ Phases: `AwaitRoll → (AwaitBuyDecision | Auction | AwaitChoice | Rescue)* → 
    - ProposeTrade ends the turn when the trade resolves (accepted / rejected / expired / invalidated).
 5. **Turn end.** The checks run in this order:
    1. Last solvent player wins.
-   2. Round cap: the 25th round is complete, i.e. the last active seat of round 25 just finished.
+   2. Round cap: the last round is complete, i.e. the last active seat of that round just finished. The cap depends on how many players were seated at the start (`max_rounds_by_players`, v3: **2p 40 / 3p 30 / 4p 25**). Bankruptcies do not change it; `max_rounds` (25) is the fallback for an unlisted count.
    3. Time cap (G9): `clock − match_start ≥ 30 min`, checked **only at turn end**.
    4. Otherwise the next non-bankrupt seat starts. Wrapping past the last seat increments `round`.
 
@@ -79,9 +79,11 @@ A command is accepted only while `now < deadline`. At or after the deadline it g
 |---|---|---|---|
 | Level 0, district incomplete | 100 | 8 | 32 |
 | Level 0, district complete | 200 | 16 | 64 |
-| Level 1 | 600 | 48 | 192 |
-| Level 2 | 1800 | 144 | 576 |
-| Level 3 | 4500 | 360 | 1,440 |
+| Level 1 | 700 | 56 | 224 |
+| Level 2 | 2200 | 176 | 704 |
+| Level 3 | 5500 | 440 | 1,760 |
+
+(Balance v3. M1 v2 rows were 600 / 1800 / 4500. With Tourism Boom (+50%) on the tourist district D5 at level 3, a single rent can reach 22 × 55 × 1.5 = **1,815 RC**.)
 
 Levels 1–3 already include the value of completing the district. They never get the 2× on top.
 
@@ -91,7 +93,7 @@ Modifiers are applied in this order:
 
 ## 6. Upgrades
 - Requirements: you own all 3 properties of the district, the level is < 3, and you can pay.
-- Cost: `upgrade_cost × (100 − discount) / 100`.
+- Cost: `upgrade_cost × (100 − discount) / 100`. v3 upgrade costs by tier: 30 / 30 / 45 / 45 / 60 / 60 / 75.
   - Discount = Tycoon passive 10% + at most one single-use subsidy (50%), capped at 75%.
 - Only one level per action.
 - Buildings stay if the district is later broken by liquidation. Rent then uses that property's level row.

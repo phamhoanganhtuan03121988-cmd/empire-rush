@@ -1,0 +1,18 @@
+== v3 focus seat plays normally ==
+  2p n=1000  min med/p90 14.6/17.2  s/turn 11.7  rounds 36.8  end { "last_solvent": 41.2, "round_cap": 58.8 }  bk 41.2% (rd 33.0)  seats [54.3, 45.7] spread 8.6pp  chars { "TYCOON": 49.6, "NEGOTIATOR": 50.4, "INVESTOR": 50.0 }  winner!=book 2.4%  hoarder/focus 50.3%±3.1
+  3p n=1000  min med/p90 16.6/18.9  s/turn 11.4  rounds 29.8  end { "round_cap": 91.4, "last_solvent": 8.6 }  bk 42.1% (rd 27.0)  seats [36.0, 32.5, 31.5] spread 4.5pp  chars { "INVESTOR": 33.7, "NEGOTIATOR": 33.0, "TYCOON": 33.3 }  winner!=book 7.3%  hoarder/focus 31.8%±2.9
+  4p n=2000  min med/p90 18.2/20.6  s/turn 11.1  rounds 25.0  end { "round_cap": 99.0, "last_solvent": 0.9 }  bk 32.3% (rd 23.0)  seats [31.4, 25.1, 22.4, 21.1] spread 10.3pp  chars { "NEGOTIATOR": 24.7, "INVESTOR": 26.8, "TYCOON": 23.5 }  winner!=book 8.6%  hoarder/focus 23.9%±1.9
+== v3 focus seat hoards last 3 rounds ==
+  2p n=1000  min med/p90 14.6/17.2  s/turn 11.7  rounds 36.8  end { "last_solvent": 40.8, "round_cap": 59.2 }  bk 40.8% (rd 33.0)  seats [54.3, 45.7] spread 8.6pp  chars { "TYCOON": 49.9, "NEGOTIATOR": 50.2, "INVESTOR": 49.8 }  winner!=book 3.0%  hoarder/focus 50.9%±3.1
+  3p n=1000  min med/p90 16.7/18.8  s/turn 11.4  rounds 29.8  end { "round_cap": 91.8, "last_solvent": 8.2 }  bk 41.9% (rd 27.0)  seats [35.6, 32.4, 32.0] spread 3.6pp  chars { "INVESTOR": 34.2, "NEGOTIATOR": 33.5, "TYCOON": 32.3 }  winner!=book 6.9%  hoarder/focus 31.7%±2.9
+  4p n=2000  min med/p90 18.2/20.6  s/turn 11.1  rounds 25.0  end { "round_cap": 99.0, "last_solvent": 0.9 }  bk 31.7% (rd 23.0)  seats [31.4, 25.1, 22.6, 20.9] spread 10.5pp  chars { "NEGOTIATOR": 25.1, "INVESTOR": 26.7, "TYCOON": 23.2 }  winner!=book 8.4%  hoarder/focus 24.1%±1.9
+== v3 focus seat hoards last 5 rounds ==
+  2p n=1000  min med/p90 14.7/17.2  s/turn 11.7  rounds 36.8  end { "last_solvent": 39.9, "round_cap": 60.1 }  bk 39.9% (rd 33.0)  seats [53.7, 46.3] spread 7.4pp  chars { "TYCOON": 50.2, "NEGOTIATOR": 50.1, "INVESTOR": 49.7 }  winner!=book 3.3%  hoarder/focus 51.1%±3.1
+  3p n=1000  min med/p90 16.6/18.9  s/turn 11.4  rounds 29.8  end { "round_cap": 92.5, "last_solvent": 7.5 }  bk 40.8% (rd 27.0)  seats [35.5, 32.4, 32.1] spread 3.4pp  chars { "INVESTOR": 34.7, "NEGOTIATOR": 33.2, "TYCOON": 32.1 }  winner!=book 6.2%  hoarder/focus 31.7%±2.9
+  4p n=2000  min med/p90 18.2/20.7  s/turn 11.1  rounds 25.0  end { "round_cap": 99.2, "last_solvent": 0.9 }  bk 31.1% (rd 23.0)  seats [30.8, 25.0, 23.3, 21.0] spread 9.8pp  chars { "NEGOTIATOR": 25.2, "INVESTOR": 26.2, "TYCOON": 23.6 }  winner!=book 8.7%  hoarder/focus 23.6%±1.9
+== v3 focus seat hoards last 8 rounds ==
+  2p n=1000  min med/p90 14.6/17.3  s/turn 11.7  rounds 36.9  end { "last_solvent": 38.0, "round_cap": 62.0 }  bk 38.0% (rd 32.0)  seats [54.8, 45.2] spread 9.6pp  chars { "TYCOON": 50.5, "NEGOTIATOR": 50.1, "INVESTOR": 49.4 }  winner!=book 3.2%  hoarder/focus 50.4%±3.1
+  3p n=1000  min med/p90 16.7/19.0  s/turn 11.5  rounds 29.8  end { "round_cap": 93.0, "last_solvent": 7.0 }  bk 39.5% (rd 26.0)  seats [35.8, 32.1, 32.1] spread 3.7pp  chars { "INVESTOR": 35.8, "NEGOTIATOR": 32.2, "TYCOON": 32.0 }  winner!=book 7.4%  hoarder/focus 29.7%±2.8
+  4p n=2000  min med/p90 18.3/20.6  s/turn 11.1  rounds 25.0  end { "round_cap": 99.2, "last_solvent": 0.9 }  bk 28.5% (rd 23.0)  seats [30.0, 25.1, 24.0, 20.9] spread 9.1pp  chars { "NEGOTIATOR": 24.6, "INVESTOR": 26.9, "TYCOON": 23.5 }  winner!=book 9.5%  hoarder/focus 19.4%±1.7
+FAILURES: 0  wall 419706 ms
+wrote /home/user/empire-rush/docs/test-logs/m1.2/hoarding.json
