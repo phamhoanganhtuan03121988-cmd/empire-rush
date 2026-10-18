@@ -22,10 +22,10 @@ func test_with_balance_still_validates() -> void:
 
 
 func test_round_cap_override_is_respected() -> void:
-	var cfg := ErFixture.config().with_balance({"max_rounds": 30})
+	var cfg := ErFixture.config().with_balance({"max_rounds_by_players": {"2": 30}})
 	var r := MatchSimulator.run(cfg, 77, 2, {})
 	assert_true(r["rounds"] <= 30, "cap 30")
-	assert_true(r["rounds"] > 25 or r["end_reason"] != "round_cap", "ran past the default 25 when capped at 30")
+	assert_true(r["rounds"] > 25 or r["end_reason"] != "round_cap", "ran past 25 when capped at 30")
 	assert_eq(r["invariant_errors"].size(), 0, "invariants")
 
 

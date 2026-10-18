@@ -41,7 +41,7 @@ func test_negotiator_halves_next_rent() -> void:
 	f.cmd(0, ErCommand.USE_ABILITY, {"ability_id": "CONTRACT_CLAUSE"})
 	f.give(1, f.district("D1"), 1)
 	f.land(0, 1)
-	assert_eq(f.cash(0), 1500 - 24, "48 halved")
+	assert_eq(f.cash(0), 1500 - 28, "56 halved")
 
 
 func test_passive_ability_cannot_be_used() -> void:

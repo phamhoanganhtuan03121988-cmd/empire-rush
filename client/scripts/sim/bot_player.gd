@@ -66,7 +66,7 @@ func decide(engine: GameEngine) -> Dictionary:
 
 
 func _frozen(engine: GameEngine) -> bool:
-	return endgame_freeze_rounds > 0 and engine.state.round > engine.config.balance["max_rounds"] - endgame_freeze_rounds
+	return endgame_freeze_rounds > 0 and engine.state.round > engine.config.max_rounds_for(engine.state.players.size()) - endgame_freeze_rounds
 
 
 func _would_complete(engine: GameEngine, pid: String, for_seat: int) -> bool:

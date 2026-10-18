@@ -17,7 +17,7 @@ func test_upgrade_charges_cost_and_ends_turn() -> void:
 	var res := f.cmd(0, ErCommand.UPGRADE, {"property_id": "P_D1_1"})
 	assert_true(res["ok"], "upgrade ok")
 	assert_eq(f.state.level["P_D1_1"], 1, "level 1")
-	assert_eq(f.cash(0), 1460, "paid 40")
+	assert_eq(f.cash(0), 1470, "paid 30 (v3 tier-1 upgrade cost)")
 	assert_eq(f.state.current_seat, 1, "turn passed to next player")
 	assert_healthy(f)
 
@@ -27,7 +27,7 @@ func test_tycoon_passive_discount() -> void:
 	f.give(0, f.district("D7"))
 	f.to_strategy(0)
 	f.cmd(0, ErCommand.UPGRADE, {"property_id": "P_D7_1"})
-	assert_eq(f.cash(0), 1410, "100 - 10% = 90")
+	assert_eq(f.cash(0), 1433, "75 - 10% = 67 (floored)")
 
 
 func test_discounts_add_and_are_capped() -> void:
@@ -35,9 +35,9 @@ func test_discounts_add_and_are_capped() -> void:
 	f.give(0, f.district("D7"))
 	f.engine._apply_effects(0, [{"type": "upgrade_discount_next", "pct": 50, "duration_rounds": 2}], "t")
 	f.to_strategy(0)
-	assert_eq(f.engine.upgrade_quote(0, "P_D7_1")["amount"], 40, "10% + 50% = 60% off 100")
+	assert_eq(f.engine.upgrade_quote(0, "P_D7_1")["amount"], 30, "10% + 50% = 60% off 75")
 	f.engine._apply_effects(0, [{"type": "upgrade_discount_next", "pct": 50, "duration_rounds": 2}], "t")
-	assert_eq(f.engine.upgrade_quote(0, "P_D7_1")["amount"], 40, "only one subsidy is used at a time")
+	assert_eq(f.engine.upgrade_quote(0, "P_D7_1")["amount"], 30, "only one subsidy is used at a time")
 	f.cmd(0, ErCommand.UPGRADE, {"property_id": "P_D7_1"})
 	assert_eq(f.state.modifiers.filter(func(m): return m["kind"] == "upgrade_discount").size(), 1, "one subsidy consumed")
 
@@ -53,7 +53,7 @@ func test_max_level_three() -> void:
 func test_upgrade_insufficient_funds() -> void:
 	var f := ErFixture.make(2, 1, ["INVESTOR", "TYCOON"])
 	f.give(0, f.district("D1"))
-	f.set_cash(0, 39)
+	f.set_cash(0, 29)  # 1 RC short of the v3 tier-1 upgrade cost (30)
 	f.to_strategy(0)
 	var h := f.state.state_hash()
 	assert_rejected(f, f.cmd(0, ErCommand.UPGRADE, {"property_id": "P_D1_1"}), ErCommand.E_INSUFFICIENT_FUNDS, h)

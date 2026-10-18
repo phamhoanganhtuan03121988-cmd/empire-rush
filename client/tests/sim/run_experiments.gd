@@ -49,7 +49,12 @@ func _initialize() -> void:
 			var patch: Dictionary = v.get("balance", {}).duplicate(true)
 			var by_p: Dictionary = v.get("max_rounds_by_players", {})
 			if by_p.has(str(np)):
+				# Override both keys so the cap applies on v2 (no by-players
+				# table) and v3+ (by-players table) data alike.
 				patch["max_rounds"] = by_p[str(np)]
+				if not patch.has("max_rounds_by_players"):
+					patch["max_rounds_by_players"] = {}
+				patch["max_rounds_by_players"][str(np)] = by_p[str(np)]
 			var cfg := base.with_balance(patch)
 			if not cfg.is_valid():
 				printerr("variant %s invalid: %s" % [v["name"], str(cfg.errors)])

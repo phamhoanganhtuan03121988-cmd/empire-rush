@@ -50,13 +50,14 @@ func test_strategy_timeout_ends_turn() -> void:
 
 func test_round_cap_ends_match() -> void:
 	var f := ErFixture.make(2)
-	f.state.round = 25
+	var cap := f.config().max_rounds_for(2)  # v3: 40 rounds for 2 players
+	f.state.round = cap
 	f.to_strategy(0)
 	f.cmd(0, ErCommand.END_TURN)
-	assert_ne(f.state.phase, GameState.ENDED, "round 25 not complete yet")
+	assert_ne(f.state.phase, GameState.ENDED, "last round not complete yet")
 	f.to_strategy(1)
 	f.cmd(1, ErCommand.END_TURN)
-	assert_eq(f.state.phase, GameState.ENDED, "ended after the last seat of round 25")
+	assert_eq(f.state.phase, GameState.ENDED, "ended after the last seat of the last round")
 	assert_eq(f.state.end_reason, "round_cap", "reason")
 	assert_healthy(f)
 

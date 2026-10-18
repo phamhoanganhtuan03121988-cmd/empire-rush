@@ -657,7 +657,7 @@ func _end_turn(reason: String) -> void:
 			next = cand
 			break
 	var wrapped := next <= seat
-	if wrapped and state.round >= config.balance["max_rounds"]:
+	if wrapped and state.round >= config.max_rounds_for(state.players.size()):
 		_end_match("round_cap")
 		return
 	# G9: time cap checked at the end of every turn (deterministic boundary).

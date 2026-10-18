@@ -32,7 +32,7 @@ static func check(engine: GameEngine) -> Array[String]:
 			out.append("%s has buildings but no owner" % pid)
 	if s.phase != GameState.ENDED and s.players[s.current_seat]["bankrupt"]:
 		out.append("current seat %d is bankrupt" % s.current_seat)
-	if s.round > cfg.balance["max_rounds"]:
+	if s.round > cfg.max_rounds_for(s.players.size()):
 		out.append("round %d beyond cap" % s.round)
 	var expect := {
 		"auction": s.phase == GameState.AUCTION,

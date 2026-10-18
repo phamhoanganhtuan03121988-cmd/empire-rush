@@ -1,5 +1,6 @@
 ## Rent, district completion and level multipliers (GDD §5; G6).
 ## Tier 1 base rent is 8 RC; tier 2 (tourist district D2) is 11 RC.
+## Level rows are balance v3 (M1.2): x7 / x22 / x55.
 extends TestCase
 
 
@@ -24,7 +25,7 @@ func test_complete_district_doubles_level0() -> void:
 
 
 func test_levels_use_their_own_row_without_stacking() -> void:
-	var expected := {1: 48, 2: 144, 3: 360}  # 8 x 6, x18, x45 (never x2 on top)
+	var expected := {1: 56, 2: 176, 3: 440}  # 8 x 7, x22, x55 (never x2 on top)
 	for lv in expected:
 		var f := ErFixture.make()
 		f.give(1, f.district("D1"), lv)
@@ -73,7 +74,7 @@ func test_rent_cap() -> void:
 	f.give(1, f.district("D1"), 3)
 	f.engine._apply_effects(0, [{"type": "rent_cap", "cap": 100, "duration_rounds": 2}], "test")
 	f.engine._commit()
-	assert_eq(_rent_paid(f, 1, 0, 1), 100, "capped from 360")
+	assert_eq(_rent_paid(f, 1, 0, 1), 100, "capped from 440")
 
 
 func test_rent_never_negative() -> void:

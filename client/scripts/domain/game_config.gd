@@ -115,6 +115,15 @@ func _index_and_validate() -> void:
 	for key in ["level0_incomplete", "level0_district_complete", "level1", "level2", "level3"]:
 		if typeof(balance.get("rent_multiplier_pct", {}).get(key)) != TYPE_INT:
 			_err("rent_multiplier_pct.%s must be int" % key)
+	var by_p = balance.get("max_rounds_by_players", {})
+	if typeof(by_p) != TYPE_DICTIONARY:
+		_err("balance.max_rounds_by_players must be an object")
+	else:
+		for k in by_p:
+			if str(k).begins_with("_"):
+				continue
+			if not str(k) in ["2", "3", "4"] or typeof(by_p[k]) != TYPE_INT or by_p[k] < 1:
+				_err("balance.max_rounds_by_players.%s must be a positive int for 2-4 players" % k)
 	_check_ints(balance, "balance")
 
 	for d in board.get("districts", []):
@@ -253,6 +262,12 @@ func _check_ints(value: Variant, where: String) -> void:
 
 func tier_of(property_id: String) -> Dictionary:
 	return tiers[district_tier[property_district[property_id]]]
+
+
+## Round cap for a match with `n_players` seated players (G9 + M1.2 decision).
+func max_rounds_for(n_players: int) -> int:
+	var by_p: Dictionary = balance.get("max_rounds_by_players", {})
+	return by_p.get(str(n_players), balance["max_rounds"])
 
 
 func board_size() -> int:

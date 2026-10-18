@@ -10,7 +10,7 @@ func test_r1_rescue_resolved_with_no_turn_time_left() -> void:
 	var f := ErFixture.make(2)
 	f.give(1, f.district("D1"), 3)
 	f.give(0, ["P_D7_1"])
-	f.set_cash(0, 300)
+	f.set_cash(0, 400)  # 400 + 130 liquidation covers the v3 level-3 rent of 440
 	f.state.turn_deadline_ms = f.clock.now_ms()  # no turn time left
 	f.land(0, 1)
 	f.cmd(0, ErCommand.LIQUIDATE, {"property_ids": ["P_D7_1"]})

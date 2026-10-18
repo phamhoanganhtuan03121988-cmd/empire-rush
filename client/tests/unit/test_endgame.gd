@@ -11,8 +11,8 @@ func _end(f: ErFixture) -> Array:
 func test_net_worth_formula() -> void:
 	var f := ErFixture.make()
 	f.set_cash(0, 500)
-	f.give(0, f.district("D1"), 2)  # 3 x (30 + 2 x 40 x 50%) = 3 x 70
-	assert_eq(f.engine.net_worth(0), 500 + 210, "cash + liquidation incl. buildings, no objective bonus")
+	f.give(0, f.district("D1"), 2)  # 3 x (30 + 2 x 30 x 50%) = 3 x 60 (v3 upgrade cost 30)
+	assert_eq(f.engine.net_worth(0), 500 + 180, "cash + liquidation incl. buildings, no objective bonus")
 
 
 func test_rank_by_net_worth() -> void:

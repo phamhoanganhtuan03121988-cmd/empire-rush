@@ -17,7 +17,7 @@ func test_100_matches_complete_cleanly() -> void:
 		if errors.size() > 10:
 			return
 		reasons[r["end_reason"]] = reasons.get(r["end_reason"], 0) + 1
-		assert_true(r["rounds"] <= 25, "round cap respected")
+		assert_true(r["rounds"] <= cfg.max_rounds_for(r["players"]), "round cap respected (seed %d)" % r["seed"])
 		assert_true(r["end_reason"] in ["last_solvent", "round_cap", "time_cap"], "valid end reason")
 	assert_true(reasons.size() >= 1, "matches ended")
 
