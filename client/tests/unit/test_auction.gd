@@ -104,3 +104,13 @@ func test_turn_timer_paused_during_auction() -> void:
 	f.cmd(0, ErCommand.PASS_PROPERTY, {"property_id": "P_D1_1"})
 	f.expire()
 	assert_eq(f.state.turn_deadline_ms - f.clock.now_ms(), remaining, "turn time preserved across the auction")
+
+
+func test_min_next_bid_query_matches_validation() -> void:
+	var f := _open()
+	assert_eq(f.engine.min_next_bid(), 10, "opening minimum")
+	assert_false(_bid(f, 1, f.engine.min_next_bid() - 1)["ok"], "one below is rejected")
+	assert_true(_bid(f, 1, f.engine.min_next_bid())["ok"], "exact minimum accepted")
+	assert_eq(f.engine.min_next_bid(), 20, "next minimum = high + increment")
+	f.expire()
+	assert_eq(f.engine.min_next_bid(), -1, "no auction")

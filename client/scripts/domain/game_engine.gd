@@ -235,6 +235,27 @@ func gross_rent(pid: String) -> int:
 	return maxi(0, rent * (100 + adj) / 100)
 
 
+## Rent ladder for display: [L0 incomplete, L0 district complete, L1, L2, L3]
+## using the same rows as gross_rent(), without event modifiers.
+func rent_ladder(pid: String) -> Array[int]:
+	var base: int = config.tier_of(pid)["base_rent"]
+	var mult: Dictionary = config.balance["rent_multiplier_pct"]
+	var out: Array[int] = []
+	for key in ["level0_incomplete", "level0_district_complete", "level1", "level2", "level3"]:
+		out.append(base * mult[key] / 100)
+	return out
+
+
+## Smallest bid the auction would currently accept (-1 when no auction).
+func min_next_bid() -> int:
+	if state.phase != GameState.AUCTION:
+		return -1
+	var a := state.auction
+	if a["high_seat"] == BANK:
+		return a["min_bid"]
+	return a["high_bid"] + config.balance["auction"]["min_increment"]
+
+
 ## Final rent for `payer` plus the payer modifier it would consume.
 func rent_quote(pid: String, payer: int) -> Dictionary:
 	var rent := gross_rent(pid)
@@ -349,7 +370,7 @@ func _cmd_bid(seat: int, payload: Dictionary) -> String:
 	if seat == a["high_seat"]:
 		return ErCommand.E_INVALID_TARGET
 	var cfg: Dictionary = config.balance["auction"]
-	var minimum: int = a["min_bid"] if a["high_seat"] == BANK else a["high_bid"] + cfg["min_increment"]
+	var minimum := min_next_bid()
 	if amount < minimum:
 		return ErCommand.E_BID_TOO_LOW
 	if amount > state.player(seat)["cash"]:

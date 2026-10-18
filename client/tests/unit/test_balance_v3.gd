@@ -183,3 +183,17 @@ func test_simulated_matches_respect_per_count_caps() -> void:
 		if n < 4 and r["rounds"] > 25:
 			beyond_25 += 1
 	assert_true(beyond_25 > 5, "2p/3p matches actually use the longer caps (%d)" % beyond_25)
+
+
+func test_rent_ladder_query_matches_gross_rent() -> void:
+	# The HUD shows rent_ladder(); it must agree with the rent actually charged.
+	for i in 7:
+		var did := "D%d" % (i + 1)
+		var f := ErFixture.make()
+		var pid: String = f.district(did)[0]
+		var ladder := f.engine.rent_ladder(pid)
+		f.give(1, [pid])
+		assert_eq(ladder[0], f.engine.gross_rent(pid), "%s incomplete" % did)
+		for lv in 4:
+			f.give(1, f.district(did), lv)
+			assert_eq(ladder[lv + 1], f.engine.gross_rent(pid), "%s level %d" % [did, lv])

@@ -1,0 +1,25 @@
+{
+  "_note": "Presentation-only data (colours, labels). Never read by rules code.",
+  "districts": {
+    "D1": {"color": "#c8643c", "label": "Chợ Cũ"},
+    "D2": {"color": "#2a9d8f", "label": "Cảng Biển"},
+    "D3": {"color": "#6aa84f", "label": "Ven Sông"},
+    "D4": {"color": "#e07aa5", "label": "Phố Hoa"},
+    "D5": {"color": "#f2b134", "label": "Khu Nghỉ Dưỡng"},
+    "D6": {"color": "#3d6fd6", "label": "Trung Tâm Tài Chính"},
+    "D7": {"color": "#8e44ad", "label": "Đỉnh Thượng Lưu"}
+  },
+  "special_tiles": {
+    "START": {"color": "#e8c35a", "label": "XUẤT\nPHÁT"},
+    "CITY_EVENT": {"color": "#e05d5d", "label": "SỰ\nKIỆN"},
+    "OPPORTUNITY": {"color": "#4fb3e8", "label": "CƠ\nHỘI"},
+    "REST": {"color": "#9aa5b1", "label": "NGHỈ"},
+    "SPECIAL": {"color": "#d4a017", "label": "THUẾ"}
+  },
+  "players": [
+    {"color": "#e63946", "name": "Bạn"},
+    {"color": "#2f80ed", "name": "Minh"},
+    {"color": "#27ae60", "name": "Lan"},
+    {"color": "#f2994a", "name": "Huy"}
+  ]
+}

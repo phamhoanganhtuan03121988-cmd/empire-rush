@@ -1,0 +1,130 @@
+## Offline authority for the vertical slice: owns the M1 GameEngine, drives
+## its clock from frame time, applies timeouts and lets bot seats act.
+## The UI talks to the match ONLY through submit(); everything the player sees
+## comes from engine events. Swappable for a RemoteAuthority in M3.
+class_name LocalMatch
+extends Node
+
+signal events_emitted(events: Array)
+signal command_rejected(seat: int, type: String, error: String)
+
+var config: GameConfig
+var engine: GameEngine
+var clock := FrameClock.new(0)
+var human_seats: Array[int] = []
+## Presentation gate: bots wait while this returns false so animations are
+## visible. It never affects rules or timers (deadlines keep running).
+var can_act: Callable = func(): return true
+var bot_delay_range := Vector2(0.7, 1.5)
+
+var _bots: Dictionary = {}
+var _bot_wait := 0.0
+var _rng := RandomNumberGenerator.new()  # bot pacing only
+var _cmd_n := 0
+
+
+func start(p_config: GameConfig, seats: Array, seed_value: int, p_human_seats: Array[int]) -> void:
+	config = p_config
+	human_seats = p_human_seats
+	engine = GameEngine.create(config, clock, seats, seed_value, "local-%d" % seed_value)
+	_rng.seed = seed_value
+	var bot_rng := ErRng.new(seed_value * 7919 + 17)
+	for i in seats.size():
+		if not i in human_seats:
+			_bots[i] = BotPlayer.new(i, seats[i]["player_id"], bot_rng, 0)
+	# Events emitted by create() are in the engine log; replay them to listeners.
+	events_emitted.emit.call_deferred(engine.event_log.duplicate())
+
+
+func is_human(seat: int) -> bool:
+	return seat in human_seats
+
+
+func player_id(seat: int) -> String:
+	return engine.state.player(seat)["player_id"]
+
+
+## The single entry point for player intent (UI buttons, autopilot).
+func submit(seat: int, type: String, payload: Dictionary = {}) -> Dictionary:
+	_cmd_n += 1
+	var cmd := ErCommand.make(engine.state.match_id, player_id(seat), "ui-%d" % _cmd_n,
+		engine.state.state_version, type, payload)
+	var res := engine.submit(cmd)
+	if res["ok"]:
+		events_emitted.emit(res["events"])
+	else:
+		command_rejected.emit(seat, type, res["error"])
+	return res
+
+
+func _process(delta: float) -> void:
+	if engine == null:
+		return
+	clock.tick(delta)
+	var timed := engine.advance()
+	if not timed.is_empty():
+		events_emitted.emit(timed)
+	if engine.is_ended() or not can_act.call():
+		_bot_wait = 0.0
+		return
+	var actor := _bot_actor()
+	if actor < 0:
+		_bot_wait = 0.0
+		return
+	if _bot_wait <= 0.0:
+		_bot_wait = _rng.randf_range(bot_delay_range.x, bot_delay_range.y)
+		if engine.state.phase == GameState.AUCTION:
+			_bot_wait *= 0.6
+		return
+	_bot_wait -= delta
+	if _bot_wait > 0.0:
+		return
+	_bot_wait = 0.0
+	var cmd: Dictionary = _bots[actor].decide(engine)
+	if cmd.is_empty():
+		return
+	var res := engine.submit(cmd)
+	if res["ok"]:
+		events_emitted.emit(res["events"])
+
+
+## Which bot seat should act now (-1 if none / a human is up).
+func _bot_actor() -> int:
+	var s := engine.state
+	if s.phase == GameState.AUCTION:
+		var n := s.players.size()
+		for k in n:
+			var seat := (s.current_seat + 1 + k) % n
+			if _bots.has(seat) and not _bots[seat].decide(engine).is_empty():
+				return seat
+		return -1
+	var actor := s.current_seat
+	match s.phase:
+		GameState.TRADE_PENDING: actor = s.trade["to"]
+		GameState.RESCUE: actor = s.rescue["debtor"]
+		GameState.AWAIT_CHOICE: actor = s.choice["seat"]
+	return actor if _bots.has(actor) else -1
+
+
+## Seat the UI must serve right now (-1 if no human decision is pending).
+func human_actor() -> int:
+	if engine == null or engine.is_ended():
+		return -1
+	var s := engine.state
+	var actor := s.current_seat
+	match s.phase:
+		GameState.TRADE_PENDING: actor = s.trade["to"]
+		GameState.RESCUE: actor = s.rescue["debtor"]
+		GameState.AWAIT_CHOICE: actor = s.choice["seat"]
+		GameState.AUCTION:
+			for h in human_seats:
+				if not s.player(h)["bankrupt"]:
+					return h
+			return -1
+	return actor if is_human(actor) else -1
+
+
+func seconds_left() -> float:
+	if engine == null or engine.is_ended():
+		return 0.0
+	return maxf(0.0, (engine.current_deadline_ms() - clock.now_ms()) / 1000.0)

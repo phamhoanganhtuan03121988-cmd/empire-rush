@@ -24,4 +24,21 @@ if grep -qE "SCRIPT ERROR|Assertion failed|Parse Error" "$LOG_DIR/tests.log"; th
 	echo "FAIL: script/assertion errors found in $LOG_DIR/tests.log" >&2
 	exit 1
 fi
+[ "$status" -eq 0 ] || exit "$status"
+
+# Compile every script (parse errors only surface when a script is loaded).
+timeout "$TIMEOUT_SECS" "$GODOT" --headless --path "$ROOT/client" \
+	--script res://tests/check_scripts.gd 2>&1 | tee "$LOG_DIR/check_scripts.log"
+[ "${PIPESTATUS[0]}" -eq 0 ] || exit 1
+
+# UI flow tests: boot the real scene headless and drive it through HUD buttons.
+set +e
+timeout "$TIMEOUT_SECS" "$GODOT" --headless --path "$ROOT/client" \
+	--script res://tests/ui/ui_test_runner.gd 2>&1 | tee "$LOG_DIR/ui_tests.log"
+status="${PIPESTATUS[0]}"
+set -e
+if grep -qE "SCRIPT ERROR|Assertion failed|Parse Error" "$LOG_DIR/ui_tests.log"; then
+	echo "FAIL: script/assertion errors found in $LOG_DIR/ui_tests.log" >&2
+	exit 1
+fi
 exit "$status"
