@@ -28,3 +28,9 @@ window/handheld/orientation=6
 
 renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
+
+[debug]
+
+; Also on iOS/Android (default is desktop only): user://logs/godot.log is
+; reachable through the Files app and is the first crash clue on a device.
+file_logging/enable_file_logging=true

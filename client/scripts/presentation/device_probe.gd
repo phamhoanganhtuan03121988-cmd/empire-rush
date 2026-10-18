@@ -6,8 +6,9 @@
 ## - frame time is the engine frame delta (CPU+GPU pacing as seen by Godot);
 ## - input latency is "touch event dispatched -> next frame submitted", it
 ##   excludes the touch digitizer and display scan-out;
-## - memory is Godot's static allocator plus reported video memory, not the
-##   process footprint the OS uses for jetsam.
+## - memory is Godot's static allocator (tracked in debug builds only; null in
+##   release) plus reported video memory, not the process footprint the OS
+##   uses for jetsam. Use Xcode's memory gauge for that.
 class_name DeviceProbe
 extends Node
 
@@ -63,6 +64,7 @@ static func load_build_info() -> Dictionary:
 
 func device_info() -> Dictionary:
 	var screen := DisplayServer.screen_get_size()
+	var win := DisplayServer.window_get_size()
 	return {
 		"os": OS.get_name(), "os_version": OS.get_version(), "model": OS.get_model_name(),
 		"cpu": OS.get_processor_name(), "cpu_count": OS.get_processor_count(),
@@ -76,7 +78,9 @@ func device_info() -> Dictionary:
 		"refresh_hz": DisplayServer.screen_get_refresh_rate(),
 		"safe_area": str(DisplayServer.get_display_safe_area()),
 		"viewport": str((Engine.get_main_loop() as SceneTree).root.get_visible_rect().size),
-		"orientation": "portrait" if screen.y >= screen.x else "landscape",
+		"window_px": [win.x, win.y],
+		"orientation": "portrait" if win.y >= win.x else "landscape",
+		"system_memory": OS.get_memory_info(),
 	}
 
 
@@ -126,7 +130,7 @@ func live() -> Dictionary:
 	var s := frame_stats(_frames)
 	s["fps_now"] = Engine.get_frames_per_second()
 	s["draw_calls"] = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)
-	s["static_mb"] = snappedf(OS.get_static_memory_usage() / 1048576.0, 0.1)
+	s["static_mb"] = snappedf(OS.get_static_memory_usage() / 1048576.0, 0.1) if OS.is_debug_build() else -1.0
 	s["video_mb"] = snappedf(RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0, 0.1)
 	s["preset"] = preset
 	return s
@@ -194,8 +198,11 @@ func report(include_open_segment := true) -> Dictionary:
 		"frame_segments": segs,
 		"input_latency_ms": frame_stats(lat) if lat.size() > 0 else {"frames": 0},
 		"input_latency_samples": lat.size(),
-		"memory_peak": {"static_mb": snappedf(peak_static_mb, 0.1), "video_mb": snappedf(peak_video_mb, 0.1),
-			"static_peak_reported_mb": snappedf(OS.get_static_memory_peak_usage() / 1048576.0, 0.1)},
+		"memory_peak": {
+			# Godot only tracks its static allocator in debug builds.
+			"static_mb": snappedf(peak_static_mb, 0.1) if OS.is_debug_build() else null,
+			"static_peak_reported_mb": snappedf(OS.get_static_memory_peak_usage() / 1048576.0, 0.1) if OS.is_debug_build() else null,
+			"video_mb": snappedf(peak_video_mb, 0.1)},
 	}
 
 

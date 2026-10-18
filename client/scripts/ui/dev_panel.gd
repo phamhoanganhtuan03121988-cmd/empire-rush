@@ -26,6 +26,8 @@ var _bench_step := -1
 var _bench_end_ms := 0
 var _bench_restore := ""
 var _overlay_t := 0.0
+var _status_t := 0.0
+var _status_hold_until_ms := 0
 
 
 func setup(p_probe: DeviceProbe) -> void:
@@ -129,9 +131,14 @@ func _process(delta: float) -> void:
 				_bench_step = -1
 				set_quality.call(_bench_restore)
 				probe.save()
-				_status.text = UiText.t("dev_bench_done") + "\n" + probe.report_path
+				_show_message(UiText.t("dev_bench_done") + "\n" + probe.report_path)
 				_panel.visible = true
 				bench_finished.emit(probe.report_path)
+	if _panel.visible:
+		_status_t -= delta
+		if _status_t <= 0.0 and Time.get_ticks_msec() >= _status_hold_until_ms:
+			_status_t = 1.0
+			_refresh_texts()
 	if overlay.visible:
 		_overlay_t -= delta
 		if _overlay_t <= 0.0:
@@ -146,20 +153,32 @@ func _update_overlay() -> void:
 	if s.get("frames", 0) > 0:
 		lines.append("p50 %.1f · p95 %.1f · p99 %.1f ms" % [s["p50_ms"], s["p95_ms"], s["p99_ms"]])
 		lines.append(">33ms %.1f%% · max %.0f ms" % [s["pct_over_33ms"], s["max_ms"]])
-	lines.append("RAM %.0f MB · VRAM %.0f MB" % [s["static_mb"], s["video_mb"]])
+	var ram := "RAM %.0f MB" % s["static_mb"] if s["static_mb"] >= 0.0 else "RAM: xem Xcode (bản release)"
+	lines.append("%s · VRAM %.0f MB" % [ram, s["video_mb"]])
 	if _bench_step >= 0:
 		lines.append(UiText.t("dev_bench_running") % [BENCH_ORDER[_bench_step], ceili((_bench_end_ms - Time.get_ticks_msec()) / 1000.0)])
 	overlay.text = "\n".join(lines)
-	var safe := get_viewport().get_visible_rect()
+	overlay.reset_size()
+	# Next to the action panel (above it in portrait, below it in landscape)
+	# so the numbers do not sit on the board while it is being measured.
 	var hud := get_parent() as GameHud
-	if hud:
-		safe = hud.safe_rect()
-	overlay.position = safe.position + Vector2(8, safe.size.y * 0.42)
+	if hud and hud._action_panel:
+		var ap := hud._action_panel.get_global_rect()
+		var vp := get_viewport_rect().size
+		if vp.y >= vp.x:
+			overlay.position = Vector2(hud.safe_rect().position.x + 8, ap.position.y - overlay.size.y - 8)
+		else:
+			overlay.position = Vector2(ap.position.x, ap.end.y + 8)
 
 
 func _save_now() -> void:
 	probe.save()
-	_status.text = UiText.t("dev_saved") % probe.report_path
+	_show_message(UiText.t("dev_saved") % probe.report_path)
+
+
+func _show_message(text: String) -> void:
+	_status.text = text
+	_status_hold_until_ms = Time.get_ticks_msec() + 5000
 
 
 func _refresh_texts() -> void:
@@ -171,7 +190,8 @@ func _refresh_texts() -> void:
 	lines.append("Build %s · %s · %s" % [b.get("version", ""), b.get("commit", ""), "debug" if b.get("debug_build", false) else "release"])
 	var d := probe.device_info()
 	lines.append("%s %s · %s" % [d["model"], d["os_version"], d["gpu"]])
-	lines.append("Tải: %d ms tới khung hình đầu" % probe.first_frame_ms)
+	if probe.first_frame_ms >= 0:
+		lines.append("Tải: %d ms tới khung hình đầu" % probe.first_frame_ms)
 	if probe.previous_session.get("state", "") == "running":
 		lines.append(UiText.t("dev_prev_unclean") % "crash / bị hệ thống dừng khi đang mở")
 	_status.text = "\n".join(lines)
