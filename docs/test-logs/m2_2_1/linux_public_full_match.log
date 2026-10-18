@@ -1,0 +1,4 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+exit=0
+command: build/linux-public/EmpireRush.x86_64 --headless -- --players=2 --seed=42 --autoplay --timescale=4 --quit-on-end --telemetry=user://telemetry/should_not_exist.json ; afterwards user://telemetry contained only files from earlier debug test runs (session_1792306940/985/986), no should_not_exist.json

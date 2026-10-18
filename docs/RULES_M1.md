@@ -62,6 +62,37 @@ Phases: `AwaitRoll → (AwaitBuyDecision | Auction | AwaitChoice | Rescue)* → 
 The turn timer is **paused** during Auction, TradePending and Rescue, and resumes with the time that was left.
 A command is accepted only while `now < deadline`. At or after the deadline it gets `DEADLINE_PASSED`, and `advance()` applies the default.
 
+### Offline lifecycle: background, resume and force quit (M2.2.1, offline mode only)
+The rules engine reads time only through the injected `MatchClock`. In offline mode, `LocalMatch` advances that clock by frame time, filtered by `LifecycleGate` (`client/scripts/presentation/lifecycle_gate.gd`).
+
+**Background.** When the OS suspends the app (`NOTIFICATION_APPLICATION_PAUSED`), and on phones also when the app loses focus (Control Center, a call banner, the app switcher), the match clock stops. While it is stopped:
+- no deadline moves: turn, auction, trade and rescue;
+- the 30-minute cap does not advance;
+- bots do not act;
+- no timeout can fire.
+
+Session telemetry stops counting game time in the same way.
+
+**Resume.** The clock continues from exactly where it stopped. The turn timer is **not reset**: the remaining time is what was left when the app left the foreground. Time spent in the background never counts.
+- The first frame after resume may carry the whole suspension in its delta, and the OS may deliver that frame before or after the resume notice. Either way, it counts only the real time that has passed since resume.
+- One frame (≤ about 16 ms) can be lost at that moment. That is all.
+
+**Timeouts.** They are applied by the engine's `advance()` only when the clock reaches a deadline. A stopped clock therefore cannot produce a timeout, and a timeout that already fired is never repeated by later pause/resume cycles. This is tested: a run with background periods produces an identical event log to a run that only saw the foreground time.
+
+**Animations / pending UI.** The presenter keeps its queue of events. If frames still run while the clock is stopped (focus loss on a phone), animations finish and buttons stay usable. Any command is validated against the stopped clock, so it is treated the same as just before the pause.
+
+**Desktop.** Losing window focus (alt-tab) does **not** pause, so an app that stays in the foreground behaves exactly as before.
+
+**Force quit / OS termination.** There is **no match recovery** (not designed yet). The offline match exists only in memory. If the app is force-quit from the app switcher, killed by iOS while suspended, or crashes:
+- the match is lost;
+- the next launch starts a new match;
+- no result is recorded;
+- the unfinished match writes no telemetry summary.
+
+Internal test builds keep their periodically saved device report, and the launch marker shows `background` (killed while suspended) or `running` (died in the foreground). A save/resume design would be a separate, owner-approved feature.
+
+**Online (M3).** None of this applies to online play. Server timers keep running; a client that returns gets a snapshot (PROTOCOL.md).
+
 ## 4. Purchase and auction (GDD §6)
 - Buy: the player pays the price to the bank and becomes the owner.
 - Auction: ascending bids, 12 s.

@@ -1,0 +1,10 @@
+# Local reproduction of the CI steps (fresh git clone, CI-installed Godot)
+## clean clone, unmodified
+RESULT: 184 passed, 0 failed
+CHECKED 69 scripts, 0 failed
+UI RESULT: 17 passed, 0 failed
+exit=0
+## clean clone with one assertion deliberately broken
+RESULT: 183 passed, 1 failed
+FAIL: test_offline_lifecycle.gd::test_background_with_time_left_keeps_remaining_time - deliberately broken for the CI check expected <1> got <35000>
+exit=1

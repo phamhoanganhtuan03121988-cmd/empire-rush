@@ -35,27 +35,29 @@ Editor → Manage Export Templates → Install from file, or unzip the `.tpz` so
 ```bash
 GODOT="/Applications/Godot.app/Contents/MacOS/Godot" \
 IOS_TEAM_ID=XXXXXXXXXX IOS_BUNDLE_ID=com.yourteam.empirerush \
-scripts/export_build.sh ios release   # or: debug
+scripts/export_build.sh ios internal release   # device testing: has the device panel and reports
+# scripts/export_build.sh ios public release   # public release: no device tools, no Files-app access
 ```
 - The script writes `client/data/build_info.json` (commit + UTC time; git-ignored). The device panel and every report then show the exact build.
 - It injects the team and bundle IDs into a temporary copy of the presets and restores the committed file afterwards.
 
-The preset has `application/export_project_only=true`, so the output is an Xcode project in `build/ios/` (`EmpireRush.xcodeproj`, `EmpireRush.pck`, frameworks). To have Godot also build the `.ipa` on a Mac, set it to `false` in a local copy. Use **release** builds for FPS numbers; debug builds include extra checks.
+The preset has `application/export_project_only=true`, so the output is an Xcode project in `build/ios-internal/` (or `build/ios-public/`) (`EmpireRush.xcodeproj`, `EmpireRush.pck`, frameworks). To have Godot also build the `.ipa` on a Mac, set it to `false` in a local copy. Use **release** builds for FPS numbers; debug builds include extra checks.
 
-**Option B (Linux container, already tested):** run the same command on Linux. It produces the same Xcode project; copy `build/ios/` to the Mac.
+**Option B (Linux container, already tested):** run the same command on Linux. It produces the same Xcode project; copy `build/ios-internal/` to the Mac.
 
 ## 3. Check the export
-- `build/ios/EmpireRush/EmpireRush-Info.plist` contains `UIFileSharingEnabled` and the four orientations.
+- `build/ios-internal/EmpireRush/EmpireRush-Info.plist` contains `UIFileSharingEnabled` = true and the four orientations (the public build has it false).
 - `EmpireRush.pck` contains `data/rules/*.json` and `data/presentation/*.json` and no `tests/`. A unit test guards this (`test_device_validation.gd`).
 
 ## 4. Sign and run in Xcode (Mac — not yet done)
-1. Open `build/ios/EmpireRush.xcodeproj`.
+1. Open `build/ios-internal/EmpireRush.xcodeproj`.
 2. Target **EmpireRush** → Signing & Capabilities: tick *Automatically manage signing* and select the team. Fix the bundle ID if Xcode reports it is taken.
 3. Select the connected iPhone 14 Pro as the run destination. Product → Run (⌘R).
 4. On first install, trust the developer certificate on the phone (Settings → General → VPN & Device Management), then open the app.
 
 ## 5. Measure (Mac + device)
 **In-app (no Mac needed after install):**
+- **Internal Test builds only** (or any debug build; see `BuildFlavor`). In a Public Release build the panel, the reports and the telemetry files do not exist.
 - Hold the **Đồ họa** button for about one second, then release. The device panel opens.
 - *HIỆN SỐ ĐO* shows live FPS, p50/p95/p99 frame time, the share of frames over 33 ms, draw calls and memory.
 - *ĐO TỰ ĐỘNG* plays the match itself (HUD autopilot) and records 60 s each of Thấp / Vừa / Cao. The first 1.5 s of each step is ignored as warm-up.

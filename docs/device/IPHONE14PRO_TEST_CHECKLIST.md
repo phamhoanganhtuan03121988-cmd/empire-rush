@@ -25,7 +25,7 @@ Result codes: **P** pass · **F** fail (open an issue with a screenshot or scree
 | A1 | Installs from Xcode, icon shows (placeholder diamond) | | |
 | A2 | Cold start to interactive board | Force-quit, start a stopwatch on tap, stop when the board is visible. Also record `load.engine_to_first_frame_ms` from the report (excludes iOS process launch) | ___ s / ___ ms |
 | A3 | No crash in the first 5 minutes | | |
-| A4 | Device panel opens (hold *Đồ họa* about 1 s, release) and shows model, iOS, GPU and build commit | | |
+| A4 | **Internal Test build:** device panel opens (hold *Đồ họa* about 1 s, release) and shows model, iOS, GPU and build commit. **Public Release build:** a long press only cycles the preset, and the Files app shows no Empire Rush folder | | |
 
 ## B. Layout, safe area, readability
 | # | Check | Result |
@@ -58,8 +58,8 @@ Result codes: **P** pass · **F** fail (open an issue with a screenshot or scree
 | D2 | Input latency, subjective: button reaction feels immediate (< about 100 ms)? | |
 | D3 | Input latency, in-app: `input_latency_ms` p50 / p95 from the report after about 50 taps (dispatch → next frame; excludes digitizer and display) | ___ / ___ ms |
 | D4 | Optional end to end: film the screen and finger with 240 fps slow motion, count frames from touch to the button's pressed state (1 frame = 4.2 ms) | ___ ms |
-| D5 | Background mid-turn (swipe home) for 10 s, then return: game continues, no crash. **Note what happened to the turn timer** (see the report: offline clock currently counts background time) | |
-| D6 | Same with 5 minutes in background, and with a phone call / Control Center / lock screen | |
+| D5 | Background mid-turn (swipe home) for 10 s, then return: game continues, no crash. **Expected since M2.2.1:** the turn timer shows the same remaining time as before leaving (not reset, not reduced by the background time); no timeout fires on return | |
+| D6 | Same with 5 minutes in background, near the end of a turn (≤ 5 s left), during an auction, and with a phone call / Control Center / lock screen. Expected: same as D5. Then force-quit from the app switcher and reopen: a new match starts (no recovery, by design) | |
 | D7 | Play again 3 times in a row: no crash; memory does not keep growing (Xcode memory gauge) | |
 | D8 | Next launch after any abnormal exit: the device panel shows the "kết thúc bất thường" line. Pull the `.ips` crash log | |
 
