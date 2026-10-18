@@ -73,12 +73,12 @@ func _run() -> void:
 		for i in ds.size():
 			for lv in [1, 2, 3]:
 				_place(world, "res://assets/models/buildings/%s_l%d.res" % [ds[i].to_lower(), lv],
-					Vector3((i - 3) * 0.9, 0, (lv - 2) * 1.0), "%s L%d" % [ds[i], lv])
-		cam.position = Vector3(0, 3.6, 4.3)
-		cam.look_at(Vector3(0, 0.35, -0.1))
-		cam.fov = 50
+					Vector3((i - 3) * 0.95, 0, (2 - lv) * 1.15), "%s L%d" % [ds[i], lv])
+		cam.position = Vector3(0, 4.6, 5.0)
+		cam.look_at(Vector3(0, 0.3, -0.2))
+		cam.fov = 48
 	else:
-		var items := ["tile_base", "tile_top", "lot_plaza", "lot_sign", "streetlight", "tree_round_0", "tree_round_1",
+		var items := ["tile_base", "tile_top", "lot_plaza", "streetlight", "tree_round_0", "tree_round_1",
 			"tree_cone", "palm", "bench", "planter", "bollard", "boat_red", "yacht", "pier", "fountain",
 			"bg_block_0", "bg_block_1", "bg_block_2", "bg_block_3", "landmark", "flag_pole", "flag_cloth"]
 		for i in items.size():

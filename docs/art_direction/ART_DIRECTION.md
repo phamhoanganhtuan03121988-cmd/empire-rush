@@ -163,7 +163,7 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
     - enamel (clear-coat);
     - window glow (emissive, 0.85);
     - contact shadow (unshaded alpha).
-- **Textures:** 512 px tileable detail and normal maps from fixed seeds, VRAM-compressed with mipmaps.
+- **Textures:** 512 px tileable detail and normal maps from fixed seeds, VRAM-compressed with mipmaps. The **Low preset turns the triplanar detail and normal maps off** (vertex colour only) to save fill rate on weak GPUs.
 - **Light:**
   - Key: sun `#ffe2b8` at 1.45, −48° pitch, shadows on medium and high.
   - Fill: `#9cc3ff` at 0.35.

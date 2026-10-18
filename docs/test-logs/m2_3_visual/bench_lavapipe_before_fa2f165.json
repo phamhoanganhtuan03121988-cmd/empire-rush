@@ -1,0 +1,100 @@
+{
+  "build": {
+    "built_at": "unknown",
+    "commit": "unknown",
+    "debug_build": true,
+    "engine": "4.7.2-stable (official)",
+    "version": "0.0.1"
+  },
+  "device": {
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "cpu_count": 4,
+    "display_server": "X11",
+    "gpu": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "gpu_vendor": "Unknown",
+    "graphics_api": "1.4.318",
+    "model": "GenericDevice",
+    "orientation": "portrait",
+    "os": "Linux",
+    "os_version": "24.04",
+    "refresh_hz": null,
+    "renderer": "mobile",
+    "safe_area": "[P: (0, 0), S: (2000, 2000)]",
+    "screen_px": [
+      2000,
+      2000
+    ],
+    "screen_scale": 1.0,
+    "system_memory": {
+      "available": 14431174656,
+      "free": 14431174656,
+      "physical": 16874930176,
+      "stack": 8388608
+    },
+    "viewport": "(720.0, 1560.0)",
+    "window_px": [
+      786,
+      1704
+    ]
+  },
+  "frame_segments": [
+    {
+      "draw_calls_at_end": 51,
+      "frames": 232,
+      "max_ms": 143.94,
+      "mean_fps": 13.4,
+      "p50_ms": 70.83,
+      "p95_ms": 95.94,
+      "p99_ms": 139.39,
+      "pct_over_16_7ms": 100.0,
+      "pct_over_33ms": 100.0,
+      "preset": "low",
+      "seconds": 20.0,
+      "tag": "bench"
+    },
+    {
+      "draw_calls_at_end": 60,
+      "frames": 130,
+      "max_ms": 148.39,
+      "mean_fps": 7.5,
+      "p50_ms": 132.45,
+      "p95_ms": 143.98,
+      "p99_ms": 144.83,
+      "pct_over_16_7ms": 100.0,
+      "pct_over_33ms": 100.0,
+      "preset": "medium",
+      "seconds": 20.1,
+      "tag": "bench"
+    },
+    {
+      "draw_calls_at_end": 62,
+      "frames": 94,
+      "max_ms": 147.7,
+      "mean_fps": 7.5,
+      "p50_ms": 133.33,
+      "p95_ms": 144.44,
+      "p99_ms": 147.7,
+      "pct_over_16_7ms": 100.0,
+      "pct_over_33ms": 100.0,
+      "preset": "high",
+      "seconds": 20.1,
+      "tag": "bench"
+    }
+  ],
+  "input_latency_ms": {
+    "frames": 0
+  },
+  "input_latency_samples": 0,
+  "load": {
+    "engine_to_first_frame_ms": 2900,
+    "engine_to_scene_ready_ms": 794
+  },
+  "memory_peak": {
+    "static_mb": 59.8,
+    "static_peak_reported_mb": 59.9,
+    "video_mb": 203.1
+  },
+  "previous_session": {},
+  "schema": 1,
+  "started_unix": 1792311659
+}
