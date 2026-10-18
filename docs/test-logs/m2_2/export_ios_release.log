@@ -1,0 +1,19 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[ DONE ] first_scan_filesystem
+
+[ DONE ] savepack
+
+Static framework: libgodot.ios.release.xcframework
+Unzipping...
+WARNING: Property not found: application/boot_splash/fullsize
+     at: get_setting_with_override_and_custom_features (core/config/project_settings.cpp:409)
+Exporting launch screen storyboard
+Exporting additional assets
+WARNING: Xcode Build: .ipa can only be built on macOS. Leaving Xcode project without building the package.
+     at: add_message (./editor/export/editor_export_platform.h:267)
+[ DONE ] export
+
+WARNING: Project export for preset "iOS" completed with warnings.
+     at: _fs_changed (editor/editor_node.cpp:1422)
+EXPORTED iOS (release) commit=bf64eae -> /home/user/empire-rush/build/ios
