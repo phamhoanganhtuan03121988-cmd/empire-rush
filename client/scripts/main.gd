@@ -31,6 +31,7 @@ var autopilot: HudAutopilot
 var probe: DeviceProbe
 var dev_panel: DevPanel
 var quality := "medium"
+var menu: StartMenu
 var _shot_t := 0.0
 var _shot_n := 0
 
@@ -47,11 +48,41 @@ func _ready() -> void:
 	config = GameConfig.load_from_dir()
 	theme_data = ThemeData.load_default()
 	_build_world()
-	var n := clampi(int(args.get("players", "4")), 2, 4)
+	# Phase 4: a normal launch (no --players) shows the start menu first.
+	if not args.has("players") and not MatchSetup.chosen:
+		_show_menu()
+		return
+	_start_match()
+
+
+## Start screen over the (empty) board. Starting builds the match in place.
+func _show_menu() -> void:
+	set_quality(MatchSetup.quality)
+	var layer := CanvasLayer.new()
+	layer.name = "MenuLayer"
+	add_child(layer)
+	menu = StartMenu.new()
+	if args.has("notch"):
+		menu.simulated_insets = Rect2(0, 108, 0, 62)
+	layer.add_child(menu)
+	menu.setup(config, theme_data)
+	menu.start_requested.connect(func():
+		MatchSetup.chosen = true
+		layer.queue_free()
+		menu = null
+		_start_match())
+	_reframe.call_deferred()
+
+
+func _start_match() -> void:
+	# Menu choices apply only to menu launches; --players/tests keep their args.
+	var from_menu := not args.has("players")
+	var n := clampi(int(args.get("players", str(MatchSetup.players))), 2, 4)
+	var chars: Array = MatchSetup.seat_characters(n, MatchSetup.character) if from_menu else CHARACTERS
 	var seed_value := int(args["seed"]) if args.has("seed") else int(Time.get_unix_time_from_system()) % 1000000
 	var seats: Array = []
 	for i in n:
-		seats.append({"player_id": "p%d" % i, "character_id": CHARACTERS[i]})
+		seats.append({"player_id": "p%d" % i, "character_id": chars[i]})
 	match_ref = LocalMatch.new()
 	match_ref.name = "LocalMatch"
 	add_child(match_ref)
@@ -70,7 +101,7 @@ func _ready() -> void:
 	presenter.config = config
 	presenter.match_ref = match_ref
 	presenter.popup_parent = self
-	presenter.reduced_motion = args.has("reduced-motion")
+	presenter.reduced_motion = args.has("reduced-motion") or (from_menu and MatchSetup.reduced_motion)
 	add_child(presenter)
 	match_ref.can_act = presenter.is_idle
 	match_ref.events_emitted.connect(presenter.enqueue)
@@ -89,10 +120,13 @@ func _ready() -> void:
 	layer.add_child(hud)
 	hud.setup(match_ref, presenter, theme_data, config)
 	hud.restart_requested.connect(func(): get_tree().reload_current_scene())
+	hud.menu_requested.connect(func():
+		MatchSetup.chosen = false
+		get_tree().reload_current_scene())
 	hud.quality_cycle_requested.connect(func(): set_quality(QualitySettings.next(quality)))
 	_setup_device_probe()
 	presenter.match_ended_presented.connect(_on_match_ended)
-	set_quality(args.get("quality", "medium"))
+	set_quality(args.get("quality", MatchSetup.quality if from_menu else "medium"))
 	get_viewport().size_changed.connect(_reframe)
 	_reframe.call_deferred()
 	if args.has("autoplay"):
@@ -199,7 +233,8 @@ func set_quality(name: String) -> void:
 	quality = name
 	QualitySettings.apply(name, get_viewport(), sun, env)
 	board.set_water_lite(name == "low")
-	hud.set_quality_label(name)
+	if hud:
+		hud.set_quality_label(name)
 	if probe and not (dev_panel and dev_panel.is_benchmarking()):
 		probe.begin_segment(name)
 
@@ -207,6 +242,9 @@ func set_quality(name: String) -> void:
 func _reframe() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
+	if hud == null:
+		camera.frame({"top": 0.06, "bottom": 0.06, "left": 0.0, "right": 0.0})  # menu backdrop
+		return
 	camera.frame(hud.board_insets())
 
 
@@ -222,7 +260,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		pos = event.position
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		pos = event.position
-	if pos.x >= 0:
+	if pos.x >= 0 and hud != null:
 		var idx := board.pick(camera, pos)
 		if idx >= 0:
 			hud.open_tile_info(idx)

@@ -44,7 +44,7 @@ func _collect(dir_path: String, out: Array[String]) -> void:
 
 func _run_file(path: String) -> void:
 	var script: GDScript = load(path)
-	if script == null:
+	if script == null or not script.can_instantiate():
 		_failures.append("%s: failed to load" % path)
 		return
 	for method in script.get_script_method_list():

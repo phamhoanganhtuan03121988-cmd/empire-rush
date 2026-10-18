@@ -21,6 +21,11 @@ func _run() -> void:
 	files.sort()
 	for path in files:
 		var script: GDScript = load(path)
+		# A file that does not compile must fail the run, not vanish from it
+		# (Phase 4: a parse error silently skipped a whole test file).
+		if script == null or not script.can_instantiate():
+			_failures.append("%s: failed to load / compile" % path)
+			continue
 		for m in script.get_script_method_list():
 			var name: String = m["name"]
 			if not name.begins_with("test_"):

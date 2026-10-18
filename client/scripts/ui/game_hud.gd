@@ -6,6 +6,7 @@ class_name GameHud
 extends Control
 
 signal restart_requested
+signal menu_requested
 signal quality_cycle_requested
 ## Holding the quality button opens the device-validation panel (DevPanel).
 signal dev_menu_requested
@@ -64,6 +65,7 @@ var _last_key := ""
 var _timer_total := 45.0
 var _landscape := false
 var _refits_left := 0
+var results_menu_button: Button
 
 
 func setup(p_match: LocalMatch, p_presenter: EventPresenter, p_theme: ThemeData, p_config: GameConfig) -> void:
@@ -302,7 +304,21 @@ func _build_results() -> void:
 	again.icon = UiTheme.icon("dice")
 	again.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
 	again.pressed.connect(func(): restart_requested.emit())
-	v.add_child(again)
+	# Phase 4: back to the start menu (players, character, preset).
+	var to_menu := Button.new()
+	to_menu.text = "MENU"
+	to_menu.icon = UiTheme.icon("gear")
+	to_menu.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
+	UiTheme.secondary(to_menu)
+	to_menu.pressed.connect(func(): menu_requested.emit())
+	results_menu_button = to_menu
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	again.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	to_menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(again)
+	row.add_child(to_menu)
+	v.add_child(row)
 
 
 # --- layout ---------------------------------------------------------------------
@@ -711,6 +727,12 @@ func _send(type: String, payload: Dictionary) -> void:
 	if seat < 0:
 		return
 	_sub_view = ""
+	# Phase 4: one tap = one command. Disable the whole button set at once so
+	# a double tap (or a second button hit while the panel is rebuilt) cannot
+	# send another command; the engine would reject it, but silently.
+	for b in _buttons.get_children():
+		if b is Button:
+			b.disabled = true
 	match_ref.submit(seat, type, payload)
 
 

@@ -235,3 +235,42 @@ func test_rescue_list_scrolls_by_whole_rows_with_hint() -> void:
 		assert_false(hud._action_body.text.contains("Kéo để xem thêm"), "no scroll hint when everything fits: %s" % hud._action_body.text)
 	tree.root.content_scale_size = Vector2i(720, 1280)
 	tree.root.size = Vector2i(405, 720)
+
+
+## Phase 4: a double tap sends one command. The second tap lands on a
+## disabled button; state changes exactly once (cash charged once).
+func test_double_tap_sends_one_command() -> void:
+	await start_game(2, 3)
+	await wait_for_action(ErCommand.ROLL_DICE)
+	await land_human(1)
+	assert_true(await wait_for_action(ErCommand.BUY_PROPERTY), "buy offered")
+	var b := find_action(ErCommand.BUY_PROPERTY)
+	var before: int = engine().state.player(0)["cash"]
+	var version: int = engine().state.state_version
+	b.pressed.emit()
+	assert_true(b.disabled, "button disabled right after the first tap")
+	var others: Array = main.hud.actions.filter(func(a): return a["button"] != b and is_instance_valid(a["button"]))
+	assert_true(others.all(func(a): return a["button"].disabled), "every other action button disabled too")
+	b.pressed.emit()  # a disabled Button ignores real taps; emit() bypasses that, so the guard must hold too
+	await settle()
+	assert_eq(engine().state.owner["P_D1_1"], 0, "bought")
+	assert_eq(before - engine().state.player(0)["cash"], engine().config.tier_of("P_D1_1")["price"], "charged once")
+	assert_eq(engine().state.state_version, version + 1, "one state change")
+
+
+## Phase 4: reduced motion plays a whole match to the results screen.
+func test_reduced_motion_full_match() -> void:
+	await start_game(3, 33, {"autoplay": "1", "reduced-motion": "1"})
+	assert_true(main.presenter.reduced_motion, "reduced motion on")
+	main.autopilot.think_seconds = Vector2(0.01, 0.03)
+	Engine.time_scale = 4.0
+	var ok := false
+	for i in 80000:
+		await tree.process_frame
+		if engine().is_ended() and main.presenter.is_idle():
+			ok = true
+			break
+	Engine.time_scale = 1.0
+	assert_true(ok, "match ended with reduced motion")
+	await frames(10)
+	assert_true(main.hud._results.visible, "results shown")
