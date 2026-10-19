@@ -122,7 +122,14 @@ def check_register():
     check(not missing, f"every asset folder is in the register ({missing or 'ok'})")
 
 
+def check_privacy_tool():
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "analysis", "privacy_scan.py"), "--self-test"],
+                       capture_output=True, text=True)
+    check(r.returncode == 0 and "PASS" in r.stdout, f"playtest privacy scanner self-test ({r.stdout.strip() or r.stderr.strip()[-200:]})")
+
+
 def main():
+    check_privacy_tool()
     check_presets()
     check_orientation()
     check_secrets()

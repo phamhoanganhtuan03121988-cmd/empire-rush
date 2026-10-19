@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""Privacy scan for playtest data before it is shared (Phase 4).
+
+Looks for things that must never leave a tester's machine or reach the repo:
+session tokens, private keys / certificates, e-mail addresses, absolute home
+paths (they contain the OS user name), IP addresses, and tester names typed
+into free-text fields when --names is given.
+
+  python3 scripts/analysis/privacy_scan.py DIR [--names "An,Binh"]            # report only, exit 1 if findings
+  python3 scripts/analysis/privacy_scan.py DIR --redact OUT_DIR [--names …]   # write redacted copies, then re-scan them
+
+Redaction replaces findings with placeholders (<home>, <email>, <ip>, <token>,
+<name>) and drops private-key files entirely. It never edits the originals.
+Binary files (images) are copied unchanged and listed, so a person can check
+screenshots by eye.
+"""
+import argparse
+import os
+import re
+import shutil
+import sys
+
+RULES = [
+    ("private_key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
+    ("certificate", re.compile(r"-----BEGIN CERTIFICATE-----")),
+    ("token", re.compile(r'(?i)("?(?:token|session|secret|password|api_key)"?\s*[:=]\s*"?)[A-Za-z0-9_\-]{16,}')),
+    ("email", re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")),
+    # Home folders carry the OS user name; iOS app containers carry a
+    # per-install UUID (/var/mobile/Containers/Data/Application/<UUID>).
+    ("home_path", re.compile(r"(/home/[^/\s\"']+|/Users/[^/\s\"']+|/root\b|/var/mobile/Containers/Data/Application/[0-9A-Fa-f-]+|[A-Za-z]:\\\\?Users\\\\?[^\\\s\"']+)")),
+    ("ip_address", re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b")),
+]
+PLACEHOLDER = {"token": "<token>", "email": "<email>", "home_path": "<home>", "ip_address": "<ip>", "certificate": "<certificate>"}
+TEXT_EXT = {".json", ".jsonl", ".csv", ".txt", ".log", ".md", ".cfg", ".ini"}
+SAFE_IPS = {"127.0.0.1", "0.0.0.0"}
+
+
+def scan_text(text, names):
+    found = []
+    for kind, rx in RULES:
+        for m in rx.finditer(text):
+            if kind == "ip_address" and m.group(0) in SAFE_IPS:
+                continue
+            if kind == "ip_address" and re.fullmatch(r"\d+\.\d+\.\d+\.\d+", m.group(0)) and _looks_like_version(text, m.start()):
+                continue
+            found.append((kind, m.group(0)[:60]))
+    for n in names:
+        if n and re.search(r"\b" + re.escape(n) + r"\b", text, re.I):
+            found.append(("name", n))
+    return found
+
+
+def _looks_like_version(text, pos):
+    # "4.7.2.stable" / "v1.2.3.4" style version strings are not addresses.
+    before = text[max(0, pos - 2):pos]
+    return before.endswith("v") or text[pos:pos + 20].count(".stable") > 0
+
+
+def redact_text(text, names):
+    for kind, rx in RULES:
+        if kind == "token":
+            text = rx.sub(lambda m: m.group(1) + "<token>", text)  # keep the key: JSON stays valid
+        elif kind in PLACEHOLDER:
+            text = rx.sub(lambda m: m.group(0) if (kind == "ip_address" and m.group(0) in SAFE_IPS) else PLACEHOLDER[kind], text)
+    for n in names:
+        if n:
+            text = re.sub(r"\b" + re.escape(n) + r"\b", "<name>", text, flags=re.I)
+    return text
+
+
+def walk(root):
+    for d, _, files in os.walk(root):
+        for f in sorted(files):
+            yield os.path.join(d, f)
+
+
+def self_test():
+    """Checks the rules on generated strings (nothing read from disk)."""
+    sample = ('{"token": "0123456789abcdef0123456789abcdef", "p": "/home/alice/x", "r": "/root/.local", '
+              '"m": "a.b@example.com", "ip": "192.168.1.20", "v": "4.7.2.stable", "lo": "127.0.0.1", '
+              '"ios": "/var/mobile/Containers/Data/Application/1A2B-33/Documents"} An')
+    kinds = sorted({k for k, _ in scan_text(sample, ["An"])})
+    assert kinds == ["email", "home_path", "ip_address", "name", "token"], kinds
+    red = redact_text(sample, ["An"])
+    assert not scan_text(red, ["An"]), scan_text(red, ["An"])
+    import json
+    json.loads(red.rsplit("}", 1)[0] + "}")  # still valid JSON after redaction
+    assert not scan_text('{"engine": "4.7.2.stable", "server": "127.0.0.1", "seed": 404}', [])
+    print("PRIVACY_SELF_TEST PASS")
+
+
+def main():
+    if "--self-test" in sys.argv:
+        self_test()
+        return
+    ap = argparse.ArgumentParser()
+    ap.add_argument("dir")
+    ap.add_argument("--redact")
+    ap.add_argument("--names", default="")
+    a = ap.parse_args()
+    names = [x.strip() for x in a.names.split(",") if x.strip()]
+    target = a.dir
+    if a.redact:
+        for path in walk(a.dir):
+            rel = os.path.relpath(path, a.dir)
+            out = os.path.join(a.redact, rel)
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            ext = os.path.splitext(path)[1].lower()
+            if ext in (".key", ".pem", ".p12", ".mobileprovision"):
+                print(f"DROPPED {rel} (key/certificate file)")
+                continue
+            if ext in TEXT_EXT:
+                text = open(path, encoding="utf-8", errors="replace").read()
+                if "PRIVATE KEY-----" in text:
+                    print(f"DROPPED {rel} (contains a private key)")
+                    continue
+                open(out, "w", encoding="utf-8").write(redact_text(text, names))
+            else:
+                shutil.copy2(path, out)
+                print(f"COPIED AS IS {rel} (binary: check by eye)")
+        target = a.redact
+    findings = 0
+    for path in walk(target):
+        if os.path.splitext(path)[1].lower() not in TEXT_EXT:
+            continue
+        for kind, sample in scan_text(open(path, encoding="utf-8", errors="replace").read(), names):
+            findings += 1
+            print(f"FINDING {kind:12s} {os.path.relpath(path, target)}: {sample}")
+    print(f"PRIVACY_SCAN {'CLEAN' if findings == 0 else 'FOUND %d' % findings} ({target})")
+    sys.exit(0 if findings == 0 else 1)
+
+
+if __name__ == "__main__":
+    main()

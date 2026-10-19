@@ -61,6 +61,43 @@ func _name(seat: int) -> String:
 	return theme.player_name(seat) if seat >= 0 else UiText.t("bank")
 
 
+var _last_choice: Dictionary = {}
+
+
+func _option_label(option_id: String) -> String:
+	for o in _last_choice.get("options", []):
+		if o["option_id"] == option_id:
+			return theme.loc(str(_last_choice.get("ref_id", "")) + "." + option_id, "label", o.get("label", option_id))
+	return option_id
+
+
+func _tag_districts(tag: String) -> String:
+	var names: Array = []
+	for did in config.district_tags:
+		if tag in config.district_tags[did]:
+			names.append(str(theme.districts.get(did, {}).get("label", did)))
+	return ", ".join(names) if not names.is_empty() else tag
+
+
+## Player-facing summary of a rent/upgrade modifier (Phase 4).
+func modifier_text(m: Dictionary) -> String:
+	var who: String = _name(m["seat"]) if m["seat"] >= 0 else ""
+	match m["kind"]:
+		"rent_pct":
+			if m["seat"] < 0 and str(m.get("tag", "")) != "":
+				return UiText.t("mod_rent_pct_tag") % [_tag_districts(m["tag"]), m["pct"]]
+			if m["seat"] < 0:
+				return UiText.t("mod_rent_pct_all") % m["pct"]
+			return UiText.t("mod_rent_pct") % [who, m["pct"]]
+		"rent_discount":
+			return UiText.t("mod_rent_discount") % [who, m["pct"]]
+		"rent_cap":
+			return UiText.t("mod_rent_cap") % [who, m["cap"]]
+		"upgrade_discount":
+			return UiText.t("mod_upgrade_discount") % [who, m["pct"]]
+	return ""
+
+
 func _present(ev: Dictionary) -> void:
 	var d: Dictionary = ev["data"]
 	match ev["type"]:
@@ -76,12 +113,30 @@ func _present(ev: Dictionary) -> void:
 				t.set_active(t.seat == d["seat"], not reduced_motion)
 			board.set_highlight(presented_pos.get(d["seat"], 0))
 			dice.hide_dice()
+		"ChoicePrompted":
+			_last_choice = d
+		"ChoiceResolved":
+			toast.emit(UiText.t("choice_made") % [_name(d["seat"]), _option_label(d["option_id"])], theme.player_color(d["seat"]), "star")
+		"PayoutScheduled":
+			toast.emit(UiText.t("payout_set") % [_name(d["seat"]), d["chance_pct"], d["reward"]], theme.player_color(d["seat"]), "opportunity")
+		"PayoutResolved":
+			if d["won"]:
+				toast.emit(UiText.t("payout_won") % [_name(d["seat"]), d["reward"]], theme.player_color(d["seat"]), "coin")
+			else:
+				toast.emit(UiText.t("payout_lost") % _name(d["seat"]), Color.WHITE, "opportunity")
+		"ModifierAdded":
+			var text := modifier_text(d)
+			if text != "":
+				toast.emit(text, Color("#9ad0ff"), "info")
 		"DiceRolled":
 			await dice.roll_to(d["d1"], d["d2"], Vector3(0, 0.06, 1.2), 0.9 * speed)
 			toast.emit(UiText.t("rolled") % [_name(d["seat"]), d["d1"], d["d2"], d["d1"] + d["d2"]], theme.player_color(d["seat"]), "dice")
 		"TokenMoved":
 			await _move_token(d["seat"], d["from"], d["to"], d["via"])
 		"CashChanged":
+			# Phase 4: say WHY when the reason is not told by another toast.
+			if d["reason"] == "start_reward" and d["to"] >= 0:
+				toast.emit(UiText.t("start_pass") % [_name(d["to"]), d["amount"]], theme.player_color(d["to"]), "arrow_start")
 			for side in [["from", "from_balance", -1], ["to", "to_balance", 1]]:
 				var seat: int = d[side[0]]
 				if seat >= 0 and d[side[1]] != null:

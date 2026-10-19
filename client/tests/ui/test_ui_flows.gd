@@ -135,7 +135,10 @@ func test_landscape_layout_keeps_panels_on_screen() -> void:
 
 func test_full_match_completes_with_results_screen() -> void:
 	# Autopilot plays the human seat through HUD buttons; bots play the rest.
-	await start_game(2, 21, {"autoplay": "1"})
+	var tel := "user://telemetry/ui_privacy_check.json"
+	if FileAccess.file_exists(tel):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(tel))
+	await start_game(2, 21, {"autoplay": "1", "telemetry": tel})
 	main.autopilot.think_seconds = Vector2(0.01, 0.03)
 	Engine.time_scale = 4.0
 	var ok := false
@@ -154,6 +157,14 @@ func test_full_match_completes_with_results_screen() -> void:
 	var inv := Invariants.check(engine())
 	assert_true(inv.is_empty(), "engine invariants: %s" % str(inv))
 	assert_true(engine().state.end_reason in ["round_cap", "last_solvent", "time_cap"], "valid end")
+	# Phase 4: what a playtester shares holds the replay record and nothing
+	# secret or identifying (no token-like keys, no absolute paths).
+	assert_true(FileAccess.file_exists(tel), "telemetry written")
+	var text := FileAccess.get_file_as_string(tel)
+	var data: Variant = JSON.parse_string(text)
+	assert_true(data is Dictionary and data.has("replay"), "telemetry carries the replay record")
+	for bad in ["token", "secret", "password", "/home/", "/root", "/Users/", "@"]:
+		assert_false(text.contains(bad), "telemetry contains no '%s'" % bad)
 
 
 ## Phase 2 (A4): every explicit line of an action label fits its button, so
@@ -274,3 +285,32 @@ func test_reduced_motion_full_match() -> void:
 	assert_true(ok, "match ended with reduced motion")
 	await frames(10)
 	assert_true(main.hud._results.visible, "results shown")
+
+
+## Phase 4: money and effects the player could not explain before now get
+## a toast (start reward, chosen option incl. bots', delayed payout,
+## rent/upgrade modifiers). Fed through the real presenter.
+func test_money_changes_are_explained() -> void:
+	await start_game(2, 3)
+	await wait_for_action(ErCommand.ROLL_DICE)
+	var said: Array = []
+	main.presenter.toast.connect(func(text: String, _c: Color, _i: String): said.append(text))
+	var p: EventPresenter = main.presenter
+	var cash: int = engine().state.player(1)["cash"]
+	var events := [
+		{"type": "CashChanged", "data": {"tx_id": "x", "from": -1, "to": 1, "amount": 200, "reason": "start_reward", "from_balance": null, "to_balance": cash + 200}},
+		{"type": "ChoicePrompted", "data": {"choice_id": "C1", "seat": 1, "source": "opportunity", "ref_id": "O_TEST", "options": [{"option_id": "a", "label": "Nhận 50 RC"}, {"option_id": "b", "label": "Đặt cược"}]}},
+		{"type": "ChoiceResolved", "data": {"choice_id": "C1", "seat": 1, "option_id": "b", "timed_out": false}},
+		{"type": "PayoutScheduled", "data": {"payout_id": "D1", "seat": 1, "reward": 120, "chance_pct": 50}},
+		{"type": "PayoutResolved", "data": {"payout_id": "D1", "seat": 1, "won": true, "reward": 120}},
+		{"type": "PayoutResolved", "data": {"payout_id": "D2", "seat": 0, "won": false, "reward": 0}},
+		{"type": "ModifierAdded", "data": {"modifier_id": "M1", "kind": "rent_discount", "seat": 0, "tag": "", "pct": 50, "cap": 0, "uses": 1, "expires_turn": 9}},
+		{"type": "ModifierAdded", "data": {"modifier_id": "M2", "kind": "rent_pct", "seat": -1, "tag": "tourist", "pct": 25, "cap": 0, "uses": -1, "expires_turn": 9}},
+		{"type": "ModifierAdded", "data": {"modifier_id": "M3", "kind": "rent_cap", "seat": 1, "tag": "", "pct": 0, "cap": 80, "uses": -1, "expires_turn": 9}},
+	]
+	for ev in events:
+		await p._present(ev)
+	var all := "\n".join(said)
+	for want in ["qua Xuất phát: +200 RC", "chọn: Đặt cược", "50% cơ hội nhận 120 RC", "trúng thưởng 120 RC", "không trúng thưởng",
+			"giảm 50%", "Cảng Biển", "+25%", "tối đa 80 RC"]:
+		assert_true(all.contains(want), "toast says '%s' (got: %s)" % [want, all])
