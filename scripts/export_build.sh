@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Exports a build with a build stamp (commit + time) that the in-app device
 # panel and every device report show.
-# Usage: scripts/export_build.sh ios|linux internal|public [debug|release]
+# Usage: scripts/export_build.sh ios|linux|windows internal|public [debug|release]
 #   internal  = "... Internal Test" preset: custom feature "device_tools", so
 #               the device panel, reports and telemetry files exist even in a
 #               release build (for device measurements).
@@ -10,13 +10,16 @@
 #   GODOT=/path/to/Godot_v4.7.2-stable  (default: godot on PATH)
 #   IOS_TEAM_ID=XXXXXXXXXX               (required for ios; never committed)
 #   IOS_BUNDLE_ID=com.yourteam.empirerush (optional, default from preset)
+#   BUILD_TIME=2026-01-01T00:00:00Z      (optional build stamp time; the Windows
+#                                         package passes the commit time so two
+#                                         builds of one commit are identical)
 # Needs the Godot 4.7.2 export templates installed. On Linux the iOS presets
 # produce an Xcode project only; the .ipa must be built and signed on macOS.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GODOT="${GODOT:-godot}"
-USAGE="usage: export_build.sh ios|linux internal|public [debug|release]"
+USAGE="usage: export_build.sh ios|linux|windows internal|public [debug|release]"
 TARGET="${1:?$USAGE}"
 FLAVOR="${2:?$USAGE}"
 MODE="${3:-release}"
@@ -39,7 +42,7 @@ commit="$(git -C "$ROOT" rev-parse --short HEAD)"
 dirty=""
 git -C "$ROOT" diff --quiet HEAD -- client || dirty="-dirty"
 printf '{"commit": "%s%s", "built_at": "%s", "target": "%s", "flavor": "%s", "mode": "%s"}\n' \
-	"$commit" "$dirty" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TARGET" "$FLAVOR" "$MODE" > "$CLIENT/data/build_info.json"
+	"$commit" "$dirty" "${BUILD_TIME:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" "$TARGET" "$FLAVOR" "$MODE" > "$CLIENT/data/build_info.json"
 
 cp "$PRESETS" "$PRESETS.bak"
 trap 'mv "$PRESETS.bak" "$PRESETS"' EXIT
@@ -55,6 +58,10 @@ case "$TARGET" in
 		preset="iOS $flavor_name"; out="$ROOT/build/ios-$FLAVOR/EmpireRush.ipa" ;;
 	linux)
 		preset="Linux $flavor_name"; out="$ROOT/build/linux-$FLAVOR/EmpireRush.x86_64" ;;
+	windows)
+		# One self-contained .exe (data embedded); needs the windows_*_x86_64
+		# templates (scripts/ci/install_templates.sh windows).
+		preset="Windows $flavor_name"; out="$ROOT/build/windows-$FLAVOR/EmpireRush.exe" ;;
 	*) echo "$USAGE" >&2; exit 2 ;;
 esac
 

@@ -65,7 +65,10 @@ def scan_text(text, names):
 def _looks_like_version(text, pos):
     # "4.7.2.stable" / "v1.2.3.4" style version strings are not addresses.
     before = text[max(0, pos - 2):pos]
-    return before.endswith("v") or text[pos:pos + 20].count(".stable") > 0
+    if before.endswith("v") or text[pos:pos + 20].count(".stable") > 0:
+        return True
+    # version='6.0.0.0' (Windows manifests), "version": "1.2.3.4", Version 4.7.0.0
+    return re.search(r"(?i)version\W{0,4}$", text[max(0, pos - 12):pos]) is not None
 
 
 def redact_text(text, names):
@@ -128,6 +131,8 @@ def self_test():
                          "mean_frame_game_s": 0.0277, "session_wall_seconds": 11.5})
     assert not scan_text(replay, []), scan_text(replay, [])
     assert redact_text(replay, []) == replay
+    # Version numbers in manifests are not addresses.
+    assert not scan_text("<assemblyIdentity version='6.0.0.0' name='x'/> \"version\": \"10.0.19041.1\"", [])
     # Loopback / documentation addresses are kept; a private LAN address is not.
     assert not scan_text("clients via 127.0.0.2 and 192.0.2.2", [])
     assert [k for k, _ in scan_text("server 10.1.2.3", [])] == ["ip_address"]

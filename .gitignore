@@ -13,3 +13,4 @@ Thumbs.db
 # Export output and generated build stamp
 /build/
 client/data/build_info.json
+/dist/
