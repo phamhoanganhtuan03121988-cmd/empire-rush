@@ -122,7 +122,7 @@ Dòng cuối script cho biết có được gửi hay không:
 - `logs/godot.log`.
 
 **Script xoá:**
-- đường dẫn thư mục người dùng (chứa tên đăng nhập máy, kể cả `/root`, `C:\Users\…`) → `<home>`;
+- đường dẫn thư mục người dùng (chứa tên đăng nhập máy; cả thư mục của tài khoản quản trị Linux và thư mục người dùng Windows) → `<home>`;
 - đường dẫn ứng dụng iOS và mọi UUID (mã riêng của máy/bản cài) → `<home>` / `<uuid>`;
 - e-mail, số điện thoại Việt Nam, địa chỉ IP, token/mật khẩu;
 - các tên được liệt kê.
