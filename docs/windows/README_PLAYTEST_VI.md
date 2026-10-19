@@ -24,31 +24,39 @@ Màn hình đầu có 4 nút:
 
 | Nút | Dùng để |
 |---|---|
-| **CHƠI** | Lần đầu: 4 trang giới thiệu ngắn (có nút BỎ QUA), rồi trang **Thiết lập trận** |
-| **HƯỚNG DẪN TỪNG BƯỚC** | Một trận 2 người có thẻ hướng dẫn 7 bước, chạy trên ván thật |
-| **GIỚI THIỆU** | Xem lại 4 trang giới thiệu |
-| **CÀI ĐẶT** | Đồ hoạ, giảm chuyển động, âm lượng nhạc và hiệu ứng, tắt âm thanh |
+| **CHƠI** | Lần đầu: 2 trang ngắn **Mục tiêu của bạn** và **Bạn làm gì trong mỗi lượt?** (có nút BỎ QUA), rồi tới trang **Thiết lập trận** |
+| **HƯỚNG DẪN TỪNG BƯỚC** | Một trận thật với 1 máy. Mỗi bước dạy một thao tác (đổ xúc xắc → mua đất → kết thúc lượt), nút cần bấm được làm sáng |
+| **GIỚI THIỆU** | Xem lại 2 trang mở đầu |
+| **CÀI ĐẶT** | Đồ hoạ, giảm chuyển động, âm lượng nhạc và hiệu ứng, tắt âm thanh, bật/tắt và hiện lại gợi ý cho người mới |
 
 Trang **Thiết lập trận**:
-- **số người chơi** (bạn + máy): 2, 3 hoặc 4;
-- **nhân vật**: dòng mô tả bên dưới cho biết kỹ năng;
-- **màu và tên** của bạn;
-- **đội hình**: bạn và các máy sẽ dùng nhân vật, màu nào.
+- **Chọn nhân vật**: 8 nhân vật có chân dung riêng. Nhân vật chỉ là ngoại hình (tên, chân dung, màu), không có lợi thế gì.
+- **Số người chơi** (bạn + máy): 2, 3 hoặc 4.
+- **Tên và màu quân** của bạn.
+- **Vai trò trong trận (kỹ năng)**: Doanh Nhân, Đầu Tư hoặc Đàm Phán. Đây là kỹ năng theo luật; dòng mô tả cho biết kỹ năng làm gì.
+- **Đội hình trận**: chân dung của bạn và các máy.
 
-Bấm **BẮT ĐẦU**. **CÁCH CHƠI** mở luật đầy đủ (lấy từ dữ liệu luật của trò chơi). Lựa chọn và cài đặt được nhớ cho lần sau.
+Bấm **BẮT ĐẦU**. **CÁCH CHƠI** mở luật đầy đủ. Lựa chọn và cài đặt được nhớ cho lần sau.
+
+**Trong trận:**
+- Mỗi tình huống mới (mua đất, đấu giá, trả thuê, thẻ sự kiện, nâng cấp, thiếu tiền…) có một thẻ **gợi ý ngắn**, chỉ hiện lần đầu. Thẻ gợi ý cho một quyết định sẽ **tạm dừng đồng hồ** đến khi bạn đọc xong hoặc hành động.
+- Đứng yên khoảng 10 giây sẽ hiện dòng **"Gợi ý: …"** cho bước tiếp theo.
+- Thẻ mỗi người hiện **Tài sản** (tiền mặt + giá bán lại đất và nhà). Người có tài sản cao nhất khi hết trận sẽ thắng.
+- Luật tóm tắt đọc trong 5 phút: file **`HUONG_DAN_NHANH.md`** trong thư mục game.
 
 ## 3. Điều khiển
 | Thao tác | Chuột / bàn phím |
 |---|---|
 | Mọi nút | chuột trái |
 | Tung xúc xắc | nút **ĐỔ XÚC XẮC** hoặc phím **Space** / **Enter** |
+| Bỏ qua hoạt cảnh xúc xắc | chạm vào màn hình hoặc **Space** khi xúc xắc đang lăn. Kết quả không đổi |
 | Xem một ô (giá, tiền thuê, chủ) | bấm vào ô trên bàn cờ |
 | Tạm dừng (tiếp tục, hướng dẫn, cài đặt, về màn hình chính) | nút **☰** góc trên hoặc phím **Esc** |
 
 - Khi tạm dừng, đồng hồ lượt và máy cũng dừng.
 - Cửa sổ có thể **kéo giãn hoặc phóng to**; giao diện tự sắp lại theo chiều ngang hoặc dọc.
 - Đóng cửa sổ thì trận đang chơi sẽ mất (bản này không lưu trận dở).
-- Âm thanh: nhạc nền và hiệu ứng (tự tạo cho dự án). Chỉnh hoặc tắt trong CÀI ĐẶT.
+- Âm thanh: nhạc nền và hiệu ứng (tự tạo cho dự án), có tiếng xúc xắc nảy và tiếng báo kết quả. Chỉnh hoặc tắt trong CÀI ĐẶT.
 
 ## 4. Sau khi chơi: gửi phản hồi
 1. Mở `forms\phieu_phan_hoi.csv` bằng Excel, điền **một dòng** cho buổi chơi.
@@ -82,6 +90,7 @@ Mã in ra phải trùng với dòng `EmpireRush.exe` trong `SHA256SUMS.txt`.
 
 ## 7. Giới hạn của bản này
 - Đồ hoạ và âm thanh là bản thử (vertical slice); chưa có lồng tiếng.
+- Bạn chưa tự đề nghị giao dịch được; máy có thể đề nghị mua đất của bạn.
 - Chưa có chơi nhiều người qua mạng.
 - Luật và cân bằng: bản nháp DRAFT v3. Đừng đổi luật dựa trên một buổi chơi.
 - File chưa ký số: có cảnh báo SmartScreen (§1).

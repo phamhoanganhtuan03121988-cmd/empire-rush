@@ -18,7 +18,7 @@ name: windows-playtest
 
 on:
   push:
-    branches: [claude/windows-playtest-build, claude/phase5-visual-overhaul]
+    branches: [claude/windows-playtest-build, claude/phase5-visual-overhaul, claude/phase5-1-player-experience]
   workflow_dispatch:
 
 permissions:

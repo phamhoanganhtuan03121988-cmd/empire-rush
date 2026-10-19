@@ -3,7 +3,7 @@
 #   dist/windows-playtest/                       folder that goes into the ZIP
 #   dist/EMPIRE_RUSH_Windows_Playtest_x64.zip    the file to download
 # Contents: EmpireRush.exe (Internal Test, release, game data embedded: no
-# Godot, Python or other tool needed), README_PLAYTEST_VI.md, a short
+# Godot, Python or other tool needed), README_PLAYTEST_VI.md, the quick rules guide (HUONG_DAN_NHANH.md), a short
 # quick-start .txt, build info, the feedback/bug forms, a .bat that opens the
 # match-record folder, and SHA256SUMS.txt. No source code, tests, tools, .git,
 # editor or secrets.
@@ -46,6 +46,7 @@ rm -rf "$OUT" "$ZIP"
 mkdir -p "$OUT/forms"
 cp "$EXE" "$OUT/EmpireRush.exe"
 { printf '\xef\xbb\xbf'; sed 's/$/\r/' "$ROOT/docs/windows/README_PLAYTEST_VI.md"; } > "$OUT/README_PLAYTEST_VI.md"
+{ printf '\xef\xbb\xbf'; sed 's/$/\r/' "$ROOT/docs/HUONG_DAN_NHANH.md"; } > "$OUT/HUONG_DAN_NHANH.md"
 cp "$ROOT/docs/device/feedback_form_template.csv" "$OUT/forms/phieu_phan_hoi.csv"
 { printf '\xef\xbb\xbf'; sed 's/$/\r/' "$ROOT/docs/playtest/BUG_REPORT_TEMPLATE.md"; } > "$OUT/forms/mau_bao_loi.txt"
 # UTF-8 with BOM and CRLF, so Notepad shows the Vietnamese text and lines.
@@ -56,9 +57,12 @@ EMPIRE RUSH — bản chơi thử trên Windows (x64), phiên bản $commit
 2. Nhấp đúp EmpireRush.exe.
    Nếu Windows hiện "Windows protected your PC": bấm "More info" > "Run anyway".
    (File chưa được ký số nên Windows cảnh báo; đây là bản chơi thử nội bộ.)
-3. Màn hình đầu: bấm CHƠI (chọn số người, nhân vật, màu, rồi BẮT ĐẦU),
-   hoặc HƯỚNG DẪN TỪNG BƯỚC nếu chưa biết luật. Chuột trái cho mọi nút,
-   phím Space để tung xúc xắc, Esc để tạm dừng. Âm lượng: CÀI ĐẶT.
+3. Lần đầu chơi: bấm HƯỚNG DẪN TỪNG BƯỚC (một trận thật, dạy từng thao tác).
+   Hoặc CHƠI: chọn nhân vật (chân dung), tên, màu quân, vai trò (kỹ năng),
+   số người, rồi BẮT ĐẦU. Gợi ý tự hiện khi gặp tình huống mới.
+   Chuột trái cho mọi nút, Space tung xúc xắc (bấm lần nữa để bỏ qua
+   hoạt cảnh), Esc tạm dừng. Âm lượng và gợi ý: CÀI ĐẶT.
+   Luật tóm tắt: HUONG_DAN_NHANH.md (mở bằng Notepad).
 4. Chơi xong: điền forms\\phieu_phan_hoi.csv (mở bằng Excel). Gặp lỗi: điền forms\\mau_bao_loi.txt.
    Nhấp đúp MO_DU_LIEU_TRAN_DAU.bat để mở thư mục ghi trận, gửi kèm các file session_*.json.
 

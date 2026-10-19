@@ -242,3 +242,18 @@ The board is now a **miniature city diorama standing on a night-blue table**, no
 **Entry flow:** title over the slowly turning diorama → intro (4 pages, RulesGuide) → setup (players, character cards, colour, name, line-up) → match. Also settings, tutorial and the pause menu. All rules text is generated from the rules data (`RulesGuide`).
 
 **Audio:** original synthesised SFX and a 46 s music loop (`scripts/audio/gen_audio.py`, CC0). Music and SFX buses with their own volumes and mute; sounds are triggered by presenter cues when a beat is shown.
+
+## Phase 5.1 review: current screenshots vs this direction
+Judged on lavapipe captures at 1920×1080 (High) and 1280×720 (Medium) against "premium 3D board game / miniature city diorama". Changing colours or adding a shader does **not** by itself reach the reference look; the table below says what is still missing.
+
+| Asset | Problem found | Phase 5.1 change | Still open |
+|---|---|---|---|
+| Dice | 0.34 m cubes thrown into the city centre: about 20 px on screen, partly covered by trees, green-tinted by the grass light | Foreground `DiceStage`: the same 3D dice in their own world on a felt tray, neutral light, about 60 px or more on a 720 px wide screen, result card | Dice mesh is a rounded cube with recessed pips; no bevel normal map |
+| Property tiles | The paved lot (most of the tile) was plain ivory, so the ring read as white with thin colour bands | The lot takes a 38 % wash of the district colour | Flat colour, no texture or detail at tile scale |
+| Ownership | Owner frame was a hairline, flag 2–3 px at overview distance; the price hides once owned, so ownership was hard to read | Bolder frame, 1.5× flag, owner portrait seal on the tile corner | The seal is about a third of a tile wide, so small on a phone in portrait |
+| City centre | Landmark: stacked white boxes; four bare beige fountain discs | Warm-stone landmark on a stepped walnut / gold / marble dais, flags in the district colours, tree parks | Landmark mesh is still low-poly box stacks; the central blocks reuse the district models (muted) |
+| Pawns | Readable since Phase 5 (1.35×, colour ring) but anonymous | Persona portrait medallion over each pawn | Pawn heads are generic shapes (crown / hat / rook / gem), not the personas |
+| Buildings on tiles | Box-built, low-poly, flat plaster colours, repeated per district | — | Needs a modelled set (or licensed CC0 kit) with trims and roofs |
+| Trees / props | The same 3 round trees and 1 cone everywhere | — | Variety (species, scale jitter), ground clutter |
+
+**Cost:** see `docs/test-logs/phase5_1_perf/README.md` (same-machine A/B against Phase 5).
