@@ -13,6 +13,9 @@ static var music_volume := 0.6
 static var sfx_volume := 0.8
 static var muted := false
 static var intro_seen := false
+## Phase 5.1 coach: tips on/off and the tips already shown (once each).
+static var tips_enabled := true
+static var tips_seen: Array[String] = []
 static var loaded := false
 
 
@@ -30,6 +33,10 @@ static func load_settings() -> void:
 	sfx_volume = clampf(float(cf.get_value("audio", "sfx", sfx_volume)), 0.0, 1.0)
 	muted = bool(cf.get_value("audio", "muted", muted))
 	intro_seen = bool(cf.get_value("flow", "intro_seen", intro_seen))
+	tips_enabled = bool(cf.get_value("flow", "tips_enabled", tips_enabled))
+	tips_seen.clear()
+	for t in cf.get_value("flow", "tips_seen", []):
+		tips_seen.append(str(t))
 	MatchSetup.players = clampi(int(cf.get_value("setup", "players", MatchSetup.players)), 2, 4)
 	var ch := str(cf.get_value("setup", "character", MatchSetup.character))
 	if ch in MatchSetup.CHARACTER_CYCLE:
@@ -47,6 +54,8 @@ static func save_settings() -> void:
 	cf.set_value("audio", "sfx", sfx_volume)
 	cf.set_value("audio", "muted", muted)
 	cf.set_value("flow", "intro_seen", intro_seen)
+	cf.set_value("flow", "tips_enabled", tips_enabled)
+	cf.set_value("flow", "tips_seen", Array(tips_seen))
 	cf.set_value("setup", "players", MatchSetup.players)
 	cf.set_value("setup", "character", MatchSetup.character)
 	cf.set_value("setup", "color", MatchSetup.color_index)

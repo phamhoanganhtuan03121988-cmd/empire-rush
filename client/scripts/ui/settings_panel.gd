@@ -46,6 +46,22 @@ func build() -> void:
 	buttons["mute"] = _toggle("Tắt âm thanh", GameSettings.muted, func(on: bool):
 		GameSettings.muted = on
 		_save())
+	# Phase 5.1: contextual tips for new players (CoachOverlay).
+	_section("Hướng dẫn")
+	buttons["tips"] = _toggle("Gợi ý cho người mới", GameSettings.tips_enabled, func(on: bool):
+		GameSettings.tips_enabled = on
+		_save())
+	var again := _button("Hiện lại tất cả gợi ý")
+	again.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UiTheme.neutral(again)
+	again.pressed.connect(func():
+		GameSettings.tips_seen.clear()
+		GameSettings.tips_enabled = true
+		buttons["tips"].button_pressed = true
+		again.text = "Đã bật lại: gợi ý sẽ hiện khi tình huống xảy ra"
+		_save())
+	buttons["tips_reset"] = again
+	add_child(again)
 
 
 func _save() -> void:

@@ -53,6 +53,8 @@ func _run() -> void:
 	MatchSetup.chosen = false
 	MatchSetup.tutorial = false
 	GameSettings.intro_seen = false
+	GameSettings.tips_enabled = true
+	GameSettings.tips_seen.clear()
 	MatchSetup.players = 4
 	await _boot({})
 	await _shot("01_title")
@@ -61,10 +63,9 @@ func _run() -> void:
 	await _frames(12)
 	await _shot("02_intro_1")
 	m.buttons["intro_next"].pressed.emit()
-	m.buttons["intro_next"].pressed.emit()
 	await _frames(12)
-	await _shot("03_intro_3")
-	m.buttons["intro_skip"].pressed.emit()
+	await _shot("03_intro_2")
+	m.buttons["intro_next"].pressed.emit()
 	await _frames(12)
 	m.buttons["players_3"].pressed.emit()
 	m.buttons["character_INVESTOR"].pressed.emit()
@@ -119,5 +120,18 @@ func _run() -> void:
 	await _boot({})
 	main.menu.buttons["title_tutorial"].pressed.emit()
 	await _frames(40)
-	await _shot("12_tutorial_step1")
+	await _shot("12_tutorial_welcome")
+	var c: CoachOverlay = main.coach
+	c.buttons["ok"].pressed.emit()
+	await _frames(30)
+	await _shot("13_tutorial_roll")
+	for act in main.hud.actions:
+		if act["type"] == ErCommand.ROLL_DICE:
+			act["button"].pressed.emit()
+	for i in 900:
+		await process_frame
+		if c.current.get("id", "") == "buy":
+			break
+	await _frames(20)
+	await _shot("14_tutorial_buy")
 	quit(0)

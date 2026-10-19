@@ -1,6 +1,7 @@
 ## Phase 5 (visual overhaul, onboarding, game feel): the hero roll button and
-## its states, keyboard roll, the pause menu really pausing the match, the
-## guided tutorial advancing on real play, and audio wired to gameplay.
+## its states, keyboard roll, the pause menu really pausing the match,
+## and audio wired to gameplay. (The guided tutorial moved to the Phase 5.1
+## coach: test_phase51_coach.gd.)
 extends UiTestCase
 
 
@@ -69,48 +70,6 @@ func test_pause_menu_pauses_the_match() -> void:
 	assert_false(main.match_ref.lifecycle.is_paused(), "match running again")
 	await tree.create_timer(0.4).timeout
 	assert_true(main.match_ref.seconds_left() < left - 0.2, "turn timer runs again")
-
-
-func test_tutorial_follows_real_play() -> void:
-	MatchSetup.chosen = false
-	MatchSetup.tutorial = false
-	MatchSetup.players = 4
-	main = load("res://scenes/main.tscn").instantiate()
-	main.args_override = {"menu": "1", "telemetry": scratch_telemetry_path(), "quality": "low"}
-	tree.root.add_child(main)
-	await frames(4)
-	main.menu.buttons["title_tutorial"].pressed.emit()
-	await frames(6)
-	main.presenter.speed = 0.05
-	main.match_ref.bot_delay_range = Vector2(0.02, 0.05)
-	var t: TutorialOverlay = main.tutorial
-	assert_true(t != null and t.is_visible_in_tree(), "tutorial card shown")
-	assert_eq(engine().state.players.size(), 2, "tutorial is a 2-player match")
-	assert_eq(t.index, 0, "step 1")
-	assert_true(t.buttons["next"].disabled, "step 1 waits for the player's own roll")
-	assert_true(main.match_ref.lifecycle.is_paused(), "timer and bots wait while the card is up")
-	assert_true(await wait_for_action(ErCommand.ROLL_DICE), "roll offered under the card")
-	await press(ErCommand.ROLL_DICE)
-	for i in 600:
-		await tree.process_frame
-		if t.index == 1:
-			break
-	assert_eq(t.index, 1, "the real roll completed step 1")
-	t.buttons["next"].pressed.emit()
-	await frames(2)
-	assert_eq(t.index, 2, "step 3: buy or auction")
-	assert_true(await wait_for_action(ErCommand.BUY_PROPERTY), "the first roll lands on a buyable property (tutorial seed)")
-	await press(ErCommand.BUY_PROPERTY)
-	for i in 300:
-		await tree.process_frame
-		if t.index == 3:
-			break
-	assert_eq(t.index, 3, "buying completed the buy step")
-	while t.visible:
-		t.buttons["next"].pressed.emit()
-		await frames(1)
-	assert_false(main.match_ref.lifecycle.is_paused(), "match resumes after the tutorial")
-	assert_false(MatchSetup.tutorial, "play again starts a normal match")
 
 
 func test_audio_follows_gameplay() -> void:

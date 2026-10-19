@@ -102,9 +102,9 @@ func test_intro_and_how_to_come_from_the_rules_data() -> void:
 	await _press("title_intro")
 	var body: String = m._intro_parts["body"].text
 	assert_true(body.contains("%d RC" % main.config.balance["starting_cash"]), "starting cash from rules data")
-	for i in 3:
-		await _press("intro_next")
-	assert_true(m._intro_parts["body"].text.contains("4 người: %d vòng" % main.config.max_rounds_for(4)), "round caps from rules data")
+	assert_true(body.contains("4 người: %d vòng" % main.config.max_rounds_for(4)), "round caps from rules data")
+	await _press("intro_next")
+	assert_true(m._intro_parts["body"].text.contains("%d giây" % int(main.config.balance["turn_timer_ms"] / 1000)), "turn timer from rules data")
 	assert_eq(m.buttons["intro_next"].text, "BẮT ĐẦU", "last page offers to start")
 	await _press("intro_next")
 	assert_eq(m.page, "setup", "the intro ends on the setup page")

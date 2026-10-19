@@ -36,7 +36,7 @@ var menu: StartMenu
 ## Phase 5: audio, pause menu and the guided tutorial.
 var audio: AudioDirector
 var pause_menu: PauseMenu
-var tutorial: TutorialOverlay
+var coach: CoachOverlay
 ## Fixed seed of the tutorial match (2 players): the first roll lands on a
 ## property the player can buy, so step 3 happens on the first turn.
 const TUTORIAL_SEED := 4
@@ -215,12 +215,15 @@ func _start_match() -> void:
 		get_tree().reload_current_scene())
 	hud.quality_cycle_requested.connect(func(): set_quality(QualitySettings.next(quality)))
 	hud.pause_requested.connect(open_pause)
-	if as_tutorial:
-		tutorial = TutorialOverlay.new()
-		layer.add_child(tutorial)
-		tutorial.setup(match_ref, hud, presenter, config)
+	# Phase 5.1 coach: the guided tutorial, and contextual tips in a normal
+	# match started from the menu (once each; off in Settings). Command-line
+	# and test matches only get it with --coach.
+	if (from_menu and not args.has("autoplay") and (as_tutorial or GameSettings.tips_enabled)) or args.has("coach"):
+		coach = CoachOverlay.new()
+		layer.add_child(coach)
+		coach.setup(match_ref, hud, presenter, config, as_tutorial)
 		# Play again after the tutorial starts a normal match.
-		tutorial.finished.connect(func(): MatchSetup.tutorial = false)
+		coach.finished.connect(func(): MatchSetup.tutorial = false)
 	_setup_device_probe()
 	presenter.match_ended_presented.connect(_on_match_ended)
 	set_quality(args.get("quality", MatchSetup.quality if from_menu else "medium"))
