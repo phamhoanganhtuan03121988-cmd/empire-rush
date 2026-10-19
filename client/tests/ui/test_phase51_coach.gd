@@ -68,6 +68,8 @@ func test_tips_show_once_and_persist() -> void:
 	assert_true(await wait_for_action(ErCommand.ROLL_DICE), "roll offered")
 	assert_true(await _wait(func(): return "roll" in c.shown), "first-turn tip")
 	assert_false(main.match_ref.lifecycle.is_paused(), "an info tip does not pause the match")
+	await frames(4)
+	assert_true(c._card.size.y <= c._card.get_combined_minimum_size().y + 2.0, "card fits its text (%.0f vs %.0f)" % [c._card.size.y, c._card.get_combined_minimum_size().y])
 	await press(ErCommand.ROLL_DICE)
 	assert_true(await _wait(func(): return c.current.get("id", "") == "buy"), "buy tip at the first buy prompt (shown %s)" % str(c.shown))
 	assert_true(main.match_ref.lifecycle.is_paused(), "a decision tip pauses the timer")
@@ -97,6 +99,15 @@ func test_contextual_rent_tip_and_switch_off() -> void:
 	assert_true(await wait_for_action(ErCommand.ROLL_DICE), "roll offered")
 	give(1, ["P_D1_1"])
 	await land_human(1)
+	# The pending decision (one action per turn) goes first; the rent tip
+	# follows as soon as it is read.
+	for i in 3:
+		if "rent_paid" in c.shown and c.current.get("id", "") == "rent_paid":
+			break
+		await _wait(func(): return not c.current.is_empty(), 300)
+		if c.current.get("id", "") != "rent_paid":
+			c.buttons["ok"].pressed.emit()
+			await frames(2)
 	assert_true(await _wait(func(): return "rent_paid" in c.shown), "rent explained when the player pays rent (shown %s)" % str(c.shown))
 	c.buttons["off"].pressed.emit()
 	await frames(2)
@@ -146,5 +157,5 @@ func test_cards_show_net_worth() -> void:
 	await settle()
 	var card: Dictionary = main.hud._cards[0]
 	var worth: int = engine().net_worth(0)
-	assert_true(card["role"].text.ends_with("Tài sản %d" % worth), "card shows net worth %d: %s" % [worth, card["role"].text])
+	assert_true(card["role"].text.begins_with("Tài sản %d" % worth), "card shows net worth %d: %s" % [worth, card["role"].text])
 	assert_true(worth < engine().state.player(0)["cash"] + 60, "buying lowers net worth on paper (resale < price)")

@@ -502,7 +502,7 @@ func _refresh_worth() -> void:
 			worth = int(presenter.presented_cash.get(seat, e.state.player(seat)["cash"]))
 			for pid in e.state.properties_of(seat):
 				worth += e.liquidation_value(pid)
-		c["role"].text = UiText.t("role_worth") % [c["role_text"], worth]
+		c["role"].text = UiText.t("role_worth") % [worth, c["role_text"]]
 
 
 func _on_turn(seat: int, round: int) -> void:

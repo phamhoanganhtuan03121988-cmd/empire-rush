@@ -229,6 +229,17 @@ func _want(id: String, phase: String) -> void:
 		t["pause"] = true  # the tutorial waits for the reader on every decision
 	if current.is_empty():
 		_show_card(id, t)
+	elif t["pause"] and not current["pause"] and current["id"] != "welcome":
+		# A decision is waiting: it goes first, the information tip waits.
+		var info: Dictionary = _tips.get(current["id"], {}).duplicate()
+		if not info.is_empty():
+			info["id"] = current["id"]
+			info["phase"] = ""
+			shown.erase(current["id"])  # shown again after the decision
+		current = {}
+		_show_card(id, t)
+		if not info.is_empty():
+			_queue.push_front(info)
 	else:
 		_queue.append(t)
 
@@ -254,7 +265,7 @@ func _show_card(id: String, t: Dictionary) -> void:
 		_card.create_tween().tween_property(_card, "modulate:a", 1.0, 0.2)
 	AudioDirector.ui("ui_confirm")
 	_hide_hint()
-	_layout.call_deferred()
+	_relayout()
 	_point()
 
 
@@ -375,6 +386,16 @@ func _hide_hint() -> void:
 
 
 # --- layout ---------------------------------------------------------------------
+
+## Wrapped labels report their real height a frame or two late: lay out
+## again then, or the card keeps a too-tall first guess (empty band).
+func _relayout() -> void:
+	_layout.call_deferred()
+	for i in 2:
+		await get_tree().process_frame
+		if is_inside_tree():
+			_card.size = Vector2.ZERO
+			_layout()
 
 func _layout() -> void:
 	if not is_inside_tree():
