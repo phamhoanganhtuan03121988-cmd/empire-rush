@@ -224,6 +224,8 @@ func _build_card(seat: int) -> Dictionary:
 	ch.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ch.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	ch.text = theme_data.loc(p["character_id"], "short", theme_data.character_name(p["character_id"], config))
+	ch.tooltip_text = UiText.t("worth_tip")
+	ch.mouse_filter = Control.MOUSE_FILTER_PASS
 	v.add_child(ch)
 	var money := HBoxContainer.new()
 	money.add_theme_constant_override("separation", 4)
@@ -235,7 +237,7 @@ func _build_card(seat: int) -> Dictionary:
 	cash.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	cash.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	money.add_child(cash)
-	return {"panel": panel, "name": name, "cash": cash, "seat": seat, "avatar": avatar}
+	return {"panel": panel, "name": name, "cash": cash, "seat": seat, "avatar": avatar, "role": ch, "role_text": ch.text}
 
 
 func _icon_rect(name: String, size: int, tint: Color) -> TextureRect:
@@ -483,6 +485,24 @@ func board_insets() -> Dictionary:
 func _on_cash(seat: int, cash: int) -> void:
 	if seat < _cards.size():
 		_cards[seat]["cash"].text = "%d RC" % cash
+	_refresh_worth()
+
+
+## Phase 5.1: the winner is decided on NET WORTH (cash + resale value of
+## land and houses), so every card shows it next to the role. Presented cash
+## + the engine's resale values (read-only).
+func _refresh_worth() -> void:
+	if presenter == null or match_ref == null:
+		return
+	var e := match_ref.engine
+	for c in _cards:
+		var seat: int = c["seat"]
+		var worth := 0
+		if not e.state.player(seat)["bankrupt"]:
+			worth = int(presenter.presented_cash.get(seat, e.state.player(seat)["cash"]))
+			for pid in e.state.properties_of(seat):
+				worth += e.liquidation_value(pid)
+		c["role"].text = UiText.t("role_worth") % [c["role_text"], worth]
 
 
 func _on_turn(seat: int, round: int) -> void:

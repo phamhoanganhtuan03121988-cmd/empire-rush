@@ -52,6 +52,8 @@ const T := {
 	"you_lost": "Thua rồi — thử lại nhé!",
 	"rolled": "%s đổ %d + %d = %d",
 	"dice_who": "%s đổ được",
+	"role_worth": "%s · Tài sản %d",
+	"worth_tip": "Tài sản = tiền mặt + giá bán lại đất và nhà. Người có tài sản cao nhất khi hết trận sẽ thắng.",
 	"bought": "%s mua %s (%d RC)",
 	"passed": "%s bỏ qua %s",
 	"auction_open": "Đấu giá %s — từ %d RC",

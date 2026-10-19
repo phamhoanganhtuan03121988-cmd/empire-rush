@@ -136,3 +136,15 @@ func test_texts_follow_rules_data() -> void:
 	var t := g.tips()
 	for id in t:
 		assert_true(t[id]["body"].length() < 330, "tip %s stays short (%d chars)" % [id, t[id]["body"].length()])
+
+
+func test_cards_show_net_worth() -> void:
+	await start_game(2, 3)
+	assert_true(await wait_for_action(ErCommand.ROLL_DICE), "roll offered")
+	await land_human(1)  # Ngõ Cá, buyable
+	await press(ErCommand.BUY_PROPERTY)
+	await settle()
+	var card: Dictionary = main.hud._cards[0]
+	var worth: int = engine().net_worth(0)
+	assert_true(card["role"].text.ends_with("Tài sản %d" % worth), "card shows net worth %d: %s" % [worth, card["role"].text])
+	assert_true(worth < engine().state.player(0)["cash"] + 60, "buying lowers net worth on paper (resale < price)")
