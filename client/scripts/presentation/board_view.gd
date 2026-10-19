@@ -170,7 +170,11 @@ func _build_streets(st: MeshMerger) -> void:
 ## Decorative city centre (not gameplay): landmark, fountains, four city
 ## blocks of background buildings, trees, benches and planters.
 func _build_center_city(st: MeshMerger) -> void:
-	_place(st, "landmark", Vector3(0, 0.06, 0))
+	# Phase 5.1: the landmark stands on a round dais (walnut, gold rim, marble
+	# top) in warm stone instead of plain white, ringed by flags in the
+	# district colours, so the centre reads as the city's showpiece.
+	_dais(st)
+	_place(st, "landmark", Vector3(0, 0.12, 0), 0.0, 1.0, Color("#f3e2c0"))
 	for q in [Vector3(1, 0, 1), Vector3(-1, 0, 1), Vector3(1, 0, -1), Vector3(-1, 0, -1)]:
 		# The quadrant facing the camera (+x,+z) gets the taller blocks; the
 		# far one stays low so it never hides tiles on the far edge.
@@ -186,7 +190,11 @@ func _build_center_city(st: MeshMerger) -> void:
 		for i in 4:
 			var p: Vector3 = slots[i] * q + Vector3(0, 0.05, 0)
 			if i == 3:
-				_place(st, "fountain", p, 0.0, 0.9)
+				# A small park (the bare fountain read as an empty beige disc).
+				for k in 4:
+					var a := k * TAU / 4.0 + 0.4
+					_place(st, "tree_round_%d" % (k % 3) if k < 3 else "tree_cone", p + Vector3(cos(a), 0, sin(a)) * 0.24, 0.0, 0.9)
+				_place(st, "planter", p, 0.0, 1.2)
 				continue
 			var piece: String = mix[i]
 			var rot := _rng.randi_range(0, 3) * PI * 0.5
@@ -203,6 +211,24 @@ func _build_center_city(st: MeshMerger) -> void:
 			_place(st, ("tree_cone" if k % 2 == 0 else "tree_round_1"), Vector3(0.3 * q.x, 0.05, t * q.z), 0.0, 0.85)
 		_place(st, "bench", Vector3(1.5 * q.x, 0.05, 0.42 * q.z), PI if q.z > 0 else 0.0)
 		_place(st, "planter", Vector3(0.7 * q.x, 0.06, 0.7 * q.z))
+
+
+func _dais(st: MeshMerger) -> void:
+	var seg := 28
+	for r in [[0.64, 0.035, "wood", Color("#5a4030")], [0.61, 0.06, "gold", Color("#e9bd4c")], [0.55, 0.07, "marble", Color("#efe6d6")]]:
+		var rad: float = r[0]
+		var h: float = r[1]
+		for k in seg:
+			var a := k * TAU / seg
+			var w := 2.0 * rad * sin(PI / seg) * 1.08
+			_ubox(st, r[2], Vector3(w, h, rad), Vector3(cos(a), 0, sin(a)) * rad * 0.5 + Vector3(0, 0.05 + h * 0.5, 0), r[3], -a + PI * 0.5)
+	var dids: Array = theme.districts.keys()
+	for k in 8:
+		var a := k * TAU / 8.0 + PI / 8.0
+		var p := Vector3(cos(a), 0, sin(a)) * 0.6 + Vector3(0, 0.11, 0)
+		var col: Color = theme.district_color(dids[k % dids.size()])
+		_props.add_kit(kit("flag_pole"), Transform3D(Basis(Vector3.UP, -a) * Basis.from_scale(Vector3.ONE * 1.2), p), Color.WHITE)
+		_props.add_kit(kit("flag_cloth"), Transform3D(Basis(Vector3.UP, -a) * Basis.from_scale(Vector3.ONE * 1.2), p), col)
 
 
 # --- tiles -----------------------------------------------------------------------
@@ -253,7 +279,9 @@ func _build_tile(i: int, st: MeshMerger) -> void:
 		lot.position = -flat_in * 0.1 + Vector3(0, TILE_H, 0)
 		lot.rotation.y = rot + PI  # buildings face outwards, towards the water
 		root.add_child(lot)
-		_place(st, "lot_plaza", root.position + lot.position + Vector3(0, 0.001, 0), rot, 0.95)
+		# Phase 5.1: the paved lot takes a wash of the district colour too (it
+		# covered most of the tile in plain ivory: the board read as white).
+		_place(st, "lot_plaza", root.position + lot.position + Vector3(0, 0.001, 0), rot, 0.95, accent.lerp(Color("#fbf7ef"), 0.62))
 		_lots[sp["property_id"]] = lot
 		_lot_tile[sp["property_id"]] = i
 		_levels[sp["property_id"]] = -1
@@ -350,14 +378,31 @@ func show_owner(pid: String, seat: int) -> void:
 	# Frame strips, authored in tile space and mapped into the (offset,
 	# rotated) lot space the mark lives in.
 	var to_lot := Transform3D(lot.basis, lot.position).affine_inverse()
+	# Phase 5.1: a bolder frame (it read as a hairline from the overview
+	# camera) and a taller flag.
 	for s in [-1, 1]:
-		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.9, 0.014, 0.05)), Vector3(0, TILE_H + 0.006, s * 0.43)), c)
-		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.05, 0.014, 0.9)), Vector3(s * 0.43, TILE_H + 0.006, 0)), c)
+		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.92, 0.016, 0.08)), Vector3(0, TILE_H + 0.006, s * 0.42)), c)
+		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.08, 0.016, 0.92)), Vector3(s * 0.42, TILE_H + 0.006, 0)), c)
 	var corner := Vector3(0.24, 0.0, 0.24)
-	mm.add_kit(kit("flag_pole"), Transform3D(Basis(), corner))
-	mm.add_kit(kit("flag_cloth"), Transform3D(Basis(), corner), c)
+	mm.add_kit(kit("flag_pole"), Transform3D(Basis.from_scale(Vector3.ONE * 1.5), corner))
+	mm.add_kit(kit("flag_cloth"), Transform3D(Basis.from_scale(Vector3.ONE * 1.5), corner), c)
 	var flag := mm.instance("Owner")
 	lot.add_child(flag)
+	# The owner's portrait as a round deed seal lying on the tile corner.
+	var face := theme.player_portrait(seat)
+	if face:
+		var seal := Sprite3D.new()
+		seal.name = "Seal"
+		seal.texture = face
+		seal.axis = Vector3.AXIS_Y
+		seal.pixel_size = 0.36 / face.get_width()
+		seal.shaded = false
+		seal.double_sided = false
+		seal.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+		seal.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		seal.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		seal.position = Vector3(-0.23, 0.012, 0.23)
+		flag.add_child(seal)
 	_owner_marks[pid] = flag
 	flag.scale = Vector3.ONE * 0.01
 	create_tween().tween_property(flag, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
