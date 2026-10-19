@@ -51,6 +51,7 @@ const T := {
 	"you_won": "Bạn thắng!",
 	"you_lost": "Thua rồi — thử lại nhé!",
 	"rolled": "%s đổ %d + %d = %d",
+	"dice_who": "%s đổ được",
 	"bought": "%s mua %s (%d RC)",
 	"passed": "%s bỏ qua %s",
 	"auction_open": "Đấu giá %s — từ %d RC",

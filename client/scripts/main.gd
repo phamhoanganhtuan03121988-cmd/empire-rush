@@ -20,6 +20,7 @@ var config: GameConfig
 var theme_data: ThemeData
 var board: BoardView
 var dice: DiceView
+var dice_stage: DiceStage
 var match_ref: LocalMatch
 var presenter: EventPresenter
 var hud: GameHud
@@ -182,6 +183,7 @@ func _start_match() -> void:
 	presenter.name = "Presenter"
 	presenter.board = board
 	presenter.dice = dice
+	presenter.dice_stage = dice_stage
 	presenter.tokens = tokens
 	presenter.theme = theme_data
 	presenter.config = config
@@ -206,6 +208,7 @@ func _start_match() -> void:
 		hud.simulated_insets = Rect2(0, 108, 0, 62)
 	layer.add_child(hud)
 	hud.setup(match_ref, presenter, theme_data, config)
+	dice_stage.region_provider = hud.board_insets
 	hud.restart_requested.connect(func(): get_tree().reload_current_scene())
 	hud.menu_requested.connect(func():
 		MatchSetup.chosen = false
@@ -321,15 +324,22 @@ func _build_world() -> void:
 	board.name = "Board"
 	add_child(board)
 	board.build(config, theme_data)
-	dice = DiceView.new()
-	add_child(dice)
-	dice.build(theme_data)
+	# Phase 5.1: the dice are thrown on a foreground stage (own 3D world) so
+	# nothing on the board can cover them; it sits under the HUD layer.
+	var dice_layer := CanvasLayer.new()
+	dice_layer.name = "DiceLayer"
+	add_child(dice_layer)
+	dice_stage = DiceStage.new()
+	dice_layer.add_child(dice_stage)
+	dice = dice_stage.dice
 
 
 func set_quality(name: String) -> void:
 	quality = name
 	QualitySettings.apply(name, get_viewport(), sun, env)
 	board.set_water_lite(name == "low")
+	if dice_stage:
+		dice_stage.set_quality(name)
 	if hud:
 		hud.set_quality_label(name)
 	if probe and not (dev_panel and dev_panel.is_benchmarking()):

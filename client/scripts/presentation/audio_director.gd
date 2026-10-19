@@ -14,14 +14,15 @@ const POOL := 8
 ## Per sound: [volume dB, min gap s, max simultaneous].
 const SPEC := {
 	"ui_hover": [-16.0, 0.05, 1], "ui_click": [-6.0, 0.04, 2], "ui_confirm": [-4.0, 0.1, 1], "ui_back": [-6.0, 0.1, 1],
-	"dice_roll": [-3.0, 0.3, 1], "dice_land": [-2.0, 0.1, 1], "step": [-10.0, 0.06, 2],
+	"dice_roll": [-3.0, 0.3, 1], "dice_land": [-2.0, 0.1, 1],
+	"dice_bounce": [-7.0, 0.08, 1], "dice_result": [-5.0, 0.3, 1], "step": [-10.0, 0.06, 2],
 	"buy": [-3.0, 0.2, 1], "upgrade": [-2.0, 0.2, 1], "cash_gain": [-8.0, 0.15, 1], "cash_loss": [-8.0, 0.15, 1],
 	"card": [-4.0, 0.2, 1], "choice": [-6.0, 0.3, 1], "auction": [-3.0, 0.3, 1], "bid": [-6.0, 0.1, 2],
 	"rescue": [-4.0, 0.5, 1], "bankrupt": [-3.0, 0.5, 1], "your_turn": [-8.0, 0.5, 1], "win": [-2.0, 1.0, 1], "lose": [-3.0, 1.0, 1],
 }
 ## Presenter cue -> sound.
 const CUE_SOUND := {
-	"dice_roll": "dice_roll", "dice_land": "dice_land", "step": "step", "buy": "buy", "upgrade": "upgrade",
+	"dice_roll": "dice_roll", "dice_land": "dice_land", "dice_bounce": "dice_bounce", "dice_result": "dice_result", "step": "step", "buy": "buy", "upgrade": "upgrade",
 	"cash_gain": "cash_gain", "cash_loss": "cash_loss", "card": "card", "choice": "choice", "auction": "auction",
 	"bid": "bid", "rescue": "rescue", "bankrupt": "bankrupt", "your_turn": "your_turn", "win": "win", "lose": "lose",
 }

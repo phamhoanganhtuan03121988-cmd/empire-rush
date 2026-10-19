@@ -163,6 +163,19 @@ def sfx():
     write_wav("lose", mix(*[tone(note(n), 0.6, MARIMBA, 0.25) for n in (72, 68, 65)], at=[0, 0.18, 0.36]), 0.55)
 
 
+def sfx_phase51():
+    """Phase 5.1 dice beats, on their own seed so the Phase 5 files stay
+    byte-identical: a bounce on the felt tray (soft, low) and the result
+    chime when "5 + 6 = 11" appears."""
+    global rng
+    keep, rng = rng, np.random.default_rng(20261)
+    felt = lowpass(band(noise(0.06), 200, 2500) * env(int(SR * 0.06), 0.001, 0.012), 3000)
+    write_wav("dice_bounce", mix(knock(380, 0.08, 0.5), felt * 0.6), 0.55)
+    write_wav("dice_result", mix(tone(note(79), 0.4, MARIMBA, 0.12), tone(note(84), 0.5, MARIMBA, 0.16),
+                                 tone(note(91), 0.55, BELL, 0.2) * 0.35, at=[0, 0.06, 0.12]), 0.55)
+    rng = keep
+
+
 def music():
     """~48 s seamless loop: warm pad chords + a quiet plucked arpeggio,
     low-passed so it stays under the effects."""
@@ -227,4 +240,5 @@ def music():
 if __name__ == "__main__":
     sfx()
     music()
+    sfx_phase51()
     sys.exit(0)

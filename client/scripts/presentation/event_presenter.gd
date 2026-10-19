@@ -20,6 +20,13 @@ signal cue(name: String, data: Dictionary)
 
 var board: BoardView
 var dice: DiceView
+## Phase 5.1 foreground dice (main sets it; the dice above live in it).
+var dice_stage: DiceStage:
+	set(v):
+		dice_stage = v
+		if v:
+			v.beat.connect(func(n: String, data: Dictionary): cue.emit(n, _roll.merged(data)))
+var _roll: Dictionary = {}
 var tokens: Array[TokenView] = []
 var theme: ThemeData
 var config: GameConfig
@@ -137,9 +144,11 @@ func _present(ev: Dictionary) -> void:
 			if text != "":
 				toast.emit(text, Color("#9ad0ff"), "info")
 		"DiceRolled":
+			_roll = d
 			cue.emit("dice_roll", d)
-			await dice.roll_to(d["d1"], d["d2"], Vector3(0, 0.06, 1.2), 0.9 * speed)
-			cue.emit("dice_land", d)
+			var human := match_ref != null and match_ref.is_human(d["seat"])
+			await dice_stage.play(d["d1"], d["d2"], UiText.t("dice_who") % _name(d["seat"]), theme.player_color(d["seat"]),
+				human, speed, reduced_motion)
 			toast.emit(UiText.t("rolled") % [_name(d["seat"]), d["d1"], d["d2"], d["d1"] + d["d2"]], theme.player_color(d["seat"]), "dice")
 		"TokenMoved":
 			await _move_token(d["seat"], d["from"], d["to"], d["via"])
