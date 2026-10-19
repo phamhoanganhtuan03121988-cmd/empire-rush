@@ -352,7 +352,8 @@ func _menu_insets() -> Dictionary:
 	if menu != null and menu.page == "title":
 		if vp.x > vp.y:
 			return {"top": 0.06, "bottom": 0.06, "left": 0.5, "right": 0.02}
-		return {"top": 0.24, "bottom": 0.5, "left": 0.06, "right": 0.06}
+		var band: Dictionary = menu.title_board_band()
+		return {"top": band["top"], "bottom": band["bottom"], "left": 0.06, "right": 0.06}
 	return {"top": 0.06, "bottom": 0.06, "left": 0.0, "right": 0.0}
 
 

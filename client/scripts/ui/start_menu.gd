@@ -71,6 +71,10 @@ func setup(p_config: GameConfig, p_theme: ThemeData, first_page := "title") -> v
 	_build_how_to()
 	resized.connect(_layout)
 	get_viewport().size_changed.connect(func(): _relayouts = 2; _layout())
+	# Wrapped labels settle their height a few frames late: re-place the
+	# title column when it does (or the buttons float above the bottom).
+	_title_box.minimum_size_changed.connect(_layout.call_deferred)
+	_title_buttons.minimum_size_changed.connect(_layout.call_deferred)
 	show_page(first_page)
 
 
@@ -593,6 +597,15 @@ func _icon(name: String, size: int, tint: Color) -> TextureRect:
 
 
 # --- layout ---------------------------------------------------------------------
+
+## Portrait title: the free band between the logo block and the buttons, as
+## fractions of the screen height {top, bottom} for the camera framing.
+func title_board_band() -> Dictionary:
+	var h := get_viewport_rect().size.y
+	var top := (_title_box.position.y + _title_box.get_combined_minimum_size().y * _title_box.scale.y + 20.0) / h
+	var bottom := 1.0 - (_title_buttons.position.y - 20.0) / h
+	return {"top": clampf(top, 0.0, 0.6), "bottom": clampf(bottom, 0.0, 0.6)}
+
 
 func safe_rect() -> Rect2:
 	var vp := get_viewport_rect().size
