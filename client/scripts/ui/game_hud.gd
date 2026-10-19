@@ -202,11 +202,16 @@ func _build_card(seat: int) -> Dictionary:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 6)
 	v.add_child(head)
-	var avatar := PanelContainer.new()
-	avatar.add_theme_stylebox_override("panel", UiTheme.badge(pc.darkened(0.15), pc.lightened(0.45)))
-	avatar.custom_minimum_size = Vector2(34, 34)
-	var emblem := _icon_rect(theme_data.character_icon(p["character_id"]), 24, Color.WHITE)
-	avatar.add_child(emblem)
+	# Phase 5.1: the persona portrait (cosmetic); the role stays on the line below.
+	var avatar: PanelContainer
+	var face := theme_data.player_portrait(seat)
+	if face:
+		avatar = PortraitBadge.make(face, pc, 46)
+	else:
+		avatar = PanelContainer.new()
+		avatar.add_theme_stylebox_override("panel", UiTheme.badge(pc.darkened(0.15), pc.lightened(0.45)))
+		avatar.custom_minimum_size = Vector2(34, 34)
+		avatar.add_child(_icon_rect(theme_data.character_icon(p["character_id"]), 24, Color.WHITE))
 	head.add_child(avatar)
 	var name := _label(22, pc.lightened(0.35))
 	name.add_theme_font_override("font", UiTheme.font("Bold"))

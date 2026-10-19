@@ -6,6 +6,10 @@ extends RefCounted
 var districts: Dictionary
 var special: Dictionary
 var players: Array
+## Phase 5.1 cosmetic personas (data/presentation/personas.json): name,
+## portrait, signature colour, bio. Never read by the rules engine.
+var personas: Array = []
+var _portraits: Dictionary = {}
 var character_icons: Dictionary = {}
 var strings: Dictionary = {}
 var _mats: Dictionary = {}
@@ -18,6 +22,9 @@ static func load_default() -> ThemeData:
 	t.special = d["special_tiles"]
 	t.players = d["players"]
 	t.character_icons = d.get("character_icons", {})
+	var pd = JSON.parse_string(FileAccess.get_file_as_string("res://data/presentation/personas.json"))
+	if typeof(pd) == TYPE_DICTIONARY:
+		t.personas = pd.get("personas", [])
 	var vi = JSON.parse_string(FileAccess.get_file_as_string("res://data/presentation/strings_vi.json"))
 	if typeof(vi) == TYPE_DICTIONARY:
 		t.strings = vi
@@ -45,6 +52,25 @@ func district_color(did: String) -> Color:
 
 func player_color(seat: int) -> Color:
 	return Color(players[seat % players.size()]["color"])
+
+
+func persona(id: String) -> Dictionary:
+	for p in personas:
+		if p["id"] == id:
+			return p
+	return {}
+
+
+## Portrait texture of a persona (cached; SVG imported by Godot).
+func portrait(id: String) -> Texture2D:
+	if not _portraits.has(id):
+		var path := "res://assets/ui/portraits/%s.svg" % id
+		_portraits[id] = load(path) if ResourceLoader.exists(path) else null
+	return _portraits[id]
+
+
+func player_portrait(seat: int) -> Texture2D:
+	return portrait(str(players[seat % players.size()].get("persona", "")))
 
 
 func player_name(seat: int) -> String:

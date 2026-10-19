@@ -15,6 +15,9 @@ var _body: Node3D
 var _ring: MeshInstance3D
 var _ring_mat: StandardMaterial3D
 var _pulse: Tween
+## Phase 5.1: the persona portrait floating over the pawn (billboard, drawn
+## over the city so a tower never hides who is who). Cosmetic only.
+var medallion: Sprite3D
 
 
 func build(p_seat: int, theme: ThemeData) -> void:
@@ -47,6 +50,21 @@ func build(p_seat: int, theme: ThemeData) -> void:
 	_ring_mat.albedo_color = theme.player_color(seat)
 	_ring.material_override = _ring_mat
 	add_child(_ring)
+	var face := theme.player_portrait(seat)
+	if face:
+		medallion = Sprite3D.new()
+		medallion.name = "Medallion"
+		medallion.texture = face
+		medallion.pixel_size = 0.30 / face.get_width()
+		medallion.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		medallion.shaded = false
+		medallion.no_depth_test = true
+		medallion.render_priority = 4
+		medallion.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
+		medallion.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		medallion.position = Vector3(0, 1.08, 0)
+		medallion.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(medallion)
 	set_active(false)
 
 
@@ -59,6 +77,9 @@ func set_active(active: bool, animate := true) -> void:
 		_pulse.kill()
 		_pulse = null
 	_ring_mat.albedo_color.a = 1.0 if active else 0.55
+	if medallion:
+		medallion.modulate.a = 1.0 if active else 0.8
+		medallion.scale = Vector3.ONE * (1.3 if active else 1.0)
 	_ring.scale = Vector3(1.12, 0.25, 1.12) if active else Vector3(1, 0.25, 1)
 	if active and animate:
 		_pulse = create_tween().set_loops()

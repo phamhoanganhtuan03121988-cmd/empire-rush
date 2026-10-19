@@ -65,19 +65,23 @@
   "players": [
     {
       "color": "#e63946",
-      "name": "Bạn"
+      "name": "Bạn",
+      "persona": "khoi"
     },
     {
       "color": "#2f80ed",
-      "name": "Minh"
+      "name": "Minh",
+      "persona": "duc"
     },
     {
       "color": "#27ae60",
-      "name": "Lan"
+      "name": "Lan",
+      "persona": "chi"
     },
     {
       "color": "#f2994a",
-      "name": "Huy"
+      "name": "Huy",
+      "persona": "long"
     }
   ],
   "character_icons": {

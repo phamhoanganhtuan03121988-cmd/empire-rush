@@ -16,6 +16,7 @@ func _open_menu(extra := {}) -> void:
 	MatchSetup.reduced_motion = false
 	MatchSetup.color_index = 0
 	MatchSetup.player_name = "Bạn"
+	MatchSetup.persona = "khoi"
 	GameSettings.intro_seen = false
 	GameSettings.muted = false
 	GameSettings.music_volume = 0.6

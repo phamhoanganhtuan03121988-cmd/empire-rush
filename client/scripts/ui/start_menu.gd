@@ -38,7 +38,7 @@ var _content: VBoxContainer
 var _bottom: HBoxContainer
 var _relayouts := 2
 var _ability: Label
-var _lineup: VBoxContainer
+var _lineup: HBoxContainer
 var _name_edit: LineEdit
 var _scrim: TextureRect
 var _title_box: VBoxContainer
@@ -47,6 +47,9 @@ var _intro_index := 0
 var _intro_parts := {}
 var _settings_back_to := "title"
 var _color_group: Array[Button] = []
+var _persona_group: Array[Button] = []
+var _persona_grid: GridContainer
+var _persona_bio: Label
 ## Setup: two columns in landscape (players + character | identity + bots).
 var _split: BoxContainer
 var _cols: Array[VBoxContainer] = []
@@ -291,39 +294,53 @@ func _build_setup() -> void:
 		_split.add_child(col)
 		_cols.append(col)
 	var v := _cols[0]
+	# Phase 5.1: a real character choice (portrait, name, colour, bio). The
+	# persona is cosmetic; the ROLE below is the approved rules character.
+	_section(v, "Chọn nhân vật")
+	_persona_grid = GridContainer.new()
+	_persona_grid.columns = 4
+	_persona_grid.add_theme_constant_override("h_separation", 10)
+	_persona_grid.add_theme_constant_override("v_separation", 10)
+	v.add_child(_persona_grid)
+	for p in theme_data.personas:
+		var pid: String = p["id"]
+		var b := Button.new()
+		b.text = p["name"]
+		b.icon = theme_data.portrait(pid)
+		b.expand_icon = true
+		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		b.custom_minimum_size = Vector2(0, 150)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.add_theme_font_size_override("font_size", 19)
+		b.add_theme_constant_override("icon_max_width", 104)
+		b.add_theme_constant_override("h_separation", 2)
+		for k in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
+			b.add_theme_color_override(k, Color.WHITE)
+		b.set_meta("value", pid)
+		b.tooltip_text = p["bio"]
+		AudioDirector.wire(b)
+		b.pressed.connect(func():
+			MatchSetup.choose_persona(pid, theme_data.personas)
+			_name_edit.text = MatchSetup.player_name
+			_refresh_setup())
+		buttons["persona_%s" % pid] = b
+		_persona_group.append(b)
+		_persona_grid.add_child(b)
+	_persona_bio = _label("", UiTheme.FS_BODY, UiTheme.TEXT, "Medium")
+	_persona_bio.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_persona_bio)
 	_section(v, "Số người chơi (bạn + máy)")
 	_choice_row(v, "players", [[2, "2"], [3, "3"], [4, "4"]], MatchSetup.players, func(x):
 		MatchSetup.players = x
 		_refresh_setup())
-	_section(v, "Nhân vật của bạn")
-	var chars: Array = []
-	for c in MatchSetup.CHARACTER_CYCLE:
-		chars.append([c, theme_data.loc(c, "short", c), theme_data.character_icon(c)])
-	_choice_row(v, "character", chars, MatchSetup.character, func(x):
-		MatchSetup.character = x
-		_update_ability()
-		_refresh_setup())
-	_ability = _label("", UiTheme.FS_BODY, UiTheme.TEXT, "Medium")
-	_ability.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	v.add_child(_ability)
+	# Who plays: one portrait per seat (you first, then the bots' personas).
+	_section(v, "Đội hình trận")
+	_lineup = HBoxContainer.new()
+	_lineup.add_theme_constant_override("separation", 10)
+	v.add_child(_lineup)
 	v = _cols[1]
-	_section(v, "Màu và tên của bạn")
-	var crow := HBoxContainer.new()
-	crow.add_theme_constant_override("separation", 10)
-	v.add_child(crow)
-	for i in theme_data.players.size():
-		var b := Button.new()
-		b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.set_meta("value", i)
-		b.tooltip_text = "Màu %d" % (i + 1)
-		AudioDirector.wire(b)
-		b.pressed.connect(func():
-			MatchSetup.color_index = i
-			_refresh_setup())
-		buttons["color_%d" % i] = b
-		_color_group.append(b)
-		crow.add_child(b)
+	_section(v, "Tên và màu quân của bạn")
 	_name_edit = LineEdit.new()
 	_name_edit.max_length = MatchSetup.NAME_MAX
 	_name_edit.placeholder_text = "Tên hiển thị (ví dụ: Bạn)"
@@ -336,10 +353,36 @@ func _build_setup() -> void:
 		MatchSetup.player_name = t
 		_refresh_lineup())
 	v.add_child(_name_edit)
-	_section(v, "Đội hình trận")
-	_lineup = VBoxContainer.new()
-	_lineup.add_theme_constant_override("separation", 8)
-	v.add_child(_lineup)
+	var crow := HBoxContainer.new()
+	crow.add_theme_constant_override("separation", 10)
+	v.add_child(crow)
+	for i in theme_data.players.size():
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.set_meta("value", i)
+		b.tooltip_text = "Màu quân %d" % (i + 1)
+		AudioDirector.wire(b)
+		b.pressed.connect(func():
+			MatchSetup.color_index = i
+			_refresh_setup())
+		buttons["color_%d" % i] = b
+		_color_group.append(b)
+		crow.add_child(b)
+	_section(v, "Vai trò trong trận (kỹ năng)")
+	var chars: Array = []
+	for c in MatchSetup.CHARACTER_CYCLE:
+		chars.append([c, theme_data.loc(c, "short", c), theme_data.character_icon(c)])
+	_choice_row(v, "character", chars, MatchSetup.character, func(x):
+		MatchSetup.character = x
+		_update_ability()
+		_refresh_setup())
+	_ability = _label("", UiTheme.FS_BODY, UiTheme.TEXT, "Medium")
+	_ability.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_ability)
+	var note := _label("Nhân vật chỉ là ngoại hình. Vai trò quyết định kỹ năng trong trận.", 20, UiTheme.TEXT_MUTED, "Medium")
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(note)
 	var row := _bottom_row("setup")
 	_bottom = row
 	var back := _button("MENU", "close")
@@ -366,6 +409,23 @@ func _build_setup() -> void:
 func _refresh_setup() -> void:
 	if _color_group.is_empty():
 		return
+	for b in _persona_group:
+		var sel: bool = b.get_meta("value") == MatchSetup.persona
+		var pc := Color(theme_data.persona(b.get_meta("value")).get("color", "#334"))
+		var st := UiTheme.panel(pc.darkened(0.55) if sel else Color("#0c1220"), UiTheme.GOLD if sel else Color(1, 1, 1, 0.14), 18, 0.95)
+		st.set_border_width_all(5 if sel else 2)
+		st.set_content_margin_all(6)
+		var hov := st.duplicate()
+		hov.bg_color = pc.darkened(0.35)
+		for k in ["normal", "pressed", "focus"]:
+			b.add_theme_stylebox_override(k, st)
+		b.add_theme_stylebox_override("hover", hov)
+		b.add_theme_color_override("font_color", UiTheme.GOLD if sel else UiTheme.TEXT)
+		b.add_theme_color_override("font_hover_color", UiTheme.GOLD if sel else UiTheme.TEXT)
+		b.set_meta("selected", sel)
+	var me := theme_data.persona(MatchSetup.persona)
+	if _persona_bio and not me.is_empty():
+		_persona_bio.text = "%s: %s" % [me["name"], me["bio"]]
 	for b in _color_group:
 		var i: int = b.get_meta("value")
 		var c := Color(theme_data.players[i]["color"])
@@ -390,22 +450,27 @@ func _refresh_lineup() -> void:
 	for c in _lineup.get_children():
 		_lineup.remove_child(c)
 		c.queue_free()
-	var ids := MatchSetup.identities(theme_data.players, MatchSetup.players)
+	var ids := MatchSetup.identities(theme_data.players, MatchSetup.players, theme_data.personas)
 	var chars := MatchSetup.seat_characters(MatchSetup.players, MatchSetup.character)
 	for seat in ids.size():
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 12)
-		var av := PanelContainer.new()
+		var cell := VBoxContainer.new()
+		cell.add_theme_constant_override("separation", 2)
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cell.custom_minimum_size.x = 0
 		var pc := Color(ids[seat]["color"])
-		av.add_theme_stylebox_override("panel", UiTheme.badge(pc.darkened(0.1), pc.lightened(0.5)))
-		av.custom_minimum_size = Vector2(48, 48)
-		av.add_child(_icon(theme_data.character_icon(chars[seat]), 30, Color.WHITE))
-		row.add_child(av)
-		var who := "%s · %s%s" % [ids[seat]["name"], theme_data.loc(chars[seat], "short", chars[seat]), "  (bạn)" if seat == 0 else "  (máy)"]
-		var l := _label(who, UiTheme.FS_BODY, pc.lightened(0.45) if seat > 0 else UiTheme.TEXT, "Bold" if seat == 0 else "Medium")
-		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(l)
-		_lineup.add_child(row)
+		var av := PortraitBadge.make(theme_data.portrait(ids[seat]["persona"]), pc, 60)
+		av.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		cell.add_child(av)
+		for line in [[ids[seat]["name"], 20, UiTheme.GOLD if seat == 0 else pc.lightened(0.45), "Bold"],
+				["%s · %s" % [theme_data.loc(chars[seat], "short", chars[seat]), "bạn" if seat == 0 else "máy"], 17, UiTheme.TEXT_MUTED, "Medium"]]:
+			var l := _label(str(line[0]), line[1], line[2], line[3])
+			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			l.autowrap_mode = TextServer.AUTOWRAP_OFF
+			l.custom_minimum_size.x = 0
+			cell.add_child(l)
+		cell.set_meta("seat", seat)
+		_lineup.add_child(cell)
 	_relayouts = 2
 	_layout.call_deferred()
 
@@ -650,6 +715,16 @@ func _layout() -> void:
 	var two_cols := landscape and safe.size.x >= 1100.0
 	if _split:
 		_split.vertical = not two_cols
+	# Landscape: a shorter persona grid so the line-up stays on screen.
+	if _persona_grid:
+		_persona_grid.columns = 8 if two_cols else 4
+	for b in _persona_group:
+		b.custom_minimum_size.y = 118 if two_cols else 150
+		b.add_theme_constant_override("icon_max_width", 66 if two_cols else 104)
+		b.add_theme_font_size_override("font_size", 16 if two_cols else 19)
+		b.autowrap_mode = TextServer.AUTOWRAP_OFF
+		var full: String = theme_data.persona(b.get_meta("value")).get("name", "")
+		b.text = full.split(" ")[-1] if two_cols else full
 	for name in _cards:
 		var card: PanelContainer = _cards[name]
 		var w := minf(safe.size.x - 28.0, 1280.0 if (two_cols and name == "setup") else CARD_WIDTH)

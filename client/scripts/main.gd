@@ -166,7 +166,7 @@ func _start_match() -> void:
 		seed_value = TUTORIAL_SEED
 	if from_menu:
 		# Phase 5 identity (presentation only): the player's colour and name.
-		theme_data.players = MatchSetup.identities(theme_data.players, maxi(n, 4))
+		theme_data.players = MatchSetup.identities(theme_data.players, maxi(n, 4), theme_data.personas)
 	var seats: Array = []
 	for i in n:
 		seats.append({"player_id": "p%d" % i, "character_id": chars[i]})

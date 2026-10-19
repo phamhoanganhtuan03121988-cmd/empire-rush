@@ -36,6 +36,7 @@ static func load_settings() -> void:
 		MatchSetup.character = ch
 	MatchSetup.color_index = clampi(int(cf.get_value("setup", "color", MatchSetup.color_index)), 0, 3)
 	MatchSetup.player_name = str(cf.get_value("setup", "name", MatchSetup.player_name)).left(MatchSetup.NAME_MAX)
+	MatchSetup.persona = str(cf.get_value("setup", "persona", MatchSetup.persona))
 
 
 static func save_settings() -> void:
@@ -50,5 +51,6 @@ static func save_settings() -> void:
 	cf.set_value("setup", "character", MatchSetup.character)
 	cf.set_value("setup", "color", MatchSetup.color_index)
 	cf.set_value("setup", "name", MatchSetup.player_name)
+	cf.set_value("setup", "persona", MatchSetup.persona)
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	cf.save(path)
