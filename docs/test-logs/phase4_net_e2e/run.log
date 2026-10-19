@@ -1,0 +1,38 @@
+== chaos
+  [  12.4s] SIGKILL server
+  [  59.9s] NET_E2E PASS failures=0 rooms=1 clients=4 server={"bot_commands":9,"bot_takeovers":1,"commands":239,"duplicates":12,"frame_errors":{},"frames_in":1571,"frames_out":2472,"rejected":{"BAD_REQUEST":2,"STALE_STATE":8,"WRONG_PHASE":2},"seat_reclaims":1,"snapshots":1331} rs={"frame_errors":{"BAD_REQUEST":1,"PAYLOAD_TOO_LARGE":2,"PROTOCOL_UNSUPPORTED":1},"handshake_timeouts":0,"links_refused":0,"rate_clo
+== chaos: PASS (59.9 s)
+== concurrent
+  [  30.9s] NET_E2E PASS failures=0 rooms=3 clients=9 server={"bot_commands":0,"bot_takeovers":0,"commands":669,"duplicates":51,"frame_errors":{},"frames_in":2588,"frames_out":4516,"rejected":{},"seat_reclaims":0,"snapshots":1919} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":3,"rooms_ended":3,"rooms_expired":0,"rooms_removed":3,"rooms_started"
+== concurrent: PASS (30.9 s)
+== sequential
+  [  28.7s] after match 1: {'after_match': 1, 'objects': 1497.0, 'static_mem_mb': 25.4, 'rooms': 0, 'links': 0}
+  [  56.9s] after match 2: {'after_match': 2, 'objects': 1497.0, 'static_mem_mb': 25.4, 'rooms': 0, 'links': 0}
+  [  79.8s] after match 3: {'after_match': 3, 'objects': 1497.0, 'static_mem_mb': 25.4, 'rooms': 0, 'links': 0}
+  [  79.8s] objects after matches 1/2/3: [1497.0, 1497.0, 1497.0] -> stable
+  [  80.3s] NET_E2E PASS failures=0 rooms=3 clients=6 server={"bot_commands":0,"bot_takeovers":0,"commands":601,"duplicates":0,"frame_errors":{},"frames_in":1809,"frames_out":3023,"rejected":{},"seat_reclaims":0,"snapshots":1208} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":3,"rooms_ended":3,"rooms_expired":0,"rooms_removed":3,"rooms_started":
+== sequential: PASS (80.3 s)
+== client_restart
+  [  10.4s] SIGKILL client A_1
+  [  11.4s] restart client A_1 from its session file
+  [ 114.8s] NET_E2E PASS failures=0 rooms=1 clients=3 server={"bot_commands":0,"bot_takeovers":0,"commands":198,"duplicates":25,"frame_errors":{},"frames_in":781,"frames_out":1367,"rejected":{},"seat_reclaims":0,"snapshots":583} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":1,"rooms_ended":1,"rooms_expired":0,"rooms_removed":1,"rooms_started":1
+== client_restart: PASS (114.8 s)
+== abandon
+  [  23.6s] NET_E2E PASS failures=0 rooms=1 clients=1 server={"bot_commands":44,"bot_takeovers":1,"commands":94,"duplicates":0,"frame_errors":{},"frames_in":286,"frames_out":480,"rejected":{},"seat_reclaims":0,"snapshots":192} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":1,"rooms_ended":1,"rooms_expired":0,"rooms_removed":1,"rooms_started":1} 
+  [  23.6s] abandon: takeovers=1 bot_moves=44 reclaims=0 -> ok
+== abandon: PASS (23.6 s)
+== tls
+  [  24.9s] NET_E2E PASS failures=0 rooms=1 clients=2 server={"bot_commands":0,"bot_takeovers":0,"commands":165,"duplicates":0,"frame_errors":{},"frames_in":497,"frames_out":831,"rejected":{},"seat_reclaims":0,"snapshots":332} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":1,"rooms_ended":1,"rooms_expired":0,"rooms_removed":1,"rooms_started":1} 
+== tls: PASS (24.9 s)
+== tls_bad_ca
+  [   4.4s] tls_bad_ca: clients gave up=2/2, rooms created=0 -> ok
+== tls_bad_ca: PASS (4.4 s)
+== netem
+  [ 146.2s] proxy: {'connections': 41, 'cuts': 38, 'chunks': 2268}
+  [ 146.7s] NET_E2E PASS failures=0 rooms=1 clients=3 server={"bot_commands":0,"bot_takeovers":0,"commands":222,"duplicates":5,"frame_errors":{},"frames_in":871,"frames_out":1539,"rejected":{},"seat_reclaims":0,"snapshots":649} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":1,"rooms_ended":1,"rooms_expired":0,"rooms_removed":1,"rooms_started":1}
+== netem: PASS (146.7 s)
+== lan
+  [   0.5s] client addresses: ['127.0.0.2', '127.0.0.3', '192.0.2.2']
+  [  30.1s] NET_E2E PASS failures=0 rooms=1 clients=3 server={"bot_commands":0,"bot_takeovers":0,"commands":224,"duplicates":0,"frame_errors":{},"frames_in":896,"frames_out":1571,"rejected":{},"seat_reclaims":0,"snapshots":672} rs={"frame_errors":{},"handshake_timeouts":0,"links_refused":0,"rate_closed":0,"rate_limited":0,"rooms_created":1,"rooms_ended":1,"rooms_expired":0,"rooms_removed":1,"rooms_started":1}
+== lan: PASS (30.1 s)
+NET_E2E_SUITE PASS {"chaos": {"pass": true, "wall_s": 59.9}, "concurrent": {"pass": true, "wall_s": 30.9}, "sequential": {"pass": true, "wall_s": 80.3}, "client_restart": {"pass": true, "wall_s": 114.8}, "abandon": {"pass": true, "wall_s": 23.6}, "tls": {"pass": true, "wall_s": 24.9}, "tls_bad_ca": {"pass": true, "wall_s": 4.4}, "netem": {"pass": true, "wall_s": 146.7}, "lan": {"pass": true, "wall_s": 30.1}}

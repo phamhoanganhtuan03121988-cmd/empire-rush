@@ -64,9 +64,14 @@
 
 Phase 3 had 205 / 21 UI / 97 scripts. Phase 4 added 3 unit/integration tests and 9 UI tests. No test was removed or weakened.
 
-**Multi-process e2e:** pending (filled in by the final commit).
+**Multi-process e2e** (`scripts/run_net_e2e.sh`, separate OS processes over real sockets, one machine): **9/9 PASS** in one run on the Phase 4 code.
+- Scenarios: chaos, concurrent, sequential, client_restart, abandon, tls, tls_bad_ca, netem, lan.
+- Logs: `docs/test-logs/phase4_net_e2e/`, with session files and TLS keys removed. Privacy scan CLEAN.
+- CI runs chaos + concurrent on every push.
 
-**Release lock:** pending.
+**Release lock** (`scripts/ci/check_release_lock.sh`, local, isolated user-data folder): `RELEASE LOCK OK`.
+- The public build wrote 0 device/telemetry files; the internal build wrote them as expected.
+- Static readiness (`check_repo_readiness.py`, which includes the privacy-scanner self-test): `READINESS PASS (0 failed)`.
 
 **CI:** pending.
 

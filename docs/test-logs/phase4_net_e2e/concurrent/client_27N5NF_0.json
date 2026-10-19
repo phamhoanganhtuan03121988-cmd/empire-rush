@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 21,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 85,
+  "frames_dropped_local": 0,
+  "frames_sent": 276,
+  "invalid_kinds": [],
+  "last_seq": 495,
+  "public_hash": "0e5cab8e08ecbbd48e47e0efea3b8ff561efba078f62bfcedd80ff8c09377519",
+  "room_code": "27N5NF",
+  "seat": 0,
+  "snapshot_hash": "0e5cab8e08ecbbd48e47e0efea3b8ff561efba078f62bfcedd80ff8c09377519",
+  "state_version": 169,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 169,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 169
+  }
+}

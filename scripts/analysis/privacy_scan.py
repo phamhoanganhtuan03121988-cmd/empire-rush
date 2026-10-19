@@ -38,14 +38,20 @@ RULES = [
 ]
 PLACEHOLDER = {"phone": "<phone>", "uuid": "<uuid>", "token": "<token>", "email": "<email>", "home_path": "<home>", "ip_address": "<ip>", "certificate": "<certificate>"}
 TEXT_EXT = {".json", ".jsonl", ".csv", ".txt", ".log", ".md", ".cfg", ".ini"}
-SAFE_IPS = {"127.0.0.1", "0.0.0.0"}
+SAFE_IPS = {"0.0.0.0"}
+# Loopback and the RFC 5737 documentation ranges never identify a machine.
+SAFE_IP_PREFIXES = ("127.", "192.0.2.", "198.51.100.", "203.0.113.")
+
+
+def _safe_ip(ip):
+    return ip in SAFE_IPS or ip.startswith(SAFE_IP_PREFIXES)
 
 
 def scan_text(text, names):
     found = []
     for kind, rx in RULES:
         for m in rx.finditer(text):
-            if kind == "ip_address" and m.group(0) in SAFE_IPS:
+            if kind == "ip_address" and _safe_ip(m.group(0)):
                 continue
             if kind == "ip_address" and re.fullmatch(r"\d+\.\d+\.\d+\.\d+", m.group(0)) and _looks_like_version(text, m.start()):
                 continue
@@ -67,7 +73,7 @@ def redact_text(text, names):
         if kind == "token":
             text = rx.sub(lambda m: m.group(1) + "<token>", text)  # keep the key: JSON stays valid
         elif kind in PLACEHOLDER:
-            text = rx.sub(lambda m: m.group(0) if (kind == "ip_address" and m.group(0) in SAFE_IPS) else PLACEHOLDER[kind], text)
+            text = rx.sub(lambda m: m.group(0) if (kind == "ip_address" and _safe_ip(m.group(0))) else PLACEHOLDER[kind], text)
     for n in names:
         if n:
             text = re.sub(r"\b" + re.escape(n) + r"\b", "<name>", text, flags=re.I)
@@ -122,6 +128,9 @@ def self_test():
                          "mean_frame_game_s": 0.0277, "session_wall_seconds": 11.5})
     assert not scan_text(replay, []), scan_text(replay, [])
     assert redact_text(replay, []) == replay
+    # Loopback / documentation addresses are kept; a private LAN address is not.
+    assert not scan_text("clients via 127.0.0.2 and 192.0.2.2", [])
+    assert [k for k, _ in scan_text("server 10.1.2.3", [])] == ["ip_address"]
     # Phone numbers in free-text notes; timestamps and floats are not phones.
     assert [k for k, _ in scan_text("goi 0912 345 678 hoac +84 987654321", [])] == ["phone", "phone"]
     assert not scan_text('{"at_ms": 1792311089, "t": 0.0912345678, "n": 309123456789}', [])

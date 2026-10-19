@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 13,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 55,
+  "frames_dropped_local": 0,
+  "frames_sent": 303,
+  "invalid_kinds": [],
+  "last_seq": 624,
+  "public_hash": "961a2455c6d81ed74368be312ae45c13451a570ba3da25ed038d39d7ef81d3ad",
+  "room_code": "NXWFW9",
+  "seat": 0,
+  "snapshot_hash": "961a2455c6d81ed74368be312ae45c13451a570ba3da25ed038d39d7ef81d3ad",
+  "state_version": 234,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 234,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 234
+  }
+}

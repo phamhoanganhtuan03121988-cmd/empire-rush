@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 80,
+  "frames_dropped_local": 0,
+  "frames_sent": 248,
+  "invalid_kinds": [],
+  "last_seq": 466,
+  "public_hash": "9d47ef815cc6a2a8b7310e5106bd061b122eae292799ac8ddb7cbf131013db7e",
+  "room_code": "EWQGUJ",
+  "seat": 1,
+  "snapshot_hash": "9d47ef815cc6a2a8b7310e5106bd061b122eae292799ac8ddb7cbf131013db7e",
+  "state_version": 167,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 167,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 167
+  }
+}

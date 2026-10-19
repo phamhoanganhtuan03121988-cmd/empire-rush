@@ -1,0 +1,46 @@
+{
+  "code": "EWQGUJ",
+  "end_reason": "last_solvent",
+  "public_hash": "9d47ef815cc6a2a8b7310e5106bd061b122eae292799ac8ddb7cbf131013db7e",
+  "restarts": 0,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 1781,
+      "character_id": "INVESTOR",
+      "districts": 2,
+      "net_worth": 3017,
+      "player_id": "p1",
+      "rank": 1,
+      "seat": 1
+    },
+    {
+      "bankrupt": true,
+      "bankrupt_turn": 65,
+      "cash": 0,
+      "character_id": "TYCOON",
+      "districts": 0,
+      "net_worth": 0,
+      "player_id": "p0",
+      "rank": 2,
+      "seat": 0
+    }
+  ],
+  "rounds": 33,
+  "server_ms": 196730,
+  "state_hash": "1aeac5496ff2efd3e1af8298e927d018fdd8f02cd031846b5ffbf8ae5129cfc8",
+  "state_version": 167,
+  "stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 165,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 497,
+    "frames_out": 831,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 332
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "code": "4VANTZ",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1639903753,
+  "token_hashes": [
+    "da1a5d9713240d545d1afba364fdf5f84a114b3364d069f9dd021bf310dbe05a",
+    "df3d053bee7d4d44a46746449f698430e8e4d775c9984ad7ae0f521798b36702"
+  ]
+}

@@ -1,0 +1,8 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[server 3 ms] LISTENING bind=127.0.0.1 port=53329 tls=true time_scale=10.0 policy={ "hold_ms": 60000, "on_expiry": "bot" } rooms_restored=0
+[server 481 ms] ROOM_STARTED room=EWQGUJ players=2
+[server 20155 ms] ROOM_ENDED room=EWQGUJ reason=last_solvent state_version=167
+[server 20174 ms] LINK_CLOSED 2
+[server 20181 ms] LINK_CLOSED 1
+[server 23159 ms] EXIT all 1 rooms ended and removed; objects=1500 static_mem_mb=25.4

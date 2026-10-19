@@ -1,0 +1,31 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "resumed_from_session": 1,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 25,
+  "frames_dropped_local": 0,
+  "frames_sent": 143,
+  "invalid_kinds": [],
+  "last_seq": 625,
+  "public_hash": "62fee05d098ec73c9affe1e0b349c35c4e977be11897fa0abcbbf24d6da189f3",
+  "room_code": "SGNXTY",
+  "seat": 1,
+  "snapshot_hash": "62fee05d098ec73c9affe1e0b349c35c4e977be11897fa0abcbbf24d6da189f3",
+  "state_version": 216,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 118,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 118
+  }
+}

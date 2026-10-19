@@ -1,0 +1,24 @@
+{
+  "code": "Q4YUG2",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1402484559,
+  "token_hashes": [
+    "27f1daf11c8c99998da39918379ce8cc02e0a6180cd83ad024913ed3d63e0714",
+    "834b2f86788f3dcb348a6f7d5acb7b37918b2053acf0d7062668281e3521fc18"
+  ]
+}

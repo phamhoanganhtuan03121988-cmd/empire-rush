@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 77,
+  "frames_dropped_local": 0,
+  "frames_sent": 296,
+  "invalid_kinds": [],
+  "last_seq": 587,
+  "public_hash": "a11a9b909d32ffe39f3b3857042b06a989f7291d1c40c23469d3c1a1da18c451",
+  "room_code": "UX7Z3F",
+  "seat": 1,
+  "snapshot_hash": "a11a9b909d32ffe39f3b3857042b06a989f7291d1c40c23469d3c1a1da18c451",
+  "state_version": 218,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 218,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 218
+  }
+}

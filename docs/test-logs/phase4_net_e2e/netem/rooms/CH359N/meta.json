@@ -1,0 +1,29 @@
+{
+  "code": "CH359N",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 418726006,
+  "token_hashes": [
+    "8e2d20cb0eb30796f97f5ca452cd0657e7417a7e232774206fc761a174c2efb6",
+    "be7a2726e3299a064b9990850b35e7f71a2b46c77115e29e5f0cace51a2a677f",
+    "cf20a25f0218e1165532d0d8b4f7d09069d500787484ed30fe00524ee2602ff6"
+  ]
+}

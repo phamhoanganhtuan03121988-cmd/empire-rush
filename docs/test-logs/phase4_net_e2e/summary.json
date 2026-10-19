@@ -1,0 +1,38 @@
+{
+  "chaos": {
+    "pass": true,
+    "wall_s": 59.9
+  },
+  "concurrent": {
+    "pass": true,
+    "wall_s": 30.9
+  },
+  "sequential": {
+    "pass": true,
+    "wall_s": 80.3
+  },
+  "client_restart": {
+    "pass": true,
+    "wall_s": 114.8
+  },
+  "abandon": {
+    "pass": true,
+    "wall_s": 23.6
+  },
+  "tls": {
+    "pass": true,
+    "wall_s": 24.9
+  },
+  "tls_bad_ca": {
+    "pass": true,
+    "wall_s": 4.4
+  },
+  "netem": {
+    "pass": true,
+    "wall_s": 146.7
+  },
+  "lan": {
+    "pass": true,
+    "wall_s": 30.1
+  }
+}

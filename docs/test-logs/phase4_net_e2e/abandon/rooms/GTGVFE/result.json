@@ -1,0 +1,46 @@
+{
+  "code": "GTGVFE",
+  "end_reason": "last_solvent",
+  "public_hash": "0280515d8efdf778153feb55cc44f12ec794d0944112f1f9f129d20b8c731249",
+  "restarts": 0,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 1902,
+      "character_id": "TYCOON",
+      "districts": 2,
+      "net_worth": 3184,
+      "player_id": "p0",
+      "rank": 1,
+      "seat": 0
+    },
+    {
+      "bankrupt": true,
+      "bankrupt_turn": 44,
+      "cash": 0,
+      "character_id": "INVESTOR",
+      "districts": 0,
+      "net_worth": 0,
+      "player_id": "p1",
+      "rank": 2,
+      "seat": 1
+    }
+  ],
+  "rounds": 22,
+  "server_ms": 191330,
+  "state_hash": "d4f09b63d4eadab9e9d5c762f69c9947faed52e714ce3f1e515b106ba2c84076",
+  "state_version": 141,
+  "stats": {
+    "bot_commands": 44,
+    "bot_takeovers": 1,
+    "commands": 94,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 286,
+    "frames_out": 480,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 192
+  }
+}

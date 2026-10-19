@@ -1,0 +1,70 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 2,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "clients": 2,
+  "failures": [],
+  "pass": true,
+  "rooms": [
+    {
+      "code": "EWQGUJ",
+      "commands_applied": 165,
+      "end_reason": "last_solvent",
+      "journal_entries": 166,
+      "players": 2,
+      "restarts": 0,
+      "rounds": 33,
+      "state_version": 167,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 165,
+        "duplicates": 0,
+        "frame_errors": {},
+        "frames_in": 497,
+        "frames_out": 831,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 332
+      }
+    }
+  ],
+  "server_meta": {
+    "links": 0,
+    "objects": 1500,
+    "pid": 7676,
+    "restarts": 0,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
+    "stats": {
+      "frame_errors": {},
+      "handshake_timeouts": 0,
+      "links_refused": 0,
+      "rate_closed": 0,
+      "rate_limited": 0,
+      "rooms_created": 1,
+      "rooms_ended": 1,
+      "rooms_expired": 0,
+      "rooms_removed": 1,
+      "rooms_started": 1
+    },
+    "tls": true
+  },
+  "server_stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 165,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 497,
+    "frames_out": 831,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 332
+  }
+}
