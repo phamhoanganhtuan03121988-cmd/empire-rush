@@ -14,7 +14,9 @@
 ##  - a link must create, join or resume within `handshake_ms`;
 ##  - session tokens are random 128-bit values, stored only as SHA-256;
 ##  - identity always comes from the session, never from the payload;
-##  - limits on rooms and links protect memory.
+##  - limits on rooms and links protect memory;
+##  - one room per link, and a room that never fills is removed after
+##    `waiting_ttl_ms` (Phase 4: otherwise one client could hold every room).
 class_name RoomServer
 extends RefCounted
 
@@ -32,6 +34,8 @@ var max_rooms := 64
 var max_links := 512
 var handshake_ms := 10000
 var linger_ms := 30000
+## A WAITING room that has not filled by then is removed (its links closed).
+var waiting_ttl_ms := 600000
 ## Token bucket per link: `rate_per_s` frames/s refill, `burst` capacity.
 var rate_per_s := 20.0
 var burst := 40.0
@@ -42,7 +46,7 @@ var random_hex := func(n_bytes: int) -> String: return Crypto.new().generate_ran
 
 var rooms: Dictionary = {}        # code -> room Dictionary
 var to_close: Array = []
-var stats := {"rooms_created": 0, "rooms_started": 0, "rooms_ended": 0, "rooms_removed": 0,
+var stats := {"rooms_created": 0, "rooms_started": 0, "rooms_ended": 0, "rooms_removed": 0, "rooms_expired": 0,
 	"rate_limited": 0, "rate_closed": 0, "handshake_timeouts": 0, "links_refused": 0, "frame_errors": {}}
 var _links: Dictionary = {}       # link -> {opened_ms, room, tokens, last_ms, violations}
 var _token_room: Dictionary = {}  # token hash -> room code
@@ -97,6 +101,8 @@ func handle_frame(link: int, text: String, now_ms: int) -> Array:
 		return _flush()
 	var msg: Dictionary = dec["msg"]
 	match msg["kind"]:
+		NetProtocol.CREATE_ROOM, NetProtocol.JOIN_ROOM when l["room"] != "":
+			_send(link, NetProtocol.ERROR, {"code": NetProtocol.E_BAD_REQUEST})  # one room per link
 		NetProtocol.CREATE_ROOM:
 			_create_room(link, l, msg)
 		NetProtocol.JOIN_ROOM:
@@ -140,6 +146,9 @@ func tick(now_ms: int) -> Array:
 				room["ended_ms"] = now_ms
 				stats["rooms_ended"] += 1
 		elif room["state"] == ENDED and now_ms - room["ended_ms"] > linger_ms:
+			_remove_room(code)
+		elif room["state"] == WAITING and now_ms - room["created_ms"] > waiting_ttl_ms:
+			stats["rooms_expired"] += 1
 			_remove_room(code)
 	return _flush()
 

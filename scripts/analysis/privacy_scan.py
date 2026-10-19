@@ -27,10 +27,16 @@ RULES = [
     ("email", re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")),
     # Home folders carry the OS user name; iOS app containers carry a
     # per-install UUID (/var/mobile/Containers/Data/Application/<UUID>).
-    ("home_path", re.compile(r"(/home/[^/\s\"']+|/Users/[^/\s\"']+|/root\b|/var/mobile/Containers/Data/Application/[0-9A-Fa-f-]+|[A-Za-z]:\\\\?Users\\\\?[^\\\s\"']+)")),
+    # Windows: a JSON-escaped user name (C:\\Users\\Ph\u1ea1m) is matched whole.
+    ("home_path", re.compile(r"(/home/[^/\s\"']+|/Users/[^/\s\"']+|/root\b|/var/mobile/Containers/Data/Application/[0-9A-Fa-f-]+|[A-Za-z]:\\\\?Users\\\\?(?:\\u[0-9A-Fa-f]{4}|[^\\\s\"'])+)")),
+    # Any other UUID (iOS bundle / app-group paths, vendor ids). The game
+    # writes none; match ids, hashes and seeds are not in this form.
+    ("uuid", re.compile(r"\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\b")),
+    # Vietnamese mobile numbers (0912 345 678, +84 912345678) typed into notes.
+    ("phone", re.compile(r"(?<![\d.])(?:\+84[ .-]?|0)[35789](?:[ .-]?\d){8}(?![\d.])")),
     ("ip_address", re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b")),
 ]
-PLACEHOLDER = {"token": "<token>", "email": "<email>", "home_path": "<home>", "ip_address": "<ip>", "certificate": "<certificate>"}
+PLACEHOLDER = {"phone": "<phone>", "uuid": "<uuid>", "token": "<token>", "email": "<email>", "home_path": "<home>", "ip_address": "<ip>", "certificate": "<certificate>"}
 TEXT_EXT = {".json", ".jsonl", ".csv", ".txt", ".log", ".md", ".cfg", ".ini"}
 SAFE_IPS = {"127.0.0.1", "0.0.0.0"}
 
@@ -68,6 +74,15 @@ def redact_text(text, names):
     return text
 
 
+def _parses(text):
+    import json
+    try:
+        json.loads(text)
+        return True
+    except ValueError:
+        return False
+
+
 def walk(root):
     for d, _, files in os.walk(root):
         for f in sorted(files):
@@ -75,7 +90,9 @@ def walk(root):
 
 
 def self_test():
-    """Checks the rules on generated strings (nothing read from disk)."""
+    """Checks the rules on generated strings (nothing read from disk). Each
+    case below is a regression for a defect found in Phase 4."""
+    import json
     sample = ('{"token": "0123456789abcdef0123456789abcdef", "p": "/home/alice/x", "r": "/root/.local", '
               '"m": "a.b@example.com", "ip": "192.168.1.20", "v": "4.7.2.stable", "lo": "127.0.0.1", '
               '"ios": "/var/mobile/Containers/Data/Application/1A2B-33/Documents"} An')
@@ -83,9 +100,31 @@ def self_test():
     assert kinds == ["email", "home_path", "ip_address", "name", "token"], kinds
     red = redact_text(sample, ["An"])
     assert not scan_text(red, ["An"]), scan_text(red, ["An"])
-    import json
-    json.loads(red.rsplit("}", 1)[0] + "}")  # still valid JSON after redaction
-    assert not scan_text('{"engine": "4.7.2.stable", "server": "127.0.0.1", "seed": 404}', [])
+    # Token redaction once replaced the key too and broke the JSON.
+    json.loads(red.rsplit("}", 1)[0] + "}")
+    assert '"token": "<token>"' in red, red
+    # `/root` (no user-name segment) was missed in godot.log lines.
+    assert scan_text("BENCH_REPORT /root/.local/share/godot/x.json", [])
+    # iOS bundle path and a bare vendor UUID.
+    ios = "/var/containers/Bundle/Application/0F1E2D3C-4B5A-6978-8796-A5B4C3D2E1F0/EmpireRush.app"
+    assert [k for k, _ in scan_text(ios, [])] == ["uuid"], scan_text(ios, [])
+    assert "0F1E2D3C" not in redact_text(ios, [])
+    # A Windows user name with a JSON \u escape must go whole, not leave a suffix.
+    win = json.dumps({"log": "C:\\Users\\Ph\u1ea1m\\AppData\\x"})
+    out = redact_text(win, [])
+    assert json.loads(out)["log"] == "<home>\\AppData\\x", out
+    # Replay-relevant fields must come out byte-identical: hashes, seeds,
+    # ids, timestamps, engine version, loopback address.
+    replay = json.dumps({"engine": "4.7.2.stable", "server": "127.0.0.1", "seed": 404,
+                         "replay": {"match_id": "local-21", "state_hash": "5dc39a781eebed095acd0268a0ee05a3a1d8f43c9c702014c75b33139315240e",
+                                    "input_log": [{"command_id": "c17", "player_id": "p0", "at_ms": 1792311089, "type": "BuyProperty",
+                                                   "payload": {"property_id": "P_D3_1"}}]},
+                         "mean_frame_game_s": 0.0277, "session_wall_seconds": 11.5})
+    assert not scan_text(replay, []), scan_text(replay, [])
+    assert redact_text(replay, []) == replay
+    # Phone numbers in free-text notes; timestamps and floats are not phones.
+    assert [k for k, _ in scan_text("goi 0912 345 678 hoac +84 987654321", [])] == ["phone", "phone"]
+    assert not scan_text('{"at_ms": 1792311089, "t": 0.0912345678, "n": 309123456789}', [])
     print("PRIVACY_SELF_TEST PASS")
 
 
@@ -97,9 +136,12 @@ def main():
     ap.add_argument("dir")
     ap.add_argument("--redact")
     ap.add_argument("--names", default="")
+    ap.add_argument("--binaries-reviewed", action="store_true",
+                    help="images/binaries in the data were checked by eye")
     a = ap.parse_args()
     names = [x.strip() for x in a.names.split(",") if x.strip()]
     target = a.dir
+    binaries = []
     if a.redact:
         for path in walk(a.dir):
             rel = os.path.relpath(path, a.dir)
@@ -114,9 +156,14 @@ def main():
                 if "PRIVATE KEY-----" in text:
                     print(f"DROPPED {rel} (contains a private key)")
                     continue
-                open(out, "w", encoding="utf-8").write(redact_text(text, names))
+                red = redact_text(text, names)
+                if ext == ".json" and _parses(text) and not _parses(red):
+                    print(f"ERROR redaction broke the JSON of {rel}; nothing should be shared")
+                    sys.exit(2)
+                open(out, "w", encoding="utf-8").write(red)
             else:
                 shutil.copy2(path, out)
+                binaries.append(rel)
                 print(f"COPIED AS IS {rel} (binary: check by eye)")
         target = a.redact
     findings = 0
@@ -127,7 +174,15 @@ def main():
             findings += 1
             print(f"FINDING {kind:12s} {os.path.relpath(path, target)}: {sample}")
     print(f"PRIVACY_SCAN {'CLEAN' if findings == 0 else 'FOUND %d' % findings} ({target})")
-    sys.exit(0 if findings == 0 else 1)
+    if findings:
+        sys.exit(1)
+    # Text can be checked by rules; images cannot. Sharing stays blocked until
+    # a person has looked at them (a screenshot can show a notification, a
+    # name or a desktop).
+    if binaries and not a.binaries_reviewed:
+        print(f"SHARING BLOCKED: {len(binaries)} image/binary file(s) not checked. Look at each one, "
+              "delete what shows anything personal, then re-run with --binaries-reviewed.")
+        sys.exit(3)
 
 
 if __name__ == "__main__":

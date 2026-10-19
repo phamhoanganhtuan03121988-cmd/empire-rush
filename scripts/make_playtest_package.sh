@@ -5,14 +5,24 @@
 #   2. smoke-tests THE EXPORTED BINARY: a full autoplay match must end, write
 #      telemetry with a replay record, replay to the same final state, and
 #      pass the privacy scan;
-#   3. assembles build/playtest/EmpireRush-playtest-<commit>/ with the game,
+#   3. redacts a copy of the smoke data and replays the REDACTED copy (the
+#      redaction must not break the replay record);
+#   4. assembles build/playtest/EmpireRush-playtest-<commit>/ with the game,
 #      a Vietnamese quick start, forms, the data-collection script and
-#      SHA-256 sums, and a .tar.gz of it.
+#      SHA-256 sums; privacy-scans the finished folder and only then writes
+#      the .tar.gz. Any finding stops the script: the package is not made.
+# Refuses a dirty working tree (the package name is the commit it was built
+# from); ALLOW_DIRTY=1 overrides for local experiments only.
 # Usage: GODOT=/path/to/godot scripts/make_playtest_package.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GODOT="${GODOT:-godot}"
 commit="$(git -C "$ROOT" rev-parse --short HEAD)"
+if [ -n "$(git -C "$ROOT" status --porcelain)" ] && [ "${ALLOW_DIRTY:-0}" != "1" ]; then
+	git -C "$ROOT" status --short
+	echo "REFUSED: uncommitted changes; commit first so the package matches $commit"
+	exit 1
+fi
 "$ROOT/scripts/export_build.sh" linux internal release
 BIN="$ROOT/build/linux-internal/EmpireRush.x86_64"
 WORK="$(mktemp -d)"
@@ -27,9 +37,18 @@ TEL="$UD/telemetry/package_smoke.json"
 cp "$TEL" "$WORK/"
 "$GODOT" --headless --path "$ROOT/client" --script res://tools/replay_match.gd -- --file="$WORK/package_smoke.json" \
 	| grep -q "MATCHES the recorded final state" || { echo "REPLAY MISMATCH"; exit 1; }
-python3 "$ROOT/scripts/analysis/privacy_scan.py" "$WORK" > "$WORK/privacy.txt" || { cat "$WORK/privacy.txt"; exit 1; }
+SCAN="$ROOT/scripts/analysis/privacy_scan.py"
+echo "== privacy: input data (smoke telemetry + engine log), as a tester would collect it"
+mkdir -p "$WORK/in/telemetry" "$WORK/in/logs"
+cp "$WORK/package_smoke.json" "$WORK/in/telemetry/"
+cp "$WORK/smoke.log" "$WORK/in/logs/"
+[ -f "$UD/logs/godot.log" ] && cp "$UD/logs/godot.log" "$WORK/in/logs/"
+python3 "$SCAN" "$WORK/in" || echo "(findings above are redacted in the next step)"
+python3 "$SCAN" "$WORK/in" --redact "$WORK/out" | grep -v "^COPIED" || { echo "REDACTED COPY NOT CLEAN"; exit 1; }
+"$GODOT" --headless --path "$ROOT/client" --script res://tools/replay_match.gd -- --file="$WORK/out/telemetry/package_smoke.json" \
+	| grep -q "MATCHES the recorded final state" || { echo "REDACTED REPLAY MISMATCH"; exit 1; }
 rm -f "$TEL"
-echo "smoke OK: match ended, replay matches, privacy scan clean"
+echo "smoke OK: match ended, replay matches before and after redaction, redacted data clean"
 
 NAME="EmpireRush-playtest-$commit"
 OUT="$ROOT/build/playtest/$NAME"
@@ -53,5 +72,7 @@ EMPIRE RUSH — bản thử nội bộ ($commit)
 Trò chơi KHÔNG gửi gì qua mạng. Chi tiết: HUONG_DAN_PLAYTEST.md
 TXT
 ( cd "$OUT" && sha256sum EmpireRush.* BAT_DAU_O_DAY.txt HUONG_DAN_PLAYTEST.md collect_playtest_data.sh privacy_scan.py forms/* > SHA256SUMS )
+echo "== privacy: final package folder"
+python3 "$SCAN" "$OUT" || { echo "PACKAGE BLOCKED: privacy findings in $OUT (no .tar.gz written)"; exit 1; }
 tar -C "$ROOT/build/playtest" -czf "$ROOT/build/playtest/$NAME-linux-x86_64.tar.gz" "$NAME"
 echo "PACKAGE $ROOT/build/playtest/$NAME-linux-x86_64.tar.gz"

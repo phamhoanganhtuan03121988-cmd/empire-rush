@@ -135,7 +135,7 @@ func test_landscape_layout_keeps_panels_on_screen() -> void:
 
 func test_full_match_completes_with_results_screen() -> void:
 	# Autopilot plays the human seat through HUD buttons; bots play the rest.
-	var tel := "user://telemetry/ui_privacy_check.json"
+	var tel := "user://test_telemetry/ui_privacy_check.json"
 	if FileAccess.file_exists(tel):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(tel))
 	await start_game(2, 21, {"autoplay": "1", "telemetry": tel})

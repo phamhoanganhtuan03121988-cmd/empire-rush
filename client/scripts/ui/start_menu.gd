@@ -21,6 +21,8 @@ var _center: CenterContainer
 var _content: VBoxContainer
 var _bottom: HBoxContainer
 var _relayouts := 2
+## Widest the how-to column gets (logical px): ~70 characters a line.
+const READ_WIDTH := 760.0
 var _ability: Label
 
 
@@ -122,9 +124,12 @@ func _layout() -> void:
 	if _relayouts > 0:
 		_relayouts -= 1
 		_layout.call_deferred()
-	how_to.position = safe.position + Vector2(14, 14)
-	how_to.size = safe.size - Vector2(28, 28)
-	how_to_label.custom_minimum_size.x = how_to.size.x - 60.0
+	# A centred reading column: full width on phones in portrait, capped in
+	# landscape so lines stay readable.
+	var w := minf(safe.size.x - 28.0, READ_WIDTH)
+	how_to.size = Vector2(w, safe.size.y - 28.0)
+	how_to.position = safe.position + Vector2((safe.size.x - w) * 0.5, 14.0)
+	how_to_label.custom_minimum_size.x = w - 60.0
 
 
 func _section(v: VBoxContainer, text: String) -> void:
@@ -180,6 +185,10 @@ func _label(text: String, size: int, color: Color, weight := "Medium") -> Label:
 
 func _update_ability() -> void:
 	_ability.text = ability_text(MatchSetup.character)
+	# The text height changes with the character: measure again, or the
+	# scroll keeps its old height and clips the rows below (Phase 4 bug).
+	_relayouts = 2
+	_layout.call_deferred()
 
 
 ## Vietnamese ability summary built from the rules data (numbers never typed

@@ -8,7 +8,7 @@ var main: Node3D
 
 
 func start_game(players := 2, seed_value := 1, extra := {}) -> void:
-	var args := {"players": str(players), "seed": str(seed_value), "quality": "low"}
+	var args := {"players": str(players), "seed": str(seed_value), "quality": "low", "telemetry": scratch_telemetry_path()}
 	args.merge(extra, true)
 	main = load("res://scenes/main.tscn").instantiate()
 	main.args_override = args
@@ -16,6 +16,13 @@ func start_game(players := 2, seed_value := 1, extra := {}) -> void:
 	main.presenter.speed = 0.05
 	main.match_ref.bot_delay_range = Vector2(0.02, 0.05)
 	await frames(3)
+
+
+## Tests edit engine state directly (forced ends, placed tokens), so their
+## replay records cannot be rebuilt from the input log. They must never land
+## in user://telemetry, which testers collect and share (Phase 4).
+static func scratch_telemetry_path() -> String:
+	return "user://test_telemetry/ui_%d.json" % Time.get_ticks_usec()
 
 
 func stop_game() -> void:

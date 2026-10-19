@@ -11,17 +11,30 @@
 | Đồ hoạ, âm thanh | Đồ hoạ là bộ asset dọc (vertical slice), chưa có âm thanh |
 | Luật chơi và balance | Bản nháp DRAFT v3. **Không thay đổi luật dựa trên một buổi thử** (xem §8) |
 
-## 1. Chuẩn bị gói (người điều phối, một lần cho mỗi bản build)
+## 0. Nhận gói (người điều phối, không cần Godot)
+Máy cần: Linux x86_64 có màn hình và driver **Vulkan**, `python3`, `tar`. Gói đã được thử trên container Linux x86_64 (Ubuntu, chạy không màn hình, đồ hoạ phần mềm); **chưa thử trên Windows, macOS hay điện thoại**.
+```
+tar -xzf EmpireRush-playtest-<commit>-linux-x86_64.tar.gz
+cd EmpireRush-playtest-<commit>
+sha256sum -c SHA256SUMS        # mọi dòng phải là OK
+chmod +x EmpireRush.x86_64 collect_playtest_data.sh
+./EmpireRush.x86_64            # mở màn hình chọn trận
+```
+Nếu không mở được: chạy lại trong terminal, chép các dòng `ERROR` in ra vào phiếu báo lỗi (thường là máy thiếu Vulkan). Chưa có bản dự phòng OpenGL đã được kiểm thử.
+
+## 1. Chuẩn bị gói (người làm bản build, cần mã nguồn + Godot 4.7.2)
 ```
 GODOT=/đường/dẫn/Godot_v4.7.2-stable_linux.x86_64 scripts/make_playtest_package.sh
 ```
 
-Script thực hiện các bước sau. Nếu bất kỳ bước nào sai, nó dừng và không tạo gói:
-1. Export bản **Linux Internal Test** (release).
-2. **Chạy thử chính bản vừa export** một trận tự động hoàn chỉnh.
-3. Kiểm tra tệp ghi trận có bản replay, và replay ra đúng trạng thái cuối.
-4. Kiểm tra tệp ghi trận không chứa dữ liệu cá nhân.
-5. Tạo `build/playtest/EmpireRush-playtest-<commit>-linux-x86_64.tar.gz`.
+Script thực hiện các bước sau. Nếu bất kỳ bước nào sai, nó dừng và **không tạo gói**:
+1. Từ chối nếu working tree còn thay đổi chưa commit (tên gói = commit).
+2. Export bản **Linux Internal Test** (release).
+3. **Chạy thử chính bản vừa export** một trận tự động hoàn chỉnh.
+4. Kiểm tra tệp ghi trận có bản replay, và replay ra đúng trạng thái cuối.
+5. Quét dữ liệu đầu vào (tệp ghi trận + log), xoá thông tin cá nhân trên một bản sao, rồi **replay lại bản đã xoá** — phải vẫn khớp.
+6. Quét quyền riêng tư toàn bộ thư mục gói. Có phát hiện → **chặn, không tạo `.tar.gz`**.
+7. Tạo `build/playtest/EmpireRush-playtest-<commit>-linux-x86_64.tar.gz`.
 
 | Trong gói | Dùng để |
 |---|---|
@@ -90,9 +103,18 @@ Thời lượng thật lấy từ tệp ghi trận, không từ trí nhớ.
 
 ## 5. Thu thập dữ liệu và quyền riêng tư
 ```
-./collect_playtest_data.sh                     # gom vào playtest_data_<ngày giờ>/
+./collect_playtest_data.sh                       # gom vào playtest_data_<ngày giờ>/
 ./collect_playtest_data.sh OUT --names "An,Bình" # thêm: xoá các tên này nếu lỡ gõ vào
+./collect_playtest_data.sh OUT --binaries-reviewed  # sau khi đã xem từng ảnh bằng mắt
 ```
+
+Dòng cuối script cho biết có được gửi hay không:
+
+| Dòng cuối | Ý nghĩa |
+|---|---|
+| `READY TO SHARE` | đã xoá thông tin, quét lại sạch: được gửi thư mục này |
+| `NOT READY: check the images…` | có ảnh/tệp nhị phân chưa ai xem. Xem từng ảnh, xoá ảnh lộ thông tin (thông báo, tên, màn hình desktop), chạy lại với `--binaries-reviewed` |
+| `NOT READY: privacy scan failed` | không gửi; báo người làm bản build |
 
 **Script gom:**
 - `telemetry/` (thời lượng, từng lượt, bản ghi replay);
@@ -100,18 +122,24 @@ Thời lượng thật lấy từ tệp ghi trận, không từ trí nhớ.
 - `logs/godot.log`.
 
 **Script xoá:**
-- đường dẫn thư mục người dùng (chứa tên đăng nhập máy) → `<home>`;
-- e-mail, địa chỉ IP, token/mật khẩu;
+- đường dẫn thư mục người dùng (chứa tên đăng nhập máy, kể cả `/root`, `C:\Users\…`) → `<home>`;
+- đường dẫn ứng dụng iOS và mọi UUID (mã riêng của máy/bản cài) → `<home>` / `<uuid>`;
+- e-mail, số điện thoại Việt Nam, địa chỉ IP, token/mật khẩu;
 - các tên được liệt kê.
 
-Tệp khoá riêng bị bỏ hẳn. Ảnh chụp màn hình được giữ nguyên và **phải kiểm tra bằng mắt** trước khi gửi.
+Tệp khoá riêng bị bỏ hẳn. Tệp JSON phải vẫn đọc được sau khi xoá; nếu không, script dừng.
+
+**Script không tự xử lý được** (nên vẫn cần người):
+- ảnh chụp màn hình — giữ nguyên, việc gửi bị chặn tới khi có người xem (bảng trên);
+- tên/thông tin gõ tự do trong phiếu mà không có trong `--names`. Vì vậy chỉ dùng mã T01, T02… và không gửi phiếu có tên thật.
 
 **Tệp ghi trận chứa:**
 - seed;
 - mã người chơi `p0..p3`, nhân vật;
 - mọi lệnh và thời điểm;
-- thời gian mỗi lượt;
-- máy/hệ điều hành/CPU (cho phân tích hiệu năng).
+- thời gian mỗi lượt, khung hình.
+
+Báo cáo thiết bị (`device_validation/`, chỉ khi đo hiệu năng) có thêm tên hệ điều hành, đời máy, CPU, GPU — không có mã máy hay số sê-ri.
 
 **Tệp ghi trận không chứa:**
 - tên người;
@@ -119,7 +147,7 @@ Tệp khoá riêng bị bỏ hẳn. Ảnh chụp màn hình được giữ nguy�
 - vị trí;
 - bất kỳ token mạng nào (bản offline không có).
 
-**Bản Public Release không ghi tệp nào** (kiểm tra trong CI).
+**Bản Public Release không ghi tệp nào** (kiểm tra trong CI). Trận do test tự động tạo ghi vào `user://test_telemetry/`, không lẫn vào dữ liệu người thử.
 
 Tổng hợp nhiều buổi, ẩn danh:
 ```

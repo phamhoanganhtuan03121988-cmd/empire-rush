@@ -150,6 +150,8 @@ On turn timeout the server applies the safe default from GDD §3.8.
   - After 50 violations the link is closed.
 - Handshake timeout: a link that has not created, joined or resumed within 10 s is closed (`HANDSHAKE_TIMEOUT`).
 - Server limits: max rooms 64 (`--max_rooms`, `SERVER_FULL`) and max links 512 (refused at accept).
+- One room per link (Phase 4): a second `CreateRoom` or `JoinRoom` on a link that already has a room is refused `BAD_REQUEST`.
+- A room still `WAITING` 10 minutes after it was created is removed (`waiting_ttl_ms`): its tokens stop working and its links are closed with `ROOM_CLOSED`. Without this, abandoned rooms could hold all 64 slots.
 - Identity always comes from the session. A command whose `player_id` is not the session's is rejected `UNAUTHENTICATED`.
 - New error codes: `RATE_LIMITED, ROOM_NOT_FOUND, ROOM_FULL, ROOM_CLOSED, SERVER_FULL, HANDSHAKE_TIMEOUT, SESSION_REPLACED`.
 

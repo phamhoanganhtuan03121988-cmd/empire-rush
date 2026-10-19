@@ -185,6 +185,39 @@ func test_room_errors_and_identity() -> void:
 	assert_true("4:Welcome" in kinds, "new link welcomed")
 
 
+## Phase 4 security review: one link could send CreateRoom/JoinRoom again
+## and again (filling every room, or several seats of one room), and a room
+## that never filled lived forever. 64 abandoned rooms = SERVER_FULL for
+## everyone. Now: one room per link, and waiting rooms expire.
+func test_one_room_per_link_and_waiting_rooms_expire() -> void:
+	var rs := _server(25)
+	rs.max_rooms = 4
+	rs.link_opened(1, 0)
+	var out := rs.handle_frame(1, NetProtocol.encode(NetProtocol.CREATE_ROOM, {"players": 3}), 0)
+	var code: String = JSON.parse_string(out[0][1])["room_code"]
+	for i in 3:
+		out = rs.handle_frame(1, NetProtocol.encode(NetProtocol.CREATE_ROOM, {"players": 2}), 0)
+		assert_true(out[0][1].contains(NetProtocol.E_BAD_REQUEST), "second CreateRoom on the same link refused")
+	out = rs.handle_frame(1, NetProtocol.encode(NetProtocol.JOIN_ROOM, {"room_code": code}), 0)
+	assert_true(out[0][1].contains(NetProtocol.E_BAD_REQUEST), "the creator cannot take a second seat")
+	assert_eq(rs.rooms.size(), 1, "one room for one link")
+	assert_eq(rs.rooms[code]["seats"].size(), 1, "one seat for one link")
+	# The creator leaves; nobody joins. The room is removed after the wait limit.
+	rs.link_closed(1)
+	rs.tick(rs.waiting_ttl_ms - 1)
+	assert_true(rs.rooms.has(code), "still open inside the wait limit")
+	rs.link_opened(2, rs.waiting_ttl_ms)
+	out = rs.handle_frame(2, NetProtocol.encode(NetProtocol.JOIN_ROOM, {"room_code": code}), rs.waiting_ttl_ms)
+	assert_true(out[0][1].contains(NetProtocol.ROOM_JOINED), "a late friend can still join")
+	rs.tick(rs.waiting_ttl_ms + 1)
+	assert_false(rs.rooms.has(code), "unfilled room removed after the wait limit")
+	assert_true(2 in rs.to_close, "its remaining links are closed (ROOM_CLOSED)")
+	assert_eq(rs.stats["rooms_expired"], 1, "counted")
+	rs.link_opened(3, rs.waiting_ttl_ms + 2)
+	out = rs.handle_frame(3, NetProtocol.encode(NetProtocol.CREATE_ROOM, {"players": 2}), rs.waiting_ttl_ms + 2)
+	assert_true(out[0][1].contains(NetProtocol.ROOM_JOINED), "the slot is free again")
+
+
 func test_rate_limit_and_handshake_timeout() -> void:
 	var rs := _server(31)
 	rs.link_opened(1, 0)
@@ -349,3 +382,121 @@ func test_ended_rooms_are_removed_without_leaks() -> void:
 	assert_eq(rs.stats["rooms_removed"], 4, "four rooms removed")
 	assert_eq(rs.link_count(), 0, "no links left")
 	assert_true(absi(int(counts[3]) - int(counts[1])) < 200, "object count stable across matches: %s" % str(counts))
+
+
+## 2-player room with both seats connected (creator, then joiner).
+func _two_player_room(seed_value: int) -> Dictionary:
+	var rs := _server(seed_value)
+	rs.policy_dict = {"hold_ms": 60000, "on_expiry": DisconnectPolicy.BOT, "bot_think_ms": 300}
+	var w := _world(rs, [{"kind": NetProtocol.CREATE_ROOM, "players": 2}], seed_value)
+	w["net"].connect_client(0)
+	for k in 10:
+		w["net"].step(STEP_MS)
+	var c1 := NetClient.new("")
+	c1.room_request = {"kind": NetProtocol.JOIN_ROOM, "room_code": w["clients"][0].room_code}
+	w["clients"].append(c1)
+	w["net"].teardown()
+	var net := LoopbackNetwork.new()
+	net.setup(rs, w["clients"], seed_value + 1)
+	w["net"] = net
+	net.connect_client(0)
+	net.connect_client(1)
+	return w
+
+
+## Phase 4: the link drops at the exact step a trade becomes pending - for
+## the recipient (who must answer) and, in another room, for the proposer.
+## The trade must still resolve exactly once (answered or expired), the match
+## must finish, the journal must replay to the same state, and the player who
+## comes back inside the hold reclaims the seat and converges.
+func test_disconnect_while_trade_is_pending() -> void:
+	for who in ["to", "from"]:
+		var w: Dictionary
+		var hit := {}
+		for seed_value in [71, 73, 75, 77, 79, 81, 83, 85]:
+			w = _two_player_room(seed_value + (0 if who == "to" else 100))
+			var net: LoopbackNetwork = w["net"]
+			# Watch every step; drop the link the moment a trade is pending.
+			_run(w, 400000, func(_step: int) -> void:
+				if not hit.is_empty():
+					if net.now_ms == hit["back_at"]:
+						net.connect_client(hit["seat"])
+					return
+				var host := _host_of(w, w["clients"][0])
+				if host == null or host.engine.state.phase != GameState.TRADE_PENDING:
+					return
+				var t: Dictionary = host.engine.state.trade
+				var seat: int = t[who]
+				var link := -1
+				for i in w["clients"].size():
+					if w["clients"][i].seat == seat:
+						link = i
+				# merge, not assign: a lambda cannot rebind a captured local
+				hit.merge({"seat": link, "trade_id": t["trade_id"], "back_at": net.now_ms + 30000})
+				net.disconnect_client(link))
+			if not hit.is_empty():
+				break
+			net.teardown()
+		assert_false(hit.is_empty(), "a bot proposed a trade in one of the seeds (%s)" % who)
+		if hit.is_empty():
+			return
+		var code: String = w["clients"][0].room_code
+		var host: MatchHost = w["rs"].rooms[code]["host"]
+		var outcomes: Array = []
+		for ev in host.engine.event_log:
+			if ev["type"] == "TradeResolved" and ev["data"]["trade_id"] == hit["trade_id"]:
+				outcomes.append(ev["data"]["status"])
+		assert_eq(outcomes.size(), 1, "%s: the trade resolved exactly once (%s)" % [who, outcomes])
+		if who == "to":  # away 30 s > 20 s trade timer, inside the 60 s hold: no bot answers
+			assert_eq(outcomes, ["expired"], "recipient away: the trade expired")
+		assert_true(host.engine.is_ended(), "%s: match ended" % who)
+		assert_true(Invariants.check(host.engine).is_empty(), "%s: invariants" % who)
+		assert_true(_replay_matches(w["rs"], code), "%s: journal replays to the same state" % who)
+		var back: NetClient = w["clients"][hit["seat"]]
+		assert_true(back.connected and back.welcomed, "%s: player reconnected after 30 s" % who)
+		assert_false(host.seat_down_since.has(back.seat), "%s: seat no longer held as away" % who)
+		assert_eq(host.stats["bot_takeovers"], 0, "%s: no takeover inside the 60 s hold" % who)
+		_sync(w)
+		for c in w["clients"]:
+			assert_eq(c.public_hash, host.public_hash(), "%s: seat %d converged" % [who, c.seat])
+		w["net"].teardown()
+
+
+## Phase 4: the link of the seat whose turn just started drops at that exact
+## step and stays away past the hold: the bot takes the seat, the player
+## returns mid-match and plays on; the match ends normally and replays.
+func test_disconnect_at_turn_change() -> void:
+	var w := _two_player_room(91)
+	var net: LoopbackNetwork = w["net"]
+	var st := {"last": -1, "changes": 0, "dropped_at": -1, "link": -1}
+	_run(w, 400000, func(_step: int) -> void:
+		var host := _host_of(w, w["clients"][0])
+		if host == null:
+			return
+		if st["dropped_at"] >= 0:
+			if net.now_ms == st["dropped_at"] + 70000:
+				net.connect_client(st["link"])
+			return
+		var seat: int = host.engine.state.current_seat
+		if seat != st["last"]:
+			st["last"] = seat
+			st["changes"] += 1
+			if st["changes"] == 6:  # a few turns in, at the exact turn change
+				for i in w["clients"].size():
+					if w["clients"][i].seat == seat:
+						st["link"] = i
+				st["dropped_at"] = net.now_ms
+				net.disconnect_client(st["link"]))
+	assert_true(st["dropped_at"] >= 0, "dropped a link at a turn change")
+	var code: String = w["clients"][0].room_code
+	var host: MatchHost = w["rs"].rooms[code]["host"]
+	assert_true(host.engine.is_ended(), "match ended")
+	assert_true(host.engine.state.end_reason in ["round_cap", "last_solvent", "time_cap"], "normal end: %s" % host.engine.state.end_reason)
+	assert_eq(host.stats["bot_takeovers"], 1, "bot held the seat after 60 s")
+	assert_true(host.stats["seat_reclaims"] >= 1, "player reclaimed the seat at 70 s")
+	assert_true(Invariants.check(host.engine).is_empty(), "invariants")
+	assert_true(_replay_matches(w["rs"], code), "journal replays to the same state")
+	_sync(w)
+	for c in w["clients"]:
+		assert_eq(c.public_hash, host.public_hash(), "seat %d converged" % c.seat)
+	net.teardown()

@@ -10,7 +10,7 @@ func _open_menu(extra := {}) -> void:
 	MatchSetup.character = "TYCOON"
 	MatchSetup.quality = "low"
 	MatchSetup.reduced_motion = false
-	var args := {"menu": "1"}  # no --players: the menu is shown
+	var args := {"menu": "1", "telemetry": scratch_telemetry_path()}  # no --players: the menu is shown
 	args.merge(extra, true)
 	main = load("res://scenes/main.tscn").instantiate()
 	main.args_override = args
@@ -77,6 +77,42 @@ func test_landscape_menu_fits() -> void:
 	# START is pinned: always fully on screen without scrolling.
 	assert_true(vp.grow(1).encloses(b.get_global_rect()), "START on screen in landscape: %s" % str(b.get_global_rect()))
 	assert_true(vp.grow(1).encloses(m._card.get_global_rect()), "menu card inside the screen")
+	tree.root.content_scale_size = Vector2i(720, 1280)
+	tree.root.size = Vector2i(405, 720)
+
+
+## Regression (Phase 4 screenshots): picking a character with a longer
+## description grew the content but the scroll area kept its old height, so
+## the reduced-motion toggle was cut off under the START row although the
+## screen had room. Every pick must re-measure.
+func test_menu_grows_when_the_ability_text_grows() -> void:
+	await _open_menu({"notch": "1"})
+	await frames(6)
+	var m: StartMenu = main.menu
+	for c in ["INVESTOR", "NEGOTIATOR", "TYCOON", "INVESTOR"]:
+		m.buttons["character_" + c].pressed.emit()
+		await frames(6)
+		var toggle: Rect2 = m.buttons["reduced_motion"].get_global_rect()
+		assert_true(m._scroll.get_global_rect().grow(1).encloses(toggle),
+			"%s: toggle fully visible %s in %s" % [c, str(toggle), str(m._scroll.get_global_rect())])
+
+
+## Regression (Phase 4 screenshots): in landscape the how-to sheet spanned the
+## whole width (lines of ~200 characters). It is now a centred column.
+func test_landscape_how_to_is_a_readable_column() -> void:
+	await _open_menu()
+	tree.root.content_scale_size = Vector2i(1280, 720)
+	tree.root.size = Vector2i(1280, 720)
+	await frames(6)
+	var m: StartMenu = main.menu
+	m.buttons["how_to"].pressed.emit()
+	await frames(6)
+	var r: Rect2 = m.how_to.get_global_rect()
+	var vp := m.get_viewport_rect()
+	assert_true(r.size.x <= StartMenu.READ_WIDTH + 1.0, "how-to width %d <= %d" % [r.size.x, StartMenu.READ_WIDTH])
+	assert_true(absf(r.get_center().x - vp.get_center().x) < 2.0, "how-to centred")
+	assert_true(vp.grow(1).encloses(r), "whole sheet on screen (title included): %s in %s" % [str(r), str(vp)])
+	assert_true(vp.grow(1).encloses(m.buttons["how_to_close"].get_global_rect()), "ĐÃ HIỂU on screen")
 	tree.root.content_scale_size = Vector2i(720, 1280)
 	tree.root.size = Vector2i(405, 720)
 
