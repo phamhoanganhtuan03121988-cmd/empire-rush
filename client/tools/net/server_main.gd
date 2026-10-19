@@ -26,6 +26,7 @@ var restarts := 0
 var t0 := 0
 var _ended_rooms: Dictionary = {}
 var _saved_ms := 0
+var _saved_guard := ""
 
 
 func _initialize() -> void:
@@ -151,8 +152,12 @@ func _process(_delta: float) -> bool:
 			peers[link]["ws"].close(1008, "policy")
 	rs.to_close.clear()
 	var exiting: bool = args.has("exit_after_rooms") and _ended_rooms.size() >= int(args["exit_after_rooms"]) and rs.rooms.is_empty()
-	if now - _saved_ms > 1000 or exiting:
+	# Abuse counters are written at once: a crash (the chaos test SIGKILLs the
+	# server) inside the 1 s save window must not lose them.
+	var guard := "%d/%d/%d" % [rs.stats["rate_limited"], rs.stats["rate_closed"], rs.stats["frame_errors"].size()]
+	if now - _saved_ms > 1000 or exiting or guard != _saved_guard:
 		_saved_ms = now
+		_saved_guard = guard
 		_write_json(dir.path_join("server_meta.json"), {"restarts": restarts, "pid": OS.get_process_id(),
 			"tls": tls_options != null, "stats": rs.stats, "links": rs.link_count(), "rooms": rs.rooms.size(),
 			"objects": Performance.get_monitor(Performance.OBJECT_COUNT),
