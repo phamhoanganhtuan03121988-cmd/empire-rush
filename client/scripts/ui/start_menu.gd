@@ -1,186 +1,409 @@
-## Start screen (Phase 4, playtest readiness): number of players, the
-## player's character, graphics preset, reduced motion and a short how-to-play
-## generated from the rules data. Before Phase 4 the game started a 4-player
-## match straight away and these choices needed command-line arguments.
+## Front end (Phase 4 start menu, rebuilt in Phase 5 as a full entry flow):
+##   title    - logo over the slowly turning diorama; CHƠI, HƯỚNG DẪN,
+##              GIỚI THIỆU, CÀI ĐẶT;
+##   intro    - four short pages on the goal and the turn (RulesGuide, from the
+##              rules data), skippable; shown once before the first match;
+##   setup    - players (2-4), character cards with the ability, the player's
+##              colour and display name, and the line-up of the bots;
+##   settings - SettingsPanel (graphics, reduced motion, volumes, mute);
+##   how-to   - the full rules sheet (RulesGuide.how_to_text()).
+## Choices live in MatchSetup / GameSettings, so back, skip and play-again
+## never lose them. Pure presentation: rules come from GameConfig.
 class_name StartMenu
 extends Control
 
 signal start_requested
+signal tutorial_requested
+signal settings_changed
 
-const PRESET_LABELS := {"low": "Thấp", "medium": "Vừa", "high": "Cao"}
+const PRESET_LABELS := SettingsPanel.PRESET_LABELS
+## Widest the how-to column and the cards get (logical px).
+const READ_WIDTH := 760.0
+const CARD_WIDTH := 700.0
 
 var config: GameConfig
 var theme_data: ThemeData
+var guide: RulesGuide
 var simulated_insets := Rect2()
 var buttons := {}            # id -> Button (tests)
+var page := ""
 var how_to: PanelContainer
 var how_to_label: Label
-var _scroll: ScrollContainer
-var _card: PanelContainer
-var _center: CenterContainer
+var settings: SettingsPanel
+var _pages := {}             # name -> Control
+var _cards := {}             # name -> PanelContainer (intro/setup/settings)
+var _scroll: ScrollContainer # setup choices (tests)
+var _card: PanelContainer    # setup card (tests)
 var _content: VBoxContainer
 var _bottom: HBoxContainer
 var _relayouts := 2
-## Widest the how-to column gets (logical px): ~70 characters a line.
-const READ_WIDTH := 760.0
 var _ability: Label
+var _lineup: VBoxContainer
+var _name_edit: LineEdit
+var _scrim: TextureRect
+var _title_box: VBoxContainer
+var _title_buttons: VBoxContainer
+var _intro_index := 0
+var _intro_parts := {}
+var _settings_back_to := "title"
+var _color_group: Array[Button] = []
+## Setup: two columns in landscape (players + character | identity + bots).
+var _split: BoxContainer
+var _cols: Array[VBoxContainer] = []
 
 
-func setup(p_config: GameConfig, p_theme: ThemeData) -> void:
+func setup(p_config: GameConfig, p_theme: ThemeData, first_page := "title") -> void:
 	config = p_config
 	theme_data = p_theme
+	guide = RulesGuide.new(config)
 	theme = UiTheme.build()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	var shade := ColorRect.new()
-	shade.color = Color(0.03, 0.05, 0.1, 0.55)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(shade)
-	# Card = scrollable choices + a pinned START row, so START is always on
-	# screen (landscape phones are only ~390 pt tall).
-	_center = CenterContainer.new()
-	add_child(_center)
-	_card = PanelContainer.new()
-	_card.add_theme_stylebox_override("panel", UiTheme.glass_panel(true))
-	_center.add_child(_card)
-	var outer := VBoxContainer.new()
-	outer.add_theme_constant_override("separation", 14)
-	_card.add_child(outer)
-	_scroll = ScrollContainer.new()
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	outer.add_child(_scroll)
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 14)
-	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.add_child(v)
-	_content = v
-	var title := _label("EMPIRE RUSH", 44, UiTheme.GOLD, "ExtraBold")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(title)
-	var sub := _label("Bản thử nội bộ · chơi với máy", UiTheme.FS_BODY, UiTheme.TEXT_MUTED)
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(sub)
-	_section(v, "Số người chơi (bạn + máy)")
-	_choice_row(v, "players", [[2, "2"], [3, "3"], [4, "4"]], MatchSetup.players, func(x): MatchSetup.players = x)
-	_section(v, "Nhân vật của bạn")
-	var chars: Array = []
-	for c in MatchSetup.CHARACTER_CYCLE:
-		chars.append([c, theme_data.loc(c, "short", c)])
-	_choice_row(v, "character", chars, MatchSetup.character, func(x): MatchSetup.character = x; _update_ability())
-	_ability = _label("", UiTheme.FS_BODY, UiTheme.TEXT)
-	_ability.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	v.add_child(_ability)
-	_section(v, "Đồ họa")
-	var q: Array = []
-	for k in QualitySettings.ORDER:
-		q.append([k, PRESET_LABELS[k]])
-	_choice_row(v, "quality", q, MatchSetup.quality, func(x): MatchSetup.quality = x)
-	var motion := Button.new()
-	motion.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
-	motion.toggle_mode = true
-	motion.button_pressed = MatchSetup.reduced_motion
-	UiTheme.neutral(motion)
-	var set_motion_text := func(on: bool): motion.text = "Giảm chuyển động: " + ("BẬT" if on else "TẮT")
-	set_motion_text.call(motion.button_pressed)
-	motion.toggled.connect(func(on: bool): MatchSetup.reduced_motion = on; set_motion_text.call(on))
-	buttons["reduced_motion"] = motion
-	v.add_child(motion)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	outer.add_child(row)
-	_bottom = row
-	var help := _button("CÁCH CHƠI", "info")
-	UiTheme.secondary(help)
-	help.pressed.connect(func(): how_to.visible = true)
-	buttons["how_to"] = help
-	row.add_child(help)
-	var start := _button("BẮT ĐẦU", "dice")
-	start.pressed.connect(func(): start_requested.emit())
-	buttons["start"] = start
-	row.add_child(start)
+	_scrim = TextureRect.new()
+	_scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_scrim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_scrim.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_scrim.stretch_mode = TextureRect.STRETCH_SCALE
+	add_child(_scrim)
+	_build_title()
+	_build_intro()
+	_build_setup()
+	_build_settings()
 	_build_how_to()
-	_update_ability()
 	resized.connect(_layout)
 	get_viewport().size_changed.connect(func(): _relayouts = 2; _layout())
+	show_page(first_page)
+
+
+# --- navigation -----------------------------------------------------------------
+
+func show_page(name: String) -> void:
+	page = name
+	for k in _pages:
+		_pages[k].visible = k == name
+	how_to.visible = false
+	if name == "intro":
+		_show_intro(0)
+	if name == "setup":
+		_refresh_setup()
+	_relayouts = 2
+	_layout.call_deferred()
+	var p: Control = _pages[name]
+	if not MatchSetup.reduced_motion:
+		p.modulate.a = 0.0
+		p.create_tween().tween_property(p, "modulate:a", 1.0, 0.22)
+
+
+func _play_pressed() -> void:
+	show_page("setup" if GameSettings.intro_seen else "intro")
+
+
+func _finish_intro() -> void:
+	GameSettings.intro_seen = true
+	GameSettings.save_settings()
+	show_page("setup")
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo and visible):
+		return
+	if event.keycode == KEY_ESCAPE:
+		if how_to.visible:
+			how_to.visible = false
+		elif page == "intro" or page == "setup":
+			show_page("title")
+		elif page == "settings":
+			show_page(_settings_back_to)
+		else:
+			return
+		AudioDirector.ui("ui_back")
+		get_viewport().set_input_as_handled()
+
+
+# --- title ----------------------------------------------------------------------
+
+func _build_title() -> void:
+	var p := Control.new()
+	p.set_anchors_preset(Control.PRESET_FULL_RECT)
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(p)
+	_pages["title"] = p
+	_title_box = VBoxContainer.new()
+	_title_box.add_theme_constant_override("separation", 6)
+	p.add_child(_title_box)
+	var kicker := _label("TRÒ CHƠI BÀN CỜ CHIẾN THUẬT", 24, UiTheme.TEXT_MUTED, "Bold")
+	_title_box.add_child(kicker)
+	var logo := _label("EMPIRE\nRUSH", 112, UiTheme.GOLD, "ExtraBold")
+	logo.add_theme_constant_override("line_spacing", -24)
+	logo.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.55))
+	logo.add_theme_constant_override("shadow_offset_x", 0)
+	logo.add_theme_constant_override("shadow_offset_y", 6)
+	logo.add_theme_constant_override("shadow_outline_size", 10)
+	_title_box.add_child(logo)
+	var rule := ColorRect.new()
+	rule.color = UiTheme.GOLD
+	rule.custom_minimum_size = Vector2(96, 4)
+	rule.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_title_box.add_child(rule)
+	var tag := _label("Mua đất · Gom quận · Xây nhà · Thu tiền thuê", 28, UiTheme.TEXT, "Medium")
+	_title_box.add_child(tag)
+	_title_buttons = VBoxContainer.new()
+	_title_buttons.add_theme_constant_override("separation", 14)
+	p.add_child(_title_buttons)
+	var play := _button("CHƠI", "dice")
+	play.custom_minimum_size.y = 120
+	play.add_theme_font_size_override("font_size", 40)
+	play.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+	play.add_theme_constant_override("icon_max_width", 52)
+	play.pressed.connect(_play_pressed)
+	buttons["title_play"] = play
+	_title_buttons.add_child(play)
+	var tut := _button("HƯỚNG DẪN TỪNG BƯỚC", "star")
+	UiTheme.secondary(tut)
+	tut.pressed.connect(func(): tutorial_requested.emit())
+	buttons["title_tutorial"] = tut
+	_title_buttons.add_child(tut)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
+	_title_buttons.add_child(row)
+	var intro := _button("GIỚI THIỆU", "info")
+	UiTheme.neutral(intro)
+	intro.pressed.connect(func(): show_page("intro"))
+	buttons["title_intro"] = intro
+	row.add_child(intro)
+	var sets := _button("CÀI ĐẶT", "gear")
+	UiTheme.neutral(sets)
+	sets.pressed.connect(func(): _settings_back_to = "title"; show_page("settings"))
+	buttons["title_settings"] = sets
+	row.add_child(sets)
+	var foot := _label("Bản thử nội bộ · %s" % _build_stamp(), 20, Color(1, 1, 1, 0.45), "Medium")
+	foot.name = "Footer"
+	_title_buttons.add_child(foot)
+
+
+func _build_stamp() -> String:
+	var d: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/build_info.json")) if FileAccess.file_exists("res://data/build_info.json") else null
+	return str(d.get("commit", "dev")) if d is Dictionary else "dev"
+
+
+# --- intro ----------------------------------------------------------------------
+
+func _build_intro() -> void:
+	var v := _page_card("intro")
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 18)
+	v.add_child(head)
+	var badge := PanelContainer.new()
+	badge.add_theme_stylebox_override("panel", UiTheme.badge(UiTheme.NAVY_SOFT, UiTheme.GOLD))
+	badge.custom_minimum_size = Vector2(112, 112)
+	var icon := _icon("trophy", 72, UiTheme.GOLD)
+	badge.add_child(icon)
+	head.add_child(badge)
+	var tv := VBoxContainer.new()
+	tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tv.alignment = BoxContainer.ALIGNMENT_CENTER
+	head.add_child(tv)
+	var step := _label("", 22, UiTheme.TEXT_MUTED, "Bold")
+	tv.add_child(step)
+	var title := _label("", 40, UiTheme.GOLD, "ExtraBold")
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tv.add_child(title)
+	var body := _label("", 28, UiTheme.TEXT, "Medium")
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_constant_override("line_spacing", 6)
+	v.add_child(body)
+	var dots := HBoxContainer.new()
+	dots.alignment = BoxContainer.ALIGNMENT_CENTER
+	dots.add_theme_constant_override("separation", 10)
+	v.add_child(dots)
+	for i in guide.intro_pages().size():
+		var d := Panel.new()
+		d.custom_minimum_size = Vector2(14, 14)
+		dots.add_child(d)
+	_intro_parts = {"icon": icon, "step": step, "title": title, "body": body, "dots": dots, "box": v}
+	var row := _bottom_row("intro")
+	var skip := _button("BỎ QUA", "skip")
+	UiTheme.neutral(skip)
+	skip.pressed.connect(_finish_intro)
+	buttons["intro_skip"] = skip
+	row.add_child(skip)
+	var back := _button("QUAY LẠI", "close")
+	UiTheme.secondary(back)
+	back.pressed.connect(func():
+		if _intro_index == 0:
+			show_page("title")
+		else:
+			_show_intro(_intro_index - 1))
+	buttons["intro_back"] = back
+	row.add_child(back)
+	var next := _button("TIẾP", "check")
+	next.pressed.connect(func():
+		if _intro_index >= guide.intro_pages().size() - 1:
+			_finish_intro()
+		else:
+			_show_intro(_intro_index + 1))
+	buttons["intro_next"] = next
+	row.add_child(next)
+
+
+func _show_intro(i: int) -> void:
+	var pages := guide.intro_pages()
+	_intro_index = clampi(i, 0, pages.size() - 1)
+	var pg: Dictionary = pages[_intro_index]
+	_intro_parts["icon"].texture = UiTheme.icon(pg["icon"])
+	_intro_parts["step"].text = "%d / %d" % [_intro_index + 1, pages.size()]
+	_intro_parts["title"].text = pg["title"]
+	_intro_parts["body"].text = pg["body"]
+	var k := 0
+	for d in _intro_parts["dots"].get_children():
+		var st := StyleBoxFlat.new()
+		st.bg_color = UiTheme.GOLD if k == _intro_index else Color(1, 1, 1, 0.25)
+		st.set_corner_radius_all(7)
+		d.add_theme_stylebox_override("panel", st)
+		k += 1
+	var last := _intro_index == pages.size() - 1
+	buttons["intro_next"].text = "BẮT ĐẦU" if last else "TIẾP"
+	buttons["intro_back"].text = "MENU" if _intro_index == 0 else "QUAY LẠI"
+	var box: Control = _intro_parts["box"]
+	if not MatchSetup.reduced_motion and is_inside_tree():
+		box.modulate.a = 0.0
+		box.create_tween().tween_property(box, "modulate:a", 1.0, 0.25)
+	_relayouts = 2
 	_layout.call_deferred()
 
 
-func _layout() -> void:
-	var vp := get_viewport_rect().size
-	var safe := Rect2(Vector2.ZERO, vp)
-	safe.position += simulated_insets.position
-	safe.size -= simulated_insets.position + simulated_insets.size
-	_center.position = safe.position
-	_center.size = safe.size
-	_card.custom_minimum_size.x = minf(safe.size.x - 28.0, 680.0)
-	for l in _card.find_children("*", "Label", true, false):
-		if l.autowrap_mode != TextServer.AUTOWRAP_OFF:
-			l.custom_minimum_size.x = _card.custom_minimum_size.x - 64.0
-	# Choices scroll inside whatever height is left above the pinned row.
-	var sb := _card.get_theme_stylebox("panel")
-	var chrome := (sb.get_minimum_size().y if sb else 40.0) + 14.0 + _bottom.get_combined_minimum_size().y + 28.0
-	_scroll.custom_minimum_size.y = minf(_content.get_combined_minimum_size().y, safe.size.y - chrome)
-	# Wrapped labels report their real height only after a layout pass.
-	if _relayouts > 0:
-		_relayouts -= 1
-		_layout.call_deferred()
-	# A centred reading column: full width on phones in portrait, capped in
-	# landscape so lines stay readable.
-	var w := minf(safe.size.x - 28.0, READ_WIDTH)
-	how_to.size = Vector2(w, safe.size.y - 28.0)
-	how_to.position = safe.position + Vector2((safe.size.x - w) * 0.5, 14.0)
-	how_to_label.custom_minimum_size.x = w - 60.0
+# --- setup ----------------------------------------------------------------------
+
+func _build_setup() -> void:
+	var root := _page_card("setup", true)
+	_card = _cards["setup"]
+	root.add_child(_label("THIẾT LẬP TRẬN", 40, UiTheme.GOLD, "ExtraBold"))
+	_split = BoxContainer.new()
+	_split.add_theme_constant_override("separation", 28)
+	root.add_child(_split)
+	for i in 2:
+		var col := VBoxContainer.new()
+		col.add_theme_constant_override("separation", 14)
+		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_split.add_child(col)
+		_cols.append(col)
+	var v := _cols[0]
+	_section(v, "Số người chơi (bạn + máy)")
+	_choice_row(v, "players", [[2, "2"], [3, "3"], [4, "4"]], MatchSetup.players, func(x):
+		MatchSetup.players = x
+		_refresh_setup())
+	_section(v, "Nhân vật của bạn")
+	var chars: Array = []
+	for c in MatchSetup.CHARACTER_CYCLE:
+		chars.append([c, theme_data.loc(c, "short", c), theme_data.character_icon(c)])
+	_choice_row(v, "character", chars, MatchSetup.character, func(x):
+		MatchSetup.character = x
+		_update_ability()
+		_refresh_setup())
+	_ability = _label("", UiTheme.FS_BODY, UiTheme.TEXT, "Medium")
+	_ability.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_ability)
+	v = _cols[1]
+	_section(v, "Màu và tên của bạn")
+	var crow := HBoxContainer.new()
+	crow.add_theme_constant_override("separation", 10)
+	v.add_child(crow)
+	for i in theme_data.players.size():
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.set_meta("value", i)
+		b.tooltip_text = "Màu %d" % (i + 1)
+		AudioDirector.wire(b)
+		b.pressed.connect(func():
+			MatchSetup.color_index = i
+			_refresh_setup())
+		buttons["color_%d" % i] = b
+		_color_group.append(b)
+		crow.add_child(b)
+	_name_edit = LineEdit.new()
+	_name_edit.max_length = MatchSetup.NAME_MAX
+	_name_edit.placeholder_text = "Tên hiển thị (ví dụ: Bạn)"
+	_name_edit.text = MatchSetup.player_name
+	_name_edit.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
+	_name_edit.add_theme_font_size_override("font_size", 28)
+	_name_edit.add_theme_stylebox_override("normal", UiTheme.panel(Color("#0c1220"), Color(1, 1, 1, 0.18), 16, 0.95))
+	_name_edit.add_theme_stylebox_override("focus", UiTheme.panel(Color("#0c1220"), UiTheme.GOLD, 16, 0.95))
+	_name_edit.text_changed.connect(func(t: String):
+		MatchSetup.player_name = t
+		_refresh_lineup())
+	v.add_child(_name_edit)
+	_section(v, "Đội hình trận")
+	_lineup = VBoxContainer.new()
+	_lineup.add_theme_constant_override("separation", 8)
+	v.add_child(_lineup)
+	var row := _bottom_row("setup")
+	_bottom = row
+	var back := _button("MENU", "close")
+	UiTheme.neutral(back)
+	back.pressed.connect(func(): show_page("title"))
+	buttons["setup_back"] = back
+	row.add_child(back)
+	var help := _button("CÁCH CHƠI", "info")
+	UiTheme.secondary(help)
+	help.pressed.connect(func(): how_to.visible = true; _layout.call_deferred())
+	buttons["how_to"] = help
+	row.add_child(help)
+	var start := _button("BẮT ĐẦU", "dice")
+	start.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+	start.pressed.connect(func():
+		GameSettings.save_settings()
+		AudioDirector.ui("ui_confirm")
+		start_requested.emit())
+	buttons["start"] = start
+	row.add_child(start)
+	_update_ability()
 
 
-func _section(v: VBoxContainer, text: String) -> void:
-	v.add_child(_label(text, UiTheme.FS_LABEL, UiTheme.GOLD, "Bold"))
+func _refresh_setup() -> void:
+	if _color_group.is_empty():
+		return
+	for b in _color_group:
+		var i: int = b.get_meta("value")
+		var c := Color(theme_data.players[i]["color"])
+		var sel := i == MatchSetup.color_index
+		var st := UiTheme.panel(c, UiTheme.GOLD if sel else Color(1, 1, 1, 0.3), 18, 1.0)
+		st.set_border_width_all(6 if sel else 2)
+		var hov := st.duplicate()
+		hov.bg_color = c.lightened(0.15)
+		for k in ["normal", "pressed", "focus"]:
+			b.add_theme_stylebox_override(k, st)
+		b.add_theme_stylebox_override("hover", hov)
+		b.icon = UiTheme.icon("check") if sel else null
+		b.add_theme_color_override("icon_normal_color", Color.WHITE)
+		b.add_theme_color_override("icon_hover_color", Color.WHITE)
+		b.set_meta("selected", sel)
+	_refresh_lineup()
 
 
-## A row of mutually exclusive buttons; the selected one uses the primary skin.
-func _choice_row(v: VBoxContainer, id: String, options: Array, current: Variant, on_pick: Callable) -> void:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	v.add_child(row)
-	var group: Array[Button] = []
-	for o in options:
-		var b := _button(str(o[1]), "")
-		b.set_meta("value", o[0])
-		row.add_child(b)
-		group.append(b)
-		buttons["%s_%s" % [id, str(o[0])]] = b
-	var paint := func(sel: Variant):
-		for b in group:
-			if b.get_meta("value") == sel:
-				b.remove_theme_stylebox_override("normal")
-				b.remove_theme_stylebox_override("hover")
-				b.remove_theme_stylebox_override("pressed")
-				b.remove_theme_color_override("font_color")
-				b.set_meta("selected", true)
-			else:
-				UiTheme.neutral(b)
-				b.set_meta("selected", false)
-	for b in group:
-		b.pressed.connect(func(): on_pick.call(b.get_meta("value")); paint.call(b.get_meta("value")))
-	paint.call(current)
-
-
-func _button(text: String, icon_name: String) -> Button:
-	var b := Button.new()
-	b.text = text
-	if icon_name != "":
-		b.icon = UiTheme.icon(icon_name)
-	b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
-	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	return b
-
-
-func _label(text: String, size: int, color: Color, weight := "Medium") -> Label:
-	var l := Label.new()
-	l.text = text
-	l.add_theme_font_size_override("font_size", size)
-	l.add_theme_color_override("font_color", color)
-	l.add_theme_font_override("font", UiTheme.font(weight))
-	return l
+func _refresh_lineup() -> void:
+	if _lineup == null:
+		return
+	for c in _lineup.get_children():
+		_lineup.remove_child(c)
+		c.queue_free()
+	var ids := MatchSetup.identities(theme_data.players, MatchSetup.players)
+	var chars := MatchSetup.seat_characters(MatchSetup.players, MatchSetup.character)
+	for seat in ids.size():
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		var av := PanelContainer.new()
+		var pc := Color(ids[seat]["color"])
+		av.add_theme_stylebox_override("panel", UiTheme.badge(pc.darkened(0.1), pc.lightened(0.5)))
+		av.custom_minimum_size = Vector2(48, 48)
+		av.add_child(_icon(theme_data.character_icon(chars[seat]), 30, Color.WHITE))
+		row.add_child(av)
+		var who := "%s · %s%s" % [ids[seat]["name"], theme_data.loc(chars[seat], "short", chars[seat]), "  (bạn)" if seat == 0 else "  (máy)"]
+		var l := _label(who, UiTheme.FS_BODY, pc.lightened(0.45) if seat > 0 else UiTheme.TEXT, "Bold" if seat == 0 else "Medium")
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		_lineup.add_child(row)
+	_relayouts = 2
+	_layout.call_deferred()
 
 
 func _update_ability() -> void:
@@ -209,25 +432,30 @@ func ability_text(character_id: String) -> String:
 	return str(config.character_by_id[character_id].get("description", ""))
 
 
-## Short rules from the rules data (GDD wins if they ever disagree).
+## The full rules sheet (RulesGuide, generated from the rules data).
 func how_to_text() -> String:
-	var b: Dictionary = config.balance
-	var rounds := []
-	for n in [2, 3, 4]:
-		rounds.append("%d người: %d vòng" % [n, config.max_rounds_for(n)])
-	return "\n".join([
-		"Mục tiêu: khi trận kết thúc, người có TÀI SẢN RÒNG cao nhất thắng (tiền mặt + giá trị bán lại đất và nhà).",
-		"Mỗi người bắt đầu với %d RC. Qua ô Xuất phát nhận %d RC." % [b["starting_cash"], b["start_reward"]],
-		"Lượt của bạn: bấm ĐỔ XÚC XẮC. Dừng ở đất chưa có chủ: MUA, hoặc BỎ QUA để cả bàn đấu giá.",
-		"Dừng ở đất của người khác: trả tiền thuê tự động. Sở hữu đủ cả quận thì tiền thuê tăng và được nâng cấp nhà (tối đa cấp %d)." % b["max_level"],
-		"Sau khi di chuyển, bạn có MỘT hành động chiến lược: nâng cấp, đề nghị giao dịch hoặc dùng kỹ năng nhân vật, rồi KẾT THÚC LƯỢT.",
-		"Ô ! (Sự kiện thành phố): có sự kiện xảy ra ngay, có sự kiện cho bạn chọn. Ô ? (Cơ hội): chọn một trong các phương án. Ô %% là thuế tài sản (tối đa %d RC). Ô có tách cà phê là ô nghỉ." % b["wealth_tax"]["cap"],
-		"Thiếu tiền: bán đất cho ngân hàng để trả nợ. Nếu vẫn không đủ thì PHÁ SẢN và rời trận.",
-		"Mỗi lượt có %d giây; hết giờ trò chơi tự chọn phương án an toàn." % [int(b["turn_timer_ms"] / 1000)],
-		"Trận kết thúc khi hết số vòng (%s), hết %d phút, hoặc chỉ còn một người chưa phá sản." % [", ".join(rounds), int(b["time_cap_ms"] / 60000)],
-		"Mẹo: chạm vào một ô trên bàn cờ để xem giá, tiền thuê và chủ sở hữu.",
-	])
+	return guide.how_to_text()
 
+
+# --- settings -------------------------------------------------------------------
+
+func _build_settings() -> void:
+	var v := _page_card("settings", true)
+	v.add_child(_label("CÀI ĐẶT", 40, UiTheme.GOLD, "ExtraBold"))
+	settings = SettingsPanel.new()
+	settings.build()
+	settings.changed.connect(func(): settings_changed.emit())
+	v.add_child(settings)
+	for k in settings.buttons:
+		buttons[k] = settings.buttons[k]
+	var row := _bottom_row("settings")
+	var back := _button("XONG", "check")
+	back.pressed.connect(func(): show_page(_settings_back_to))
+	buttons["settings_back"] = back
+	row.add_child(back)
+
+
+# --- how-to sheet ---------------------------------------------------------------
 
 func _build_how_to() -> void:
 	how_to = PanelContainer.new()
@@ -242,10 +470,213 @@ func _build_how_to() -> void:
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(sc)
-	how_to_label = _label(how_to_text(), UiTheme.FS_BODY, UiTheme.TEXT)
+	how_to_label = _label(how_to_text(), UiTheme.FS_BODY, UiTheme.TEXT, "Medium")
 	how_to_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sc.add_child(how_to_label)
 	var close := _button("ĐÃ HIỂU", "check")
 	close.pressed.connect(func(): how_to.visible = false)
 	buttons["how_to_close"] = close
 	v.add_child(close)
+
+
+# --- building blocks ------------------------------------------------------------
+
+## A centred card page. `scroll`: the content scrolls above a pinned button row.
+func _page_card(name: String, scroll := false) -> VBoxContainer:
+	var p := Control.new()
+	p.set_anchors_preset(Control.PRESET_FULL_RECT)
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(p)
+	_pages[name] = p
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", UiTheme.glass_panel(true))
+	p.add_child(card)
+	_cards[name] = card
+	var outer := VBoxContainer.new()
+	outer.add_theme_constant_override("separation", 14)
+	card.add_child(outer)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 14)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if scroll:
+		var sc := ScrollContainer.new()
+		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		outer.add_child(sc)
+		sc.add_child(v)
+		card.set_meta("scroll", sc)
+		card.set_meta("content", v)
+		if name == "setup":
+			_scroll = sc
+			_content = v
+	else:
+		outer.add_child(v)
+	return v
+
+
+func _bottom_row(name: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	(_cards[name].get_child(0) as VBoxContainer).add_child(row)
+	_cards[name].set_meta("bottom", row)
+	return row
+
+
+func _section(v: VBoxContainer, text: String) -> void:
+	v.add_child(_label(text, UiTheme.FS_LABEL, UiTheme.GOLD, "Bold"))
+
+
+## A row of mutually exclusive buttons; the selected one uses the primary skin.
+## Options: [value, text] or [value, text, icon].
+func _choice_row(v: VBoxContainer, id: String, options: Array, current: Variant, on_pick: Callable) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	v.add_child(row)
+	var group: Array[Button] = []
+	for o in options:
+		var b := _button(str(o[1]), o[2] if o.size() > 2 else "")
+		b.set_meta("value", o[0])
+		row.add_child(b)
+		group.append(b)
+		buttons["%s_%s" % [id, str(o[0])]] = b
+	var paint := func(sel: Variant):
+		for b in group:
+			if b.get_meta("value") == sel:
+				for st in ["normal", "hover", "pressed"]:
+					b.remove_theme_stylebox_override(st)
+				for c in ["font_color", "icon_normal_color", "icon_hover_color", "icon_pressed_color"]:
+					b.remove_theme_color_override(c)
+				b.set_meta("selected", true)
+			else:
+				UiTheme.neutral(b)
+				b.set_meta("selected", false)
+	for b in group:
+		b.pressed.connect(func(): on_pick.call(b.get_meta("value")); paint.call(b.get_meta("value")))
+	paint.call(current)
+
+
+func _button(text: String, icon_name: String) -> Button:
+	var b := Button.new()
+	b.text = text
+	if icon_name != "":
+		b.icon = UiTheme.icon(icon_name)
+	b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	AudioDirector.wire(b)
+	return b
+
+
+func _label(text: String, size: int, color: Color, weight := "Medium") -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	l.add_theme_font_override("font", UiTheme.font(weight))
+	return l
+
+
+func _icon(name: String, size: int, tint: Color) -> TextureRect:
+	var t := TextureRect.new()
+	t.texture = UiTheme.icon(name)
+	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	t.custom_minimum_size = Vector2(size, size)
+	t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	t.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	t.modulate = tint
+	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return t
+
+
+# --- layout ---------------------------------------------------------------------
+
+func safe_rect() -> Rect2:
+	var vp := get_viewport_rect().size
+	var safe := Rect2(Vector2.ZERO, vp)
+	safe.position += simulated_insets.position
+	safe.size -= simulated_insets.position + simulated_insets.size
+	return safe
+
+
+func _layout() -> void:
+	var vp := get_viewport_rect().size
+	var safe := safe_rect()
+	var landscape := vp.x > vp.y
+	_scrim.texture = _scrim_texture(landscape, page == "title")
+	# Title: logo + buttons over the diorama. Landscape: a left column;
+	# portrait: logo at the top, buttons at the bottom, the board in between.
+	var col_w := minf(safe.size.x - 56.0, 620.0)
+	if landscape:
+		col_w = minf(safe.size.x * 0.42, 620.0)
+	_title_box.custom_minimum_size.x = col_w
+	_title_buttons.custom_minimum_size.x = col_w
+	_title_box.reset_size()
+	_title_buttons.reset_size()
+	if landscape:
+		var x := safe.position.x + maxf(40.0, safe.size.x * 0.06)
+		var total := _title_box.get_combined_minimum_size().y + 48.0 + _title_buttons.get_combined_minimum_size().y
+		# Short windows: scale the whole column down to fit (input follows).
+		var k := minf(1.0, (safe.size.y - 48.0) / total)
+		_title_box.scale = Vector2.ONE * k
+		_title_buttons.scale = Vector2.ONE * k
+		var y := safe.position.y + maxf(24.0, (safe.size.y - total * k) * 0.5)
+		_title_box.position = Vector2(x, y)
+		_title_buttons.position = Vector2(x, y + (_title_box.get_combined_minimum_size().y + 48.0) * k)
+	else:
+		var x := safe.position.x + (safe.size.x - col_w) * 0.5
+		_title_box.scale = Vector2.ONE
+		_title_buttons.scale = Vector2.ONE
+		_title_box.position = Vector2(x, safe.position.y + 48.0)
+		_title_buttons.position = Vector2(x, safe.end.y - _title_buttons.get_combined_minimum_size().y - 40.0)
+	# Cards: centred in the safe area; content scrolls above a pinned row.
+	# Landscape setup: two columns side by side in a wider card.
+	var two_cols := landscape and safe.size.x >= 1100.0
+	if _split:
+		_split.vertical = not two_cols
+	for name in _cards:
+		var card: PanelContainer = _cards[name]
+		var w := minf(safe.size.x - 28.0, 1280.0 if (two_cols and name == "setup") else CARD_WIDTH)
+		var text_w := (w - 64.0 - 28.0) * 0.5 if (two_cols and name == "setup") else w - 64.0
+		card.custom_minimum_size.x = w
+		for l in card.find_children("*", "Label", true, false):
+			if l.autowrap_mode != TextServer.AUTOWRAP_OFF:
+				var row := l.get_parent() as HBoxContainer
+				l.custom_minimum_size.x = maxf(text_w - (160.0 if row else 0.0), 80.0)
+		if card.has_meta("scroll"):
+			var sc: ScrollContainer = card.get_meta("scroll")
+			var content: Control = card.get_meta("content")
+			var sb := card.get_theme_stylebox("panel")
+			var bottom: Control = card.get_meta("bottom") if card.has_meta("bottom") else null
+			var chrome := (sb.get_minimum_size().y if sb else 40.0) + 14.0 + (bottom.get_combined_minimum_size().y if bottom else 0.0) + 28.0
+			sc.custom_minimum_size.y = minf(content.get_combined_minimum_size().y, safe.size.y - chrome)
+		card.reset_size()
+		card.position = safe.position + (safe.size - card.size) * 0.5
+	# Wrapped labels report their real height only after a layout pass.
+	if _relayouts > 0:
+		_relayouts -= 1
+		_layout.call_deferred()
+	# A centred reading column: full width on phones in portrait, capped in
+	# landscape so lines stay readable.
+	var hw := minf(safe.size.x - 28.0, READ_WIDTH)
+	how_to.size = Vector2(hw, safe.size.y - 28.0)
+	how_to.position = safe.position + Vector2((safe.size.x - hw) * 0.5, 14.0)
+	how_to_label.custom_minimum_size.x = hw - 60.0
+
+
+## Title: a gradient that darkens the side holding the text (the diorama
+## stays visible); other pages: an even dim behind the card.
+func _scrim_texture(landscape: bool, title: bool) -> GradientTexture2D:
+	var g := Gradient.new()
+	var tex := GradientTexture2D.new()
+	if title:
+		g.set_color(0, Color(0.02, 0.03, 0.06, 0.88))
+		g.set_color(1, Color(0.02, 0.03, 0.06, 0.0))
+		g.add_point(0.45, Color(0.02, 0.03, 0.06, 0.55))
+		tex.fill_from = Vector2(0, 0) if landscape else Vector2(0, 1)
+		tex.fill_to = Vector2(0.75, 0) if landscape else Vector2(0, 0.35)
+	else:
+		g.set_color(0, Color(0.02, 0.03, 0.06, 0.62))
+		g.set_color(1, Color(0.02, 0.03, 0.06, 0.62))
+	tex.gradient = g
+	tex.width = 64
+	tex.height = 64
+	return tex

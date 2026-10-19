@@ -76,6 +76,17 @@ static func skin(name: String, margin := 16, pad := Vector4(22, 12, 22, 12), lip
 	return s
 
 
+## Hover skin: the normal skin, slightly brighter (Phase 5: visible hover on
+## desktop; touch devices never see it).
+static func hover_skin(name: String) -> StyleBoxTexture:
+	var key := "hover:" + name
+	if not _cache.has(key):
+		var sb: StyleBoxTexture = skin(name, 16, Vector4(22, 12, 22, 12), 6).duplicate()
+		sb.modulate_color = Color(1.12, 1.12, 1.12)
+		_cache[key] = sb
+	return _cache[key]
+
+
 static func panel(bg := NAVY, border := Color(1, 1, 1, 0.12), radius := 22, alpha := 0.92) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = Color(bg, alpha)
@@ -123,7 +134,7 @@ static func build() -> Theme:
 
 static func _button_styles(th: Theme, type: String, normal: String, pressed: String, ink: Color) -> void:
 	th.set_stylebox("normal", type, skin(normal, 16, Vector4(22, 12, 22, 12), 6))
-	th.set_stylebox("hover", type, skin(normal, 16, Vector4(22, 12, 22, 12), 6))
+	th.set_stylebox("hover", type, hover_skin(normal))
 	th.set_stylebox("pressed", type, skin(pressed, 16, Vector4(22, 16, 22, 8), 0))
 	th.set_stylebox("disabled", type, skin("btn_disabled", 16, Vector4(22, 12, 22, 12), 6))
 	var focus := StyleBoxFlat.new()
@@ -143,7 +154,7 @@ static func _button_styles(th: Theme, type: String, normal: String, pressed: Str
 
 static func _apply(b: Button, normal: String, pressed: String, ink: Color) -> void:
 	b.add_theme_stylebox_override("normal", skin(normal, 16, Vector4(22, 12, 22, 12), 6))
-	b.add_theme_stylebox_override("hover", skin(normal, 16, Vector4(22, 12, 22, 12), 6))
+	b.add_theme_stylebox_override("hover", hover_skin(normal))
 	b.add_theme_stylebox_override("pressed", skin(pressed, 16, Vector4(22, 16, 22, 8), 0))
 	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color",
 			"icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:

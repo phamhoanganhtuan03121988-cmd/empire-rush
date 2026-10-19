@@ -11,6 +11,8 @@ signal quality_cycle_requested
 ## Holding the quality button opens the device-validation panel (DevPanel).
 signal dev_menu_requested
 signal action_buttons_changed
+## Phase 5: the menu button (pause menu: resume, guide, settings, main menu).
+signal pause_requested
 
 var match_ref: LocalMatch
 var presenter: EventPresenter
@@ -24,13 +26,14 @@ var simulated_insets := Rect2(0, 0, 0, 0)
 var actions: Array = []
 
 var _top: PanelContainer
-var _cards_box: BoxContainer
+var _cards_box: GridContainer
 var _cards: Array = []
 var _round_label: Label
 var _turn_label: Label
 var _timer_bar: ProgressBar
 var _timer_fill: StyleBoxFlat
 var _quality_btn: Button
+var pause_button: Button
 ## Set by main only when the device tools exist (BuildFlavor). Otherwise a
 ## long press is just a press and cycles the preset.
 var dev_menu_enabled := false
@@ -55,7 +58,10 @@ const TOAST_BAND := 104.0   # px reserved under the top panel for toasts (portra
 const ACTION_BAND := 0.235  # fraction of height reserved for the action panel (portrait)
 ## Landscape: the board gets the full height on the left; player bar, toasts
 ## and the action panel share the right column (Phase 2, A4).
-const LANDSCAPE_SPLIT := 0.54
+const LANDSCAPE_SPLIT := 0.62
+## Phase 5 hero roll button: the main action of every turn.
+const HERO_HEIGHT := 132
+const HERO_FONT := 38
 const LONG_PRESS_MS := 900
 
 var _presented_turn := 0
@@ -66,6 +72,12 @@ var _timer_total := 45.0
 var _landscape := false
 var _refits_left := 0
 var results_menu_button: Button
+## Set when the human sends RollDice; shows the rolling state until the dice
+## have landed and the move is presented.
+var _rolling := false
+var _hero_tween: Tween
+## Phase 5: last dice shown (d1, d2), for the rolling hero button.
+var _last_dice := []
 
 
 func setup(p_match: LocalMatch, p_presenter: EventPresenter, p_theme: ThemeData, p_config: GameConfig) -> void:
@@ -86,6 +98,7 @@ func setup(p_match: LocalMatch, p_presenter: EventPresenter, p_theme: ThemeData,
 	presenter.toast.connect(show_toast)
 	presenter.match_ended_presented.connect(_on_match_ended)
 	presenter.busy_changed.connect(func(_b): _last_key = "")
+	presenter.cue.connect(_on_cue)
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 
@@ -122,6 +135,8 @@ func _build_top() -> void:
 	_placeholder_tag.set_meta("decorative", true)
 	_placeholder_tag.text = UiText.t("placeholder")
 	_placeholder_tag.autowrap_mode = TextServer.AUTOWRAP_OFF
+	# Phase 5: the build tag moved to the title screen (it crowded this row).
+	_placeholder_tag.visible = false
 	row.add_child(_placeholder_tag)
 	_quality_btn = Button.new()
 	# 82 px ≈ 44 pt (Apple's minimum) for this secondary control.
@@ -134,9 +149,22 @@ func _build_top() -> void:
 		_quality_down = true
 		_quality_down_ms = Time.get_ticks_msec())
 	_quality_btn.pressed.connect(_on_quality_pressed)
+	AudioDirector.wire(_quality_btn)
 	row.add_child(_quality_btn)
-	_cards_box = HBoxContainer.new()
-	_cards_box.add_theme_constant_override("separation", 6)
+	pause_button = Button.new()
+	pause_button.custom_minimum_size = Vector2(82, 82)
+	pause_button.icon = UiTheme.icon("menu")
+	pause_button.add_theme_constant_override("icon_max_width", 34)
+	pause_button.tooltip_text = "Menu (Esc)"
+	UiTheme.neutral(pause_button)
+	pause_button.pressed.connect(func(): pause_requested.emit())
+	AudioDirector.wire(pause_button)
+	row.add_child(pause_button)
+	# Phase 5: a grid, so landscape shows the players 2 x 2 in a narrower column.
+	_cards_box = GridContainer.new()
+	_cards_box.columns = match_ref.engine.state.players.size()
+	_cards_box.add_theme_constant_override("h_separation", 6)
+	_cards_box.add_theme_constant_override("v_separation", 6)
 	v.add_child(_cards_box)
 	for seat in match_ref.engine.state.players.size():
 		_cards.append(_build_card(seat))
@@ -343,11 +371,19 @@ func _layout() -> void:
 	_landscape = vp.x > vp.y
 	var s := safe_rect()
 	var m := 14.0
+	var n_cards := _cards.size()
+	_cards_box.columns = 2 if _landscape and n_cards > 2 else maxi(n_cards, 1)
+	# Wrapped text re-measures at the new width over the next frames; place
+	# the panels again then (Phase 5: the action panel ended 33 px off screen
+	# after a portrait -> landscape switch).
+	_refits_left = 2
 	# Widths go through custom_minimum_size: containers with autowrapping
 	# labels otherwise collapse to their narrowest width.
 	if _landscape:
-		var cx := s.position.x + s.size.x * LANDSCAPE_SPLIT
-		var cw := s.size.x * (1.0 - LANDSCAPE_SPLIT) - m
+		# Right column: its share of the width, but never narrower than the
+		# HUD content needs (560 px) nor wider than half the screen.
+		var cw := column_width()
+		var cx := s.end.x - cw - m
 		_top.position = Vector2(cx, s.position.y + m)
 		_width(_top, cw)
 		_action_panel.position = Vector2(cx, s.position.y + m)
@@ -361,10 +397,16 @@ func _layout() -> void:
 		_width(_toasts, s.size.x - m * 2)
 	_width(_info, minf(s.size.x - m * 4, 620))
 	if _landscape:
-		_width(_results, s.size.x * (1.0 - LANDSCAPE_SPLIT) - m)
+		_width(_results, column_width())
 	else:
 		_width(_results, s.size.x - m * 2)
 	_place_bottom.call_deferred()
+
+
+## Landscape HUD column width (px, design canvas).
+func column_width() -> float:
+	var s := safe_rect()
+	return clampf(s.size.x * (1.0 - LANDSCAPE_SPLIT) - 14.0, minf(560.0, s.size.x * 0.5), s.size.x * 0.5)
 
 
 func _width(c: Control, w: float) -> void:
@@ -626,6 +668,7 @@ func _add_button(text: String, type: String, payload := {}, style := "", enabled
 	match style:
 		"secondary": UiTheme.secondary(b)
 		"danger": UiTheme.danger(b)
+	AudioDirector.wire(b, "ui_click")
 	if local_action.is_valid():
 		b.pressed.connect(local_action)
 	else:
@@ -727,6 +770,9 @@ func _send(type: String, payload: Dictionary) -> void:
 	if seat < 0:
 		return
 	_sub_view = ""
+	if type == ErCommand.ROLL_DICE:
+		_rolling = true
+		_last_dice = []
 	# Phase 4: one tap = one command. Disable the whole button set at once so
 	# a double tap (or a second button hit while the panel is rebuilt) cannot
 	# send another command; the engine would reject it, but silently.
@@ -774,6 +820,19 @@ func _rebuild_actions() -> void:
 	_action_panel.visible = true
 	var seat := match_ref.human_actor()
 	_action_body.text = ""
+	if _rolling and match_ref.is_human(s.current_seat) and not presenter.is_idle():
+		# Rolling: keep the hero button in place, disabled, with live feedback
+		# (no layout jump and no second roll while the dice are in the air).
+		_set_title(UiText.t("your_turn"), "dice")
+		var label := UiText.t("rolling") if _last_dice.is_empty() else UiText.t("rolled_hero") % [_last_dice[0], _last_dice[1], _last_dice[0] + _last_dice[1]]
+		_hero(_add_button(label, ErCommand.ROLL_DICE, {}, "", false))
+		_apply_columns()
+		_hero(_buttons.get_child(0))
+		_place_bottom.call_deferred()
+		action_buttons_changed.emit()
+		return
+	if presenter.is_idle():
+		_rolling = false
 	if seat < 0 or not presenter.is_idle():
 		var actor := s.current_seat
 		_set_title(UiText.t("turn_of") % theme_data.player_name(actor) if not match_ref.is_human(actor) else UiText.t("your_turn"),
@@ -787,7 +846,8 @@ func _rebuild_actions() -> void:
 	match s.phase:
 		GameState.AWAIT_ROLL:
 			_set_title(UiText.t("your_turn"), "dice")
-			_add_button(UiText.t("roll"), ErCommand.ROLL_DICE)
+			_action_body.text = UiText.t("roll_hint")
+			_hero(_add_button(UiText.t("roll"), ErCommand.ROLL_DICE))
 		GameState.AWAIT_BUY:
 			var pid := e.property_at(s.player(seat)["position"])
 			var price: int = config.tier_of(pid)["price"]
@@ -839,8 +899,59 @@ func _rebuild_actions() -> void:
 				_add_button(UiText.t("liquidate_item") % [_prop_name(pid), e.liquidation_value(pid)], ErCommand.LIQUIDATE, {"property_ids": [pid]}, "secondary")
 			_add_button(UiText.t("declare"), ErCommand.DECLARE_BANKRUPTCY, {}, "danger")
 	_apply_columns()
+	if s.phase == GameState.AWAIT_ROLL and _buttons.get_child_count() == 1:
+		_hero(_buttons.get_child(0))
 	_place_bottom.call_deferred()
 	action_buttons_changed.emit()
+
+
+## Phase 5: the roll button is the hero of the HUD: tall, large type, big dice
+## icon, a gentle breathing glow while it waits (off with reduced motion).
+## States: normal / hover (brighter) / pressed (lip removed) / disabled.
+func _hero(b: Button) -> void:
+	b.custom_minimum_size.y = HERO_HEIGHT
+	b.add_theme_font_size_override("font_size", HERO_FONT)
+	b.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+	b.add_theme_constant_override("icon_max_width", 64)
+	b.add_theme_stylebox_override("hover", UiTheme.hover_skin("btn_primary"))
+	b.set_meta("hero", true)
+	if _hero_tween:
+		_hero_tween.kill()
+		_hero_tween = null
+	if b.disabled:
+		b.add_theme_color_override("font_disabled_color", UiTheme.TEXT)
+		b.add_theme_color_override("icon_disabled_color", UiTheme.GOLD)
+		return
+	if presenter and not presenter.reduced_motion:
+		_hero_tween = b.create_tween().set_loops()
+		_hero_tween.tween_property(b, "self_modulate", Color(1.12, 1.08, 0.98), 0.9).set_trans(Tween.TRANS_SINE)
+		_hero_tween.tween_property(b, "self_modulate", Color.WHITE, 0.9).set_trans(Tween.TRANS_SINE)
+
+
+func _on_cue(name: String, data: Dictionary) -> void:
+	match name:
+		"dice_roll":
+			_last_dice = []
+		"dice_land":
+			_last_dice = [data["d1"], data["d2"]]
+			if _rolling:
+				_last_key = ""  # refresh the hero label with the result
+
+
+## Windows/desktop: Space or Enter rolls when the roll button is offered.
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if event.keycode == KEY_ESCAPE:
+		pause_requested.emit()
+		get_viewport().set_input_as_handled()
+		return
+	if event.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
+		for a in actions:
+			if a["type"] == ErCommand.ROLL_DICE and not a["button"].disabled:
+				a["button"].pressed.emit()
+				get_viewport().set_input_as_handled()
+				return
 
 
 func _build_strategy(seat: int) -> void:

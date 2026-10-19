@@ -32,6 +32,13 @@ var probe: DeviceProbe
 var dev_panel: DevPanel
 var quality := "medium"
 var menu: StartMenu
+## Phase 5: audio, pause menu and the guided tutorial.
+var audio: AudioDirector
+var pause_menu: PauseMenu
+var tutorial: TutorialOverlay
+## Fixed seed of the tutorial match (2 players): the first roll lands on a
+## property the player can buy, so step 3 happens on the first turn.
+const TUTORIAL_SEED := 4
 var _shot_t := 0.0
 var _shot_n := 0
 
@@ -45,14 +52,41 @@ func _ready() -> void:
 		args = args_override
 	if args.has("timescale"):
 		Engine.time_scale = float(args["timescale"])
+	_fit_content_scale()
+	get_tree().root.size_changed.connect(_fit_content_scale)
+	# Settings: real launches read the player's file once; automated runs
+	# (tests, captures) use a scratch file and never touch the player's.
+	if not args_override.is_empty():
+		GameSettings.path = "user://test_telemetry/settings.cfg"
+	elif not GameSettings.loaded:
+		GameSettings.load_settings()
 	config = GameConfig.load_from_dir()
 	theme_data = ThemeData.load_default()
+	audio = AudioDirector.new()
+	audio.name = "Audio"
+	add_child(audio)
+	if not args.has("autoplay") and not args.has("bench"):
+		audio.play_music()
 	_build_world()
 	# Phase 4: a normal launch (no --players) shows the start menu first.
 	if not args.has("players") and not MatchSetup.chosen:
 		_show_menu()
 		return
 	_start_match()
+
+
+## Phase 5: the design canvas follows the window's orientation. Portrait keeps
+## the 720 x 1280 phone canvas; a landscape window (Windows desktop, rotated
+## phone) uses 1600 x 900: HUD text at 80 % of its phone size (it used to
+## shrink to ~56 %, 720/1280) and a right column wide enough for the HUD. Headless runs (tests) set
+## their canvas themselves.
+func _fit_content_scale() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var w := DisplayServer.window_get_size()
+	var want := Vector2i(1600, 900) if w.x > w.y else Vector2i(720, 1280)
+	if get_tree().root.content_scale_size != want:
+		get_tree().root.content_scale_size = want
 
 
 ## Start screen over the (empty) board. Starting builds the match in place.
@@ -65,21 +99,73 @@ func _show_menu() -> void:
 	if args.has("notch"):
 		menu.simulated_insets = Rect2(0, 108, 0, 62)
 	layer.add_child(menu)
-	menu.setup(config, theme_data)
-	menu.start_requested.connect(func():
-		MatchSetup.chosen = true
-		layer.queue_free()
-		menu = null
-		_start_match())
+	menu.setup(config, theme_data, args.get("menu_page", "title"))
+	menu.start_requested.connect(func(): _leave_menu(layer, false))
+	menu.tutorial_requested.connect(func(): _leave_menu(layer, true))
+	menu.settings_changed.connect(_apply_settings)
 	_reframe.call_deferred()
+
+
+func _leave_menu(layer: CanvasLayer, as_tutorial: bool) -> void:
+	MatchSetup.chosen = true
+	MatchSetup.tutorial = as_tutorial
+	layer.queue_free()
+	menu = null
+	camera.configure(45.0, camera.pitch, camera.half, camera.tall)
+	_start_match()
+
+
+## Settings changed in a menu: apply the preset, motion and audio live.
+func _apply_settings() -> void:
+	if MatchSetup.quality != quality:
+		set_quality(MatchSetup.quality)
+	if presenter:
+		presenter.reduced_motion = MatchSetup.reduced_motion
+	if audio:
+		audio.apply_settings()
+
+
+func open_pause() -> void:
+	if pause_menu or match_ref == null:
+		return
+	match_ref.lifecycle.pause("menu")
+	var layer := CanvasLayer.new()
+	layer.layer = 10
+	layer.name = "PauseLayer"
+	add_child(layer)
+	pause_menu = PauseMenu.new()
+	if args.has("notch"):
+		pause_menu.simulated_insets = Rect2(0, 108, 0, 62)
+	layer.add_child(pause_menu)
+	pause_menu.setup(config)
+	pause_menu.settings_changed.connect(_apply_settings)
+	pause_menu.resume_requested.connect(close_pause)
+	pause_menu.main_menu_requested.connect(func():
+		MatchSetup.chosen = false
+		MatchSetup.tutorial = false
+		get_tree().reload_current_scene())
+
+
+func close_pause() -> void:
+	if pause_menu == null:
+		return
+	pause_menu.get_parent().queue_free()
+	pause_menu = null
+	match_ref.lifecycle.resume("menu")
 
 
 func _start_match() -> void:
 	# Menu choices apply only to menu launches; --players/tests keep their args.
 	var from_menu := not args.has("players")
-	var n := clampi(int(args.get("players", str(MatchSetup.players))), 2, 4)
+	var as_tutorial := from_menu and MatchSetup.tutorial
+	var n := 2 if as_tutorial else clampi(int(args.get("players", str(MatchSetup.players))), 2, 4)
 	var chars: Array = MatchSetup.seat_characters(n, MatchSetup.character) if from_menu else CHARACTERS
 	var seed_value := int(args["seed"]) if args.has("seed") else int(Time.get_unix_time_from_system()) % 1000000
+	if as_tutorial and not args.has("seed"):
+		seed_value = TUTORIAL_SEED
+	if from_menu:
+		# Phase 5 identity (presentation only): the player's colour and name.
+		theme_data.players = MatchSetup.identities(theme_data.players, maxi(n, 4))
 	var seats: Array = []
 	for i in n:
 		seats.append({"player_id": "p%d" % i, "character_id": chars[i]})
@@ -103,6 +189,7 @@ func _start_match() -> void:
 	presenter.popup_parent = self
 	presenter.reduced_motion = args.has("reduced-motion") or (from_menu and MatchSetup.reduced_motion)
 	add_child(presenter)
+	presenter.cue.connect(audio.on_cue)
 	match_ref.can_act = presenter.is_idle
 	match_ref.events_emitted.connect(presenter.enqueue)
 	match_ref.events_emitted.connect(_on_events)
@@ -124,6 +211,13 @@ func _start_match() -> void:
 		MatchSetup.chosen = false
 		get_tree().reload_current_scene())
 	hud.quality_cycle_requested.connect(func(): set_quality(QualitySettings.next(quality)))
+	hud.pause_requested.connect(open_pause)
+	if as_tutorial:
+		tutorial = TutorialOverlay.new()
+		layer.add_child(tutorial)
+		tutorial.setup(match_ref, hud, presenter, config)
+		# Play again after the tutorial starts a normal match.
+		tutorial.finished.connect(func(): MatchSetup.tutorial = false)
 	_setup_device_probe()
 	presenter.match_ended_presented.connect(_on_match_ended)
 	set_quality(args.get("quality", MatchSetup.quality if from_menu else "medium"))
@@ -177,19 +271,22 @@ func _setup_device_probe() -> void:
 
 
 func _build_world() -> void:
+	# Phase 5 tabletop: a night-blue room; the sky only feeds ambient light
+	# (warm-neutral, so the diorama keeps true colours instead of a blue cast).
 	env = Environment.new()
-	env.background_mode = Environment.BG_SKY
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color("#060a12")
 	var sky := Sky.new()
 	var sm := ProceduralSkyMaterial.new()
-	sm.sky_top_color = Color("#5b8fd6")
-	sm.sky_horizon_color = Color("#f6c98b")
-	sm.ground_horizon_color = Color("#f6c98b")
-	sm.ground_bottom_color = Color("#2a4a6b")
+	sm.sky_top_color = Color("#8ea6c8")
+	sm.sky_horizon_color = Color("#e9d6b8")
+	sm.ground_horizon_color = Color("#d9c6a6")
+	sm.ground_bottom_color = Color("#3a3f4c")
 	sm.sun_angle_max = 30.0
 	sky.sky_material = sm
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.8
+	env.ambient_light_energy = 0.75
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_exposure = 1.05
 	env.glow_enabled = true
@@ -197,7 +294,7 @@ func _build_world() -> void:
 	env.glow_bloom = 0.04
 	env.glow_hdr_threshold = 1.0
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 1.12
+	env.adjustment_saturation = 1.06
 	env.adjustment_contrast = 1.05
 	var we := WorldEnvironment.new()
 	we.environment = env
@@ -243,9 +340,20 @@ func _reframe() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	if hud == null:
-		camera.frame({"top": 0.06, "bottom": 0.06, "left": 0.0, "right": 0.0})  # menu backdrop
+		camera.frame(_menu_insets())  # menu backdrop
 		return
 	camera.frame(hud.board_insets())
+
+
+## Title: the board sits beside the logo column (landscape) or between the
+## logo and the buttons (portrait); other menu pages centre it.
+func _menu_insets() -> Dictionary:
+	var vp := get_viewport().get_visible_rect().size
+	if menu != null and menu.page == "title":
+		if vp.x > vp.y:
+			return {"top": 0.06, "bottom": 0.06, "left": 0.5, "right": 0.02}
+		return {"top": 0.3, "bottom": 0.4, "left": 0.04, "right": 0.04}
+	return {"top": 0.06, "bottom": 0.06, "left": 0.0, "right": 0.0}
 
 
 func _on_events(events: Array) -> void:
@@ -289,6 +397,11 @@ var _stats_done := false
 
 
 func _process(delta: float) -> void:
+	# Title screen: the diorama turns slowly behind the logo (off with
+	# reduced motion, and in captures that need a fixed frame).
+	if menu != null and menu.page == "title" and not MatchSetup.reduced_motion and not args.has("still"):
+		camera.configure(camera.yaw + delta * 5.0, camera.pitch, camera.half, camera.tall)
+		camera.frame(_menu_insets())
 	if args.has("stats") and not _stats_done:
 		_stats_t += 1.0
 		if _stats_t > float(args["stats"]):

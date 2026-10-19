@@ -87,7 +87,7 @@ func _set_ablation(name: String, on: bool) -> void:
 			if main.board.has_node("StaticProps"):
 				main.board.get_node("StaticProps").visible = not on
 		"no_water":
-			main.board.get_node("Water").visible = not on
+			main.board.get_node("Table").visible = not on
 		"no_detail_tex":
 			QualitySettings.set_material_detail(not on if main.quality != "low" else false)
 		"no_glow":
