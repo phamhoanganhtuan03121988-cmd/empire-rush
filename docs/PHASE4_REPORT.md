@@ -7,7 +7,7 @@
 | Engine | Godot 4.7.2-stable |
 | Baseline | `claude/phase3-production-hardening` @ `f6a506e` (end of Phase 3, CI #17 green) |
 | Branch | **`claude/phase4-playtest-release`** |
-| Final commit | see §3 (CI on the final commit) |
+| Final commit | the commit that adds this report (hash and CI in the hand-off message) |
 | Git | No merge, no PR. `main` and earlier branches untouched |
 
 **Not changed:**
@@ -27,7 +27,8 @@
 | `5c16b0c` | Toasts explaining money changes, playtest package, collection script, privacy scanner, guide, bug form |
 | `9eb3f54` | Runner counts, disconnect tests (trade / turn change), room limits, privacy gate, menu fixes, V5 re-check, security review |
 | `82f0df7`, `962422e` | Godot uid; guide wording (flagged by the package privacy gate) |
-| final | this report, final logs |
+| `382930f`, `c2c1a08` | Final 9/9 e2e logs, scanner keeps loopback/documentation IPs, benchmark runs |
+| final | Benchmark A/B, this report |
 
 ## 2. Issues: found / fixed / remaining
 | # | Found by | Issue | Status |
@@ -73,7 +74,17 @@ Phase 3 had 205 / 21 UI / 97 scripts. Phase 4 added 3 unit/integration tests and
 - The public build wrote 0 device/telemetry files; the internal build wrote them as expected.
 - Static readiness (`check_repo_readiness.py`, which includes the privacy-scanner self-test): `READINESS PASS (0 failed)`.
 
-**CI:** pending.
+**CI** (GitHub Actions `tests`: `godot-tests` + `release-lock`):
+
+| Run | Commit | Result |
+|---|---|---|
+| #18 | `601e1f7` | success |
+| #19 | `962422e` | cancelled (superseded by the next push; release-lock had passed) |
+| #20 | `96567c4` | success |
+| #21 | `382930f` | success |
+| #22 | `c2c1a08` | success. Log: `DISCOVERED: 29 files, 208 tests, 0 files skipped`, `RESULT: 208 passed, 0 failed`, `CHECKED 101 scripts`, `UI DISCOVERED: 4 files, 30 tests`, `UI RESULT: 30 passed, 0 failed`, e2e chaos + concurrent PASS, release lock + readiness PASS |
+
+CI on the final commit (this report) is reported in the hand-off message: a commit cannot contain its own CI result.
 
 ## 4. Playtest readiness: UI and gameplay
 **Journey** (UI tests drive only on-screen buttons):
@@ -129,7 +140,23 @@ Phase 3 had 205 / 21 UI / 97 scripts. Phase 4 added 3 unit/integration tests and
 Images cannot be scanned automatically. `collect_playtest_data.sh` returns `NOT READY` (exit 3) until a person has looked at them and re-runs with `--binaries-reviewed`. Free-text names not given with `--names` cannot be detected; the forms therefore use codes T01… only.
 
 ## 5. Benchmark
-Pending (run after the e2e suite, never at the same time).
+**Method:** the Phase 3 fixed-scene benchmark (lavapipe, 786×1704, 120 frames, 3 presets), run alone after the e2e suite. Details: `docs/test-logs/phase4_perf/README.md`.
+
+**Finding:** three runs of the Phase 4 code were ~1.9× slower than the committed Phase 3 numbers, with identical draw calls, triangles and memory. An **interleaved A/B on the same machine** (Phase 3 `f6a506e` from a separate worktree vs Phase 4, three runs each) showed the code is not the cause:
+
+| Preset | Phase 3 p50 | Phase 4 p50 | Difference |
+|---|---|---|---|
+| Low | 129.4 ms | 129.6 ms | +0.2% |
+| Medium | 316.4 ms | 321.4 ms | +1.6% |
+| High | 650.3 ms | 647.8 ms | −0.4% |
+
+- Draw calls 90 / 118 / 118, triangles 56k / 101k / 101k, video memory 84 / 115 / 146 MB: identical for both commits.
+- Load to first frame on this machine: 1.2–1.5 s for both.
+- The slowdown is the machine: today's container has 4 CPUs, and lavapipe renders on the CPU.
+
+**No regression, no optimisation.** Phase 4 changed no rendering code. The art direction is unchanged, so no before/after images of the scene were needed.
+
+**Limits:** lavapipe is not a phone. **No iPhone FPS is claimed or measured.** Numbers from different machines or days must not be compared without an A/B like this one.
 
 ## 6. Multiplayer / security: remaining risks
 Full table: `docs/PHASE4_SECURITY_REVIEW.md`.

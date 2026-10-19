@@ -4,7 +4,7 @@
     "api": "1.4.318",
     "args": {
       "frames": "120",
-      "out": "/home/user/empire-rush/docs/test-logs/phase4_perf/final_3.json"
+      "out": "final_3.json"
     },
     "engine": "4.7.2-stable (official)",
     "load_ms": {
