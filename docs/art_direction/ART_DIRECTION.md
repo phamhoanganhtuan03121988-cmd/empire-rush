@@ -218,3 +218,27 @@ Special tiles use their colour as a light tint on the marble slab plus a dark ic
 - **Character portraits are emblems,** not illustrated characters.
 - **No audio.**
 - **Not yet built:** pre-match setup screen, character selection screen, trade proposal UI. The current flow starts a match directly.
+
+## Phase 5 update: premium tabletop diorama
+The board is now a **miniature city diorama standing on a night-blue table**, not an island in harbour water.
+
+| Element | Implementation |
+|---|---|
+| Room | `Environment` background `#060a12`; the sky only feeds warm-neutral ambient light (no blue cast) |
+| Table | `tabletop.gdshader` (unshaded, no textures): night-blue felt with a fine grain, a light pool around the board, a contact shadow under the plinth, screen-space dither against banding. Low preset drops the grain |
+| Plinth | walnut base (`#4a3426`), darker foot, gold inlay line, ivory coping. The harbour piers and boats were removed (no water) |
+| Tiles | property slabs carry a light wash of their district colour (50 % towards ivory) plus a wider district band, so districts read from the overview camera. Unowned properties show their price on the band (white on the district colour, turned to the camera) |
+| City centre | muted district architecture (tint 0.9) mixed with background blocks; tall pieces on the camera-facing quadrant, low ones far away so far tiles stay visible |
+| Pawns | 1.35× larger, thicker seat ring. The pawn model follows the player's chosen colour (shape + colour stay paired) |
+
+**Palette:** navy / night blue (`#060a12`, `#121a2e`), ivory (`#f6f1e7`), gold (`#f5b83d`). Seat colours unchanged; the player chooses one, the bots take the others.
+
+**HUD:**
+- Landscape uses a 1600 × 900 design canvas (HUD text at 80 % of its phone size).
+- The right column is clamped to 560 px … 50 % of the width; players show 2 × 2.
+- **Hero roll button:** 132 px tall, 38 px ExtraBold, 64 px dice icon, gentle breathing glow (off with reduced motion). It has hover (brighter skin), pressed (lip removed), disabled and rolling states ("ĐANG TUNG…", then the result `a + b = n`). Space or Enter rolls.
+- Every primary/secondary/neutral button has a visible hover skin on desktop.
+
+**Entry flow:** title over the slowly turning diorama → intro (4 pages, RulesGuide) → setup (players, character cards, colour, name, line-up) → match. Also settings, tutorial and the pause menu. All rules text is generated from the rules data (`RulesGuide`).
+
+**Audio:** original synthesised SFX and a 46 s music loop (`scripts/audio/gen_audio.py`, CC0). Music and SFX buses with their own volumes and mute; sounds are triggered by presenter cues when a beat is shown.

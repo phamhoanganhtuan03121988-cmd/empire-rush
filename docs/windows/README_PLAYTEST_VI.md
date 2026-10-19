@@ -20,19 +20,35 @@ Bản thử nội bộ: **1 người chơi với 1–3 máy (bot), không cần 
 4. Nếu phần mềm diệt virus chặn file: đây cũng là do chưa ký số. Chỉ cho phép nếu file tải từ đúng nguồn chủ dự án gửi. Có thể so mã `SHA256SUMS.txt` (xem §6).
 
 ## 2. Bắt đầu trận
-Ở màn hình đầu chọn:
-- **Số người chơi** (bạn + máy): 2, 3 hoặc 4;
-- **Nhân vật**: dòng mô tả bên dưới cho biết kỹ năng;
-- **Đồ họa**: Thấp / Vừa / Cao. Máy yếu chọn Thấp;
-- **Giảm chuyển động**: bật nếu hiệu ứng làm khó chịu.
+Màn hình đầu có 4 nút:
 
-Bấm **CÁCH CHƠI** để đọc luật ngắn, rồi bấm **BẮT ĐẦU**.
+| Nút | Dùng để |
+|---|---|
+| **CHƠI** | Lần đầu: 4 trang giới thiệu ngắn (có nút BỎ QUA), rồi trang **Thiết lập trận** |
+| **HƯỚNG DẪN TỪNG BƯỚC** | Một trận 2 người có thẻ hướng dẫn 7 bước, chạy trên ván thật |
+| **GIỚI THIỆU** | Xem lại 4 trang giới thiệu |
+| **CÀI ĐẶT** | Đồ hoạ, giảm chuyển động, âm lượng nhạc và hiệu ứng, tắt âm thanh |
+
+Trang **Thiết lập trận**:
+- **số người chơi** (bạn + máy): 2, 3 hoặc 4;
+- **nhân vật**: dòng mô tả bên dưới cho biết kỹ năng;
+- **màu và tên** của bạn;
+- **đội hình**: bạn và các máy sẽ dùng nhân vật, màu nào.
+
+Bấm **BẮT ĐẦU**. **CÁCH CHƠI** mở luật đầy đủ (lấy từ dữ liệu luật của trò chơi). Lựa chọn và cài đặt được nhớ cho lần sau.
 
 ## 3. Điều khiển
-- Mọi thao tác đều bằng **chuột trái** (giống chạm trên điện thoại): bấm nút ở dưới màn hình (ĐỔ XÚC XẮC, MUA, BỎ QUA, ĐẤU GIÁ, NÂNG CẤP, KẾT THÚC LƯỢT…).
-- Bấm vào một ô trên bàn cờ để xem giá, tiền thuê và chủ sở hữu.
-- Cửa sổ mở ở dạng dọc như điện thoại. Có thể **kéo giãn hoặc phóng to** cửa sổ; giao diện tự sắp lại cho màn hình ngang.
-- Thoát: đóng cửa sổ (nút X). Trận đang chơi sẽ mất, vì bản này không lưu trận dở.
+| Thao tác | Chuột / bàn phím |
+|---|---|
+| Mọi nút | chuột trái |
+| Tung xúc xắc | nút **ĐỔ XÚC XẮC** hoặc phím **Space** / **Enter** |
+| Xem một ô (giá, tiền thuê, chủ) | bấm vào ô trên bàn cờ |
+| Tạm dừng (tiếp tục, hướng dẫn, cài đặt, về màn hình chính) | nút **☰** góc trên hoặc phím **Esc** |
+
+- Khi tạm dừng, đồng hồ lượt và máy cũng dừng.
+- Cửa sổ có thể **kéo giãn hoặc phóng to**; giao diện tự sắp lại theo chiều ngang hoặc dọc.
+- Đóng cửa sổ thì trận đang chơi sẽ mất (bản này không lưu trận dở).
+- Âm thanh: nhạc nền và hiệu ứng (tự tạo cho dự án). Chỉnh hoặc tắt trong CÀI ĐẶT.
 
 ## 4. Sau khi chơi: gửi phản hồi
 1. Mở `forms\phieu_phan_hoi.csv` bằng Excel, điền **một dòng** cho buổi chơi.
@@ -52,7 +68,8 @@ Thư mục ghi trận nằm ở `%APPDATA%\Godot\app_userdata\Empire Rush\teleme
 | Hiện tượng | Thử |
 |---|---|
 | Nhấp đúp không thấy gì, hoặc báo lỗi đồ hoạ (Vulkan / DirectX) | Cập nhật driver card đồ hoạ. Ghi tên máy và lỗi vào phiếu báo lỗi |
-| Game chậm, giật | Chọn **Đồ họa: Thấp** ở màn hình đầu, hoặc bật **Giảm chuyển động** |
+| Game chậm, giật | CÀI ĐẶT → **Đồ họa: Thấp**, hoặc bật **Giảm chuyển động** |
+| Không nghe tiếng | CÀI ĐẶT: kiểm tra **Tắt âm thanh** đang TẮT và âm lượng > 0; kiểm tra loa của Windows |
 | Chữ quá nhỏ | Kéo cửa sổ to hơn hoặc phóng to cửa sổ |
 | Windows/antivirus chặn | Xem §1 bước 3–4 |
 
@@ -64,7 +81,7 @@ Get-FileHash .\EmpireRush.exe -Algorithm SHA256
 Mã in ra phải trùng với dòng `EmpireRush.exe` trong `SHA256SUMS.txt`.
 
 ## 7. Giới hạn của bản này
-- Chưa có âm thanh. Đồ hoạ là bộ asset vertical slice.
+- Đồ hoạ và âm thanh là bản thử (vertical slice); chưa có lồng tiếng.
 - Chưa có chơi nhiều người qua mạng.
 - Luật và cân bằng: bản nháp DRAFT v3. Đừng đổi luật dựa trên một buổi chơi.
 - File chưa ký số: có cảnh báo SmartScreen (§1).

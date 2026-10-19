@@ -233,6 +233,12 @@ func _present(ev: Dictionary) -> void:
 				if r["rank"] == 1 and match_ref and match_ref.is_human(r["seat"]):
 					human_won = true
 			cue.emit("win" if human_won else "lose", d)
+			# Phase 5: a short gold celebration over the board when the player
+			# wins (off with reduced motion).
+			if human_won and not reduced_motion and popup_parent and speed >= 0.2:
+				for k in 5:
+					var a := TAU * k / 5.0
+					Vfx.burst(popup_parent, Vector3(cos(a) * 1.6, 1.2, sin(a) * 1.6), [Color("#ffd36b"), Color("#ffffff"), Color("#f5b83d")][k % 3], 32)
 			await _wait(0.6)
 			match_ended_presented.emit(d)
 

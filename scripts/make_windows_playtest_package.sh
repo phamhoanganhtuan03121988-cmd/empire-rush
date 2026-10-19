@@ -56,8 +56,9 @@ EMPIRE RUSH — bản chơi thử trên Windows (x64), phiên bản $commit
 2. Nhấp đúp EmpireRush.exe.
    Nếu Windows hiện "Windows protected your PC": bấm "More info" > "Run anyway".
    (File chưa được ký số nên Windows cảnh báo; đây là bản chơi thử nội bộ.)
-3. Ở màn hình đầu: chọn số người chơi, nhân vật, đồ họa, rồi bấm BẮT ĐẦU.
-   Bấm CÁCH CHƠI để đọc luật. Mọi thao tác dùng chuột trái.
+3. Màn hình đầu: bấm CHƠI (chọn số người, nhân vật, màu, rồi BẮT ĐẦU),
+   hoặc HƯỚNG DẪN TỪNG BƯỚC nếu chưa biết luật. Chuột trái cho mọi nút,
+   phím Space để tung xúc xắc, Esc để tạm dừng. Âm lượng: CÀI ĐẶT.
 4. Chơi xong: điền forms\\phieu_phan_hoi.csv (mở bằng Excel). Gặp lỗi: điền forms\\mau_bao_loi.txt.
    Nhấp đúp MO_DU_LIEU_TRAN_DAU.bat để mở thư mục ghi trận, gửi kèm các file session_*.json.
 
