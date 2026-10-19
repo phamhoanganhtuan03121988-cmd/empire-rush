@@ -535,6 +535,9 @@ func _choice_row(v: VBoxContainer, id: String, options: Array, current: Variant,
 	for o in options:
 		var b := _button(str(o[1]), o[2] if o.size() > 2 else "")
 		b.set_meta("value", o[0])
+		# Narrow portrait screens: labels wrap instead of widening the card.
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.custom_minimum_size.x = 0
 		row.add_child(b)
 		group.append(b)
 		buttons["%s_%s" % [id, str(o[0])]] = b
@@ -561,6 +564,8 @@ func _button(text: String, icon_name: String) -> Button:
 		b.icon = UiTheme.icon(icon_name)
 	b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Rows of 3 buttons on a 720 px phone: wrap rather than widen the card.
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	AudioDirector.wire(b)
 	return b
 
@@ -639,8 +644,7 @@ func _layout() -> void:
 		card.custom_minimum_size.x = w
 		for l in card.find_children("*", "Label", true, false):
 			if l.autowrap_mode != TextServer.AUTOWRAP_OFF:
-				var row := l.get_parent() as HBoxContainer
-				l.custom_minimum_size.x = maxf(text_w - (160.0 if row else 0.0), 80.0)
+				l.custom_minimum_size.x = maxf(_avail_width(l, card, text_w), 80.0)
 		if card.has_meta("scroll"):
 			var sc: ScrollContainer = card.get_meta("scroll")
 			var content: Control = card.get_meta("content")
@@ -660,6 +664,23 @@ func _layout() -> void:
 	how_to.size = Vector2(hw, safe.size.y - 28.0)
 	how_to.position = safe.position + Vector2((safe.size.x - hw) * 0.5, 14.0)
 	how_to_label.custom_minimum_size.x = hw - 60.0
+
+
+## Width left for a wrapping label: the column width minus whatever sits
+## beside it in any horizontal row on the way up to the card (a badge next to
+## a title block, an avatar next to a name). Phase 5 bug: only the direct
+## parent was checked, so the intro title grew the card past the screen.
+func _avail_width(l: Control, card: Control, text_w: float) -> float:
+	var avail := text_w
+	var node: Node = l
+	while node.get_parent() != null and node.get_parent() != card:
+		var par := node.get_parent()
+		if par is HBoxContainer:
+			for sib in par.get_children():
+				if sib != node and sib is Control and sib.visible:
+					avail -= sib.get_combined_minimum_size().x + par.get_theme_constant("separation")
+		node = par
+	return avail
 
 
 ## Title: a gradient that darkens the side holding the text (the diorama

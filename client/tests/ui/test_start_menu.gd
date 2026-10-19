@@ -141,6 +141,11 @@ func test_menu_controls_are_touch_sized_inside_safe_area() -> void:
 			if not in_scroll:
 				assert_true(safe.grow(1).encloses(b.get_global_rect()), "%s/%s inside the safe area: %s" % [page, id, str(b.get_global_rect())])
 		assert_true(seen >= 3, "page %s shows its buttons (%d)" % [page, seen])
+		# Regression (Phase 5 portrait screenshots): the intro card grew past
+		# the screen edges (a title beside its badge was not counted).
+		if page != "title":
+			var card: Rect2 = m._cards[page].get_global_rect()
+			assert_true(safe.grow(1).encloses(card), "%s card inside the safe area: %s" % [page, str(card)])
 
 
 func test_landscape_menu_fits() -> void:

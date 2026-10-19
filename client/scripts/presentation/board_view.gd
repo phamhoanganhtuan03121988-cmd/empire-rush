@@ -176,14 +176,26 @@ func _build_center_city(st: MeshMerger) -> void:
 		# far one stays low so it never hides tiles on the far edge.
 		var near: bool = q.x > 0 and q.z > 0
 		var far: bool = q.x < 0 and q.z < 0
-		var variants: Array = [1, 3, 0, 2] if near else ([2, 0, 2, 0] if far else [0, 2, 1, 0])
+		# Phase 5: a richer skyline - the district architecture (muted, so it
+		# never reads as a tile's building) mixed with the background blocks.
+		# Tall pieces on the quadrant facing the camera, low ones far away.
+		var mix: Array = (["d6_l3", "bg_block_3", "d4_l2"] if near else
+			(["d1_l1", "bg_block_0", "d3_l1"] if far else
+			(["d6_l2", "bg_block_2", "d1_l2"] if q.x > 0 else ["d7_l2", "bg_block_1", "d2_l1"])))
 		var slots := [Vector3(1.05, 0, 1.05), Vector3(1.95, 0, 1.05), Vector3(1.05, 0, 1.95), Vector3(1.95, 0, 1.95)]
 		for i in 4:
 			var p: Vector3 = slots[i] * q + Vector3(0, 0.05, 0)
 			if i == 3:
 				_place(st, "fountain", p, 0.0, 0.9)
 				continue
-			_place(st, "bg_block_%d" % variants[i], p, _rng.randi_range(0, 3) * PI * 0.5, 0.9)
+			var piece: String = mix[i]
+			var rot := _rng.randi_range(0, 3) * PI * 0.5
+			if piece.begins_with("bg_"):
+				_place(st, piece, p, rot, 0.9)
+			else:
+				var parts := piece.split("_l")
+				var mesh: Mesh = load(BUILDING % [parts[0], int(parts[1])])
+				_props.add_kit(mesh, Transform3D(Basis(Vector3.UP, rot) * Basis.from_scale(Vector3.ONE * 0.95), p), Color(0.9, 0.9, 0.93))
 		# Street trees along the avenues.
 		for k in 4:
 			var t := 0.7 + k * 0.5

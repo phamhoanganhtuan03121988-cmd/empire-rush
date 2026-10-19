@@ -36,6 +36,11 @@ func _run() -> void:
 			_failures.append("%s: no test_ methods" % path)
 		_discovered += names.size()
 		for name in names:
+			# Every test starts on the phone portrait canvas (720 x 1280). The
+			# headless window is 1280 x 1280, so without this "portrait" tests
+			# ran on a square canvas (Phase 5 finding).
+			root.content_scale_size = Vector2i(720, 1280)
+			root.size = Vector2i(405, 720)
 			var suite: UiTestCase = script.new()
 			suite.tree = self
 			_trap.take()
