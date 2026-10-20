@@ -106,7 +106,12 @@ func play(name: String, pitch_jitter := 0.0) -> bool:
 	if live >= int(spec[2]):
 		return false
 	if not _streams.has(name):
-		_streams[name] = load(SFX_DIR % name)
+		# A missing or broken file costs that one sound, never the game.
+		_streams[name] = load(SFX_DIR % name) if ResourceLoader.exists(SFX_DIR % name) else null
+		if _streams[name] == null:
+			push_warning("AudioDirector: sound '%s' unavailable" % name)
+	if _streams[name] == null:
+		return false
 	# Round-robin over the pool; a busy player is cut only when all are busy.
 	var p: AudioStreamPlayer = null
 	for k in POOL:
@@ -133,6 +138,48 @@ func play(name: String, pitch_jitter := 0.0) -> bool:
 func on_cue(cue_name: String, _data: Dictionary) -> void:
 	if CUE_SOUND.has(cue_name):
 		play(CUE_SOUND[cue_name], 0.06 if cue_name == "step" else 0.0)
+
+
+## Web only: what the browser's audio is doing (the page's erAudio helper in
+## client/web/shell.html): {supported, contexts, state, gestures, unlocked,
+## session, error}. {} on desktop or when the helper is missing.
+static func web_status() -> Dictionary:
+	if not OS.has_feature("web"):
+		return {}
+	var raw: Variant = JavaScriptBridge.eval("window.erAudio ? window.erAudio.info() : ''", true)
+	if not (raw is String) or (raw as String).is_empty():
+		return {}
+	var d: Variant = JSON.parse_string(raw)
+	return d if d is Dictionary else {}
+
+
+## One line for the settings page ("" on desktop).
+static func web_status_text() -> String:
+	var st := web_status()
+	if st.is_empty():
+		return ""
+	if not st.get("supported", false):
+		return "Trình duyệt không hỗ trợ âm thanh Web Audio."
+	if GameSettings.muted:
+		return "Âm thanh đang TẮT trong game."
+	match str(st.get("state", "")):
+		"running":
+			return "Âm thanh đang hoạt động."
+		"none":
+			return "Âm thanh chưa khởi động."
+		_:
+			return "Âm thanh đang chờ: chạm vào màn hình một lần để bật."
+
+
+## Sound on/off from the HUD button; saved like the settings page toggle.
+static func toggle_mute() -> bool:
+	GameSettings.muted = not GameSettings.muted
+	GameSettings.save_settings()
+	if instance:
+		instance.apply_settings()
+		if not GameSettings.muted:
+			instance.play("ui_confirm")
+	return GameSettings.muted
 
 
 ## UI sounds from anywhere (menus, HUD). Safe when no director exists.

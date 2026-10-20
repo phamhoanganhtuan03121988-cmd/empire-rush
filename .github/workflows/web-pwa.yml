@@ -69,6 +69,9 @@ jobs:
       - name: Responsive check (iPhone SE / 15 / 15 Pro Max / landscape / iPad mini)
         run: node tests_web/responsive_web.mjs build/web-public web-e2e/responsive
 
+      - name: Screen tour with layout audit (intro, setup, tutorial, pause, rules, settings)
+        run: node tests_web/ui_tour_web.mjs build/web-public web-e2e/tour
+
       - name: Upload e2e screenshots and results
         if: always()
         uses: actions/upload-artifact@v6
@@ -81,6 +84,38 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: build/web-public
+
+  # Safari's engine (WebKit on Linux, iPhone 13 profile): boot, WebGL 2, the
+  # AudioContext after a tap. Informative: it is not iOS Safari on a phone,
+  # and Linux WebKit's WebGL can differ, so it does not block the deploy.
+  webkit:
+    needs: web-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download the tested web build
+        uses: actions/download-artifact@v5
+        with:
+          name: github-pages
+          path: pages
+      - name: Unpack
+        run: mkdir -p build/web-public && tar -xf pages/artifact.tar -C build/web-public
+      - name: Install Playwright + WebKit (test only)
+        working-directory: tests_web
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps webkit
+      - name: WebKit smoke test
+        run: node tests_web/webkit_smoke.mjs build/web-public web-webkit
+      - name: Upload WebKit results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-webkit
+          path: web-webkit/
+          if-no-files-found: warn
 
   # Deploys only (a) on a push to main or to the launch branch, or (b) when
   # run by hand (workflow_dispatch) on the launch branch or main. Never from

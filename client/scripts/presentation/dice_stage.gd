@@ -135,7 +135,8 @@ func _build_world() -> void:
 	im.radial_segments = 64
 	inlay.mesh = im
 	inlay.position = Vector3(0, -0.062, 0)
-	inlay.material_override = _mat(UiTheme.GOLD, 0.3, 0.6)
+	# Muted brass, not UI gold: the bright ring read as a glaring yellow band.
+	inlay.material_override = _mat(Color("#a87e3a"), 0.4, 0.5)
 	world.add_child(inlay)
 	var felt := MeshInstance3D.new()
 	var fm := CylinderMesh.new()
@@ -182,7 +183,7 @@ func _region() -> Rect2:
 	return r
 
 
-## The tray fills most of the board area (dice ~1/7 of its width each), the
+## The tray covers the middle of the board area (dice ~1/7 of its width each), the
 ## result card sits just under it.
 func _layout() -> void:
 	# Hidden at _ready, so anchors never sized it: fill the screen by hand
@@ -192,7 +193,9 @@ func _layout() -> void:
 	_dim.position = Vector2.ZERO
 	_dim.size = size
 	var r := _region()
-	var w := minf(minf(r.size.x * 0.92, (r.size.y - 120.0) * 1.35), 760.0)
+	# Mobile pass: 76% of the board area (was 92%): the dice stay big and
+	# readable but no longer cover the whole board on a phone.
+	var w := minf(minf(r.size.x * 0.76, (r.size.y - 120.0) * 1.1), 620.0)
 	w = maxf(w, 280.0)
 	var h := w / 1.35
 	_box.size = Vector2(w, h)

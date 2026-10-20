@@ -8,4 +8,4 @@ try {
 } catch {
   mod = require(execSync('npm root -g').toString().trim() + '/playwright');
 }
-export const { chromium } = mod;
+export const { chromium, webkit, devices } = mod;

@@ -11,6 +11,7 @@ const PRESET_LABELS := {"low": "Thấp", "medium": "Vừa", "high": "Cao"}
 
 var buttons := {}   # id -> Button (tests): quality_*, reduced_motion, mute
 var sliders := {}   # "music" / "sfx" -> HSlider
+var _audio_status: Label
 
 
 func build() -> void:
@@ -45,7 +46,20 @@ func build() -> void:
 		_save())
 	buttons["mute"] = _toggle("Tắt âm thanh", GameSettings.muted, func(on: bool):
 		GameSettings.muted = on
-		_save())
+		_save()
+		_refresh_audio_status())
+	# Web: say whether the browser lets the game play sound, and a test button.
+	if OS.has_feature("web"):
+		_audio_status = _hint("")
+		add_child(_audio_status)
+		var test := _button("Phát thử âm thanh")
+		UiTheme.neutral(test)
+		test.pressed.connect(func():
+			AudioDirector.ui("ui_confirm")
+			get_tree().create_timer(0.6).timeout.connect(_refresh_audio_status))
+		buttons["sound_test"] = test
+		add_child(test)
+		_refresh_audio_status()
 	# Phase 5.1: contextual tips for new players (CoachOverlay).
 	_section("Hướng dẫn")
 	buttons["tips"] = _toggle("Gợi ý cho người mới", GameSettings.tips_enabled, func(on: bool):
@@ -62,6 +76,11 @@ func build() -> void:
 		_save())
 	buttons["tips_reset"] = again
 	add_child(again)
+
+
+func _refresh_audio_status() -> void:
+	if _audio_status and is_instance_valid(_audio_status):
+		_audio_status.text = AudioDirector.web_status_text()
 
 
 func _save() -> void:

@@ -57,7 +57,10 @@ for (const [name, w, h] of SIZES) {
     check(inside(roll) && roll[3] * h >= 44, `${name}: roll button on screen, ≥44 pt tall`, roll ? `${Math.round(roll[3] * h)} pt` : 'missing');
     check(inside(await rect('hud:pause')), `${name}: pause button on screen`);
     s = JSON.parse(await call('state'));
-    check(s.cards.every((c) => c.fits), `${name}: names fit`, s.cards.map((c) => c.name).join(', '));
+    check(s.cards.every((c) => c.fits && c.role_fits && c.cash_fits), `${name}: names, net worth and cash fit (no …)`, s.cards.map((c) => `${c.name}|${c.role}|${c.cash}`).join(', '));
+    const hasAudit = await page.evaluate(() => typeof window.erE2E.audit === 'function');
+    const a = hasAudit ? JSON.parse(await call('audit')) : { buttons: 0, problems: ['no layout audit in this build'] };
+    check(a.problems.length === 0, `${name}: layout audit in the match (${a.buttons} buttons)`, a.problems.slice(0, 4).join(' | '));
     await page.screenshot({ path: path.join(out, `${name}_match.png`) });
   } catch (e) {
     check(false, `${name}: crashed`, e.message);

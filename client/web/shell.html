@@ -153,6 +153,24 @@ body {
 	padding: 8px 16px;
 	min-height: 40px;
 }
+
+#audio-hint {
+	display: none;
+	position: fixed;
+	left: 50%;
+	transform: translateX(-50%);
+	top: 10px;
+	z-index: 3;
+	max-width: min(92vw, 420px);
+	background: rgba(18, 26, 46, 0.96);
+	border: 1px solid rgba(245, 184, 61, 0.6);
+	border-radius: 14px;
+	padding: 10px 14px;
+	font-size: 14px;
+	line-height: 1.4;
+	text-align: center;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
 		</style>
 		$GODOT_HEAD_INCLUDE
 	</head>
@@ -180,6 +198,98 @@ body {
 			<button id="install-hint-close" type="button">Đã hiểu</button>
 		</div>
 
+		<div id="audio-hint" role="status"></div>
+
+		<script>
+// Sound on iPhone/iPad Safari (and every browser's autoplay rule). Loaded
+// BEFORE the engine so it sees the engine's AudioContext:
+// - records every AudioContext the page creates;
+// - on each tap/click/key (a valid user gesture) resumes a suspended context
+//   and plays one silent sample, which is what unlocks Web Audio on iOS;
+// - on iOS 17+ sets the page's audio session to "playback": otherwise the
+//   ring/silent switch mutes all Web Audio and the game stays silent;
+// - if sound still cannot start after a gesture, says so (no silent failure).
+// window.erAudio.info() reports the state (tests, in-game settings page).
+(function () {
+	const Base = window.AudioContext || window.webkitAudioContext;
+	const contexts = [];
+	const info = { supported: !!Base, contexts: 0, state: 'none', gestures: 0, unlocked: false, session: 'n/a', error: '' };
+	window.erAudio = {
+		info: function () {
+			info.contexts = contexts.length;
+			info.state = contexts.length ? contexts[contexts.length - 1].state : 'none';
+			info.unlocked = contexts.some((c) => c.state === 'running');
+			return JSON.stringify(info);
+		},
+	};
+	if (!Base) {
+		return;
+	}
+	class TrackedAudioContext extends Base {
+		constructor(...args) {
+			super(...args);
+			contexts.push(this);
+		}
+	}
+	window.AudioContext = TrackedAudioContext;
+	if (window.webkitAudioContext) {
+		window.webkitAudioContext = TrackedAudioContext;
+	}
+	const hint = () => document.getElementById('audio-hint');
+	let checkTimer = 0;
+	function unlock() {
+		info.gestures += 1;
+		try {
+			if (navigator.audioSession && navigator.audioSession.type !== 'playback') {
+				navigator.audioSession.type = 'playback';
+			}
+			info.session = navigator.audioSession ? navigator.audioSession.type : 'n/a';
+		} catch (e) {
+			info.error = 'audioSession: ' + e.message;
+		}
+		for (const ctx of contexts) {
+			if (ctx.state !== 'running' && ctx.state !== 'closed') {
+				ctx.resume().catch((e) => { info.error = 'resume: ' + e.message; });
+			}
+			try {
+				const src = ctx.createBufferSource();
+				src.buffer = ctx.createBuffer(1, 1, 22050);
+				src.connect(ctx.destination);
+				src.start(0);
+			} catch (e) {
+				info.error = 'unlock: ' + e.message;
+			}
+		}
+		clearTimeout(checkTimer);
+		checkTimer = setTimeout(function () {
+			const h = hint();
+			if (!h || !contexts.length) {
+				return;
+			}
+			const ok = contexts.some((c) => c.state === 'running');
+			h.style.display = ok ? 'none' : 'block';
+			if (!ok) {
+				h.textContent = 'Chưa bật được âm thanh. Chạm vào màn hình thêm một lần; '
+					+ 'nếu vẫn không có tiếng, hãy tăng âm lượng máy.';
+			}
+		}, 1500);
+	}
+	for (const ev of ['touchend', 'pointerup', 'click', 'keydown']) {
+		document.addEventListener(ev, unlock, { capture: true, passive: true });
+	}
+	// Coming back from another app or the lock screen: iOS suspends (or
+	// "interrupts") the context; the next tap resumes it through unlock().
+	document.addEventListener('visibilitychange', function () {
+		if (document.visibilityState === 'visible') {
+			for (const ctx of contexts) {
+				if (ctx.state !== 'running' && ctx.state !== 'closed') {
+					ctx.resume().catch(() => {});
+				}
+			}
+		}
+	});
+}());
+		</script>
 		<script src="$GODOT_URL"></script>
 		<script>
 const GODOT_CONFIG = $GODOT_CONFIG;

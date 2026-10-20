@@ -99,8 +99,15 @@ func setup(config: GameConfig) -> void:
 	s.add_child(_title("CÀI ĐẶT"))
 	settings = SettingsPanel.new()
 	settings.build()
+	settings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	settings.changed.connect(func(): settings_changed.emit())
-	s.add_child(settings)
+	# Scrolls when taller than the screen (phone in landscape), so XONG stays
+	# reachable and nothing leaves the screen.
+	var ss := ScrollContainer.new()
+	ss.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	ss.set_meta("guide_scroll", true)
+	ss.add_child(settings)
+	s.add_child(ss)
 	var sb := _button("XONG", "check")
 	sb.pressed.connect(func(): _show("main"))
 	buttons["settings_back"] = sb

@@ -10,7 +10,7 @@ class_name BoardView
 extends Node3D
 
 const TILE_H := 0.126          # top of the marble slab
-const BOARD_H := 0.35
+const BOARD_H := 0.46
 ## Buildings are authored for a 0.56 m lot; shown slightly larger so the
 ## upgrade level reads at phone size.
 const BUILDING_SCALE := 1.1
@@ -26,6 +26,7 @@ var _tiles: Array[Node3D] = []
 var _lots: Dictionary = {}        # property_id -> Node3D (building anchor)
 var _lot_tile: Dictionary = {}    # property_id -> tile index
 var _owner_marks: Dictionary = {} # property_id -> MeshInstance3D
+var _owner_badges: Dictionary = {} # property_id -> Sprite3D (owner portrait badge)
 var _levels: Dictionary = {}      # property_id -> int shown
 var _markers: Dictionary = {}     # "kind:index" -> Sprite3D
 var _price_labels: Dictionary = {} # property_id -> Label3D (unowned tiles)
@@ -80,7 +81,55 @@ func _ubox(st: MeshMerger, material: String, size: Vector3, pos: Vector3, tint :
 func _place(st: MeshMerger, piece: String, pos: Vector3, rot_y := 0.0, scale := 1.0, tint := Color.WHITE) -> void:
 	if not piece in GROUND_PIECES and _props != null:
 		st = _props
+		var r := _blob_radius(piece)
+		if r > 0.0:
+			_blob(pos, r * scale)
 	st.add_kit(kit(piece), Transform3D(Basis(Vector3.UP, rot_y) * Basis.from_scale(Vector3.ONE * scale), pos), tint)
+
+
+## Mobile visual pass: soft contact shadows (a dark radial blob on the ground
+## under each object) give the diorama the grounded depth that screen-space
+## ambient occlusion would; the web renderer (Compatibility) has no SSAO.
+## They are merged into the ground mesh: no extra draw calls per object.
+const CONTACT_SHADOW := "res://assets/materials/contact_shadow.tres"
+static var _blob_plane: PlaneMesh
+
+func _blob_radius(piece: String) -> float:
+	if piece.begins_with("bg_block"):
+		return 0.42
+	if piece.begins_with("tree"):
+		return 0.2
+	if piece == "landmark":
+		return 0.8
+	if piece in ["planter", "bench", "fountain"]:
+		return 0.17
+	return 0.0
+
+
+func _blob(pos: Vector3, radius: float, strength := 0.75) -> void:
+	if _ground == null:
+		return
+	if _blob_plane == null:
+		_blob_plane = PlaneMesh.new()
+		_blob_plane.size = Vector2.ONE
+	_ground.add_mesh(_blob_plane, Transform3D(Basis.from_scale(Vector3(radius * 2.0, 1.0, radius * 2.0)), pos + Vector3(0, 0.004, 0)),
+		Color(1, 1, 1, strength), CONTACT_SHADOW)
+
+
+## Same blob as its own node (buildings placed during play).
+static func contact_shadow_node(radius: float, strength := 0.75) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.name = "ContactShadow"
+	var pm := PlaneMesh.new()
+	pm.size = Vector2.ONE * radius * 2.0
+	mi.mesh = pm
+	var m := (load(CONTACT_SHADOW) as StandardMaterial3D).duplicate() as StandardMaterial3D
+	m.vertex_color_use_as_albedo = false
+	m.albedo_color = Color(1, 1, 1, strength)
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.position.y = 0.003
+	return mi
 
 
 # --- environment ---------------------------------------------------------------
@@ -110,6 +159,11 @@ func _build_plinth(st: MeshMerger) -> void:
 	_ubox(st, "wood", Vector3(8.8, BOARD_H, 8.8), Vector3(0, -BOARD_H * 0.5, 0), walnut)
 	# Foot: slightly wider and darker, so the base reads as a separate piece.
 	_ubox(st, "wood", Vector3(8.96, 0.08, 8.96), Vector3(0, -BOARD_H + 0.03, 0), walnut.darkened(0.45))
+	# Second, thinner inlay above the foot: the deeper plinth reads as a
+	# crafted base, not a slab.
+	for s in [-1, 1]:
+		_ubox(st, "gold", Vector3(8.82, 0.012, 0.01), Vector3(0, -BOARD_H + 0.1, s * 4.401), Color("#b8862f"))
+		_ubox(st, "gold", Vector3(0.01, 0.012, 8.82), Vector3(s * 4.401, -BOARD_H + 0.1, 0), Color("#b8862f"))
 	# Gold inlay just under the top edge, on all four sides.
 	for s in [-1, 1]:
 		_ubox(st, "gold", Vector3(8.82, 0.022, 0.01), Vector3(0, -0.07, s * 4.401), Color("#d9a441"))
@@ -203,6 +257,7 @@ func _build_center_city(st: MeshMerger) -> void:
 			else:
 				var parts := piece.split("_l")
 				var mesh: Mesh = load(BUILDING % [parts[0], int(parts[1])])
+				_blob(p, 0.4)
 				_props.add_kit(mesh, Transform3D(Basis(Vector3.UP, rot) * Basis.from_scale(Vector3.ONE * 0.95), p), Color(0.9, 0.9, 0.93))
 		# Street trees along the avenues.
 		for k in 4:
@@ -271,10 +326,12 @@ func _build_tile(i: int, st: MeshMerger) -> void:
 	if stype == "PROPERTY":
 		# District colour band on the inner (street) edge with a gold trim:
 		# the classic board read, kept narrow so buildings stay visible.
-		var band_pos := root.position + flat_in * 0.32 + Vector3(0, TILE_H + 0.008, 0)
-		var band := Vector3(0.86, 0.016, 0.24)
+		# Mobile visual pass: the band is narrower (0.14 instead of 0.24) so the
+		# price plate fits in the middle of the tile without touching it.
+		var band_pos := root.position + flat_in * BAND_CENTER + Vector3(0, TILE_H + 0.008, 0)
+		var band := Vector3(0.86, 0.016, BAND_DEPTH)
 		_ubox(st, "paint", band, band_pos, accent, rot)
-		_ubox(st, "gold", Vector3(0.86, 0.018, 0.016), band_pos - flat_in * 0.125, Color("#e2b448"), rot)
+		_ubox(st, "gold", Vector3(0.86, 0.018, 0.016), band_pos - flat_in * (BAND_DEPTH * 0.5 + 0.005), Color("#e2b448"), rot)
 		var lot := Node3D.new()
 		lot.position = -flat_in * 0.1 + Vector3(0, TILE_H, 0)
 		lot.rotation.y = rot + PI  # buildings face outwards, towards the water
@@ -285,32 +342,94 @@ func _build_tile(i: int, st: MeshMerger) -> void:
 		_lots[sp["property_id"]] = lot
 		_lot_tile[sp["property_id"]] = i
 		_levels[sp["property_id"]] = -1
-		_build_price_label(root, sp["property_id"], band_pos - root.position, accent)
+		_build_price_label(root, sp["property_id"], accent)
 	else:
 		_build_special_icon(root, stype, accent)
 
 
-## Phase 5: the purchase price printed on the district band of every unowned
-## property (white on the district colour, turned to face the camera so all
-## four sides read). Hidden once the tile has an owner.
-func _build_price_label(root: Node3D, pid: String, band_local: Vector3, accent: Color) -> void:
+## The purchase price of every unowned property, on a dark plate with a rim
+## in the district colour, lying flat at the geometric centre of the tile
+## (mobile visual pass: it used to sit on the inner band and straddled its
+## edge). Turned to face the match camera (yaw 45°), so it reads upright on
+## all four sides. Hidden once the tile has an owner (show_owner).
+## PRICE_PLATE is the plate size in metres (long side along the text).
+const PRICE_PLATE := Vector2(0.56, 0.28)
+const BAND_DEPTH := 0.14
+const BAND_CENTER := 0.37   # band spans 0.30..0.44 from the tile centre inwards
+const TEXT_YAW := 45.0
+
+func _build_price_label(root: Node3D, pid: String, accent: Color) -> void:
+	var holder := Node3D.new()
+	holder.name = "Price"
+	holder.position = Vector3(0, TILE_H + 0.012, 0)
+	holder.rotation_degrees = Vector3(-90, TEXT_YAW, 0)
+	root.add_child(holder)
+	var plate := Sprite3D.new()
+	plate.name = "Plate"
+	plate.texture = _plate_texture()
+	plate.pixel_size = PRICE_PLATE.x / plate.texture.get_width()
+	plate.modulate = Color.WHITE
+	plate.shaded = false
+	plate.double_sided = false
+	plate.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
+	plate.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	plate.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	plate.render_priority = 1
+	holder.add_child(plate)
+	var rim := Sprite3D.new()
+	rim.name = "Rim"
+	rim.texture = _plate_texture(true)
+	rim.pixel_size = plate.pixel_size
+	rim.modulate = accent.lerp(Color.WHITE, 0.15)
+	rim.shaded = false
+	rim.double_sided = false
+	rim.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
+	rim.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	rim.render_priority = 2
+	holder.add_child(rim)
 	var l := Label3D.new()
+	l.name = "Text"
 	l.text = str(config.tier_of(pid)["price"])
 	l.font = load("res://assets/fonts/BeVietnamPro-ExtraBold.ttf")
 	l.font_size = 64
-	# Web/PWA polish: larger and with a heavier outline, so the price reads
-	# on a phone held in portrait (the board is ~390 pt wide there).
-	l.pixel_size = 0.0044
-	l.outline_size = 14
-	l.outline_modulate = accent.darkened(0.45)
-	l.modulate = Color("#fffaf0")
-	l.rotation_degrees = Vector3(-90, 45, 0)
-	l.position = band_local + Vector3(0, 0.012, 0)
+	l.pixel_size = 0.0036
+	l.outline_size = 0
+	l.modulate = Color("#fff6df")
+	l.position = Vector3(0, 0, 0.002)
 	l.shaded = false
 	l.double_sided = false
+	l.render_priority = 3
 	l.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(l)
-	_price_labels[pid] = l
+	holder.add_child(l)
+	_price_labels[pid] = holder
+
+
+static var _plate_tex := {}
+
+## Rounded plate (navy, opaque) or its rim (white ring, tinted per district).
+static func _plate_texture(rim := false) -> Texture2D:
+	if _plate_tex.has(rim):
+		return _plate_tex[rim]
+	var w := 208
+	var h := 108
+	var r := 40.0
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		for x in w:
+			# Signed distance to a rounded rectangle (inside < 0).
+			var qx := absf(x + 0.5 - w * 0.5) - (w * 0.5 - r)
+			var qy := absf(y + 0.5 - h * 0.5) - (h * 0.5 - r)
+			var d := Vector2(maxf(qx, 0.0), maxf(qy, 0.0)).length() + minf(maxf(qx, qy), 0.0) - r
+			var a := clampf(0.5 - d, 0.0, 1.0)
+			if rim:
+				a *= clampf(d + 7.5, 0.0, 1.0)  # 7 px ring
+				img.set_pixel(x, y, Color(1, 1, 1, a))
+			else:
+				img.set_pixel(x, y, Color(0.06, 0.09, 0.17, 0.92 * a))
+	img.generate_mipmaps()
+	_plate_tex[rim] = ImageTexture.create_from_image(img)
+	return _plate_tex[rim]
 
 
 ## Flat icon on special tiles (SVG asset, rendered as a Sprite3D lying on the
@@ -362,6 +481,52 @@ func tile_position(index: int) -> Vector3:
 	return BoardLayout.position_of(index) + Vector3(0, TILE_H, 0)
 
 
+const OWNER_BADGE_SIZE := 0.25
+static var _badge_tex := {}
+
+## Round badge: the persona portrait inside a ring of the seat colour (cached
+## per seat and colour). Null when the seat has no portrait.
+func owner_badge_texture(seat: int) -> Texture2D:
+	var face := theme.player_portrait(seat)
+	if face == null:
+		return null
+	var col := theme.player_color(seat)
+	var key := "%d|%s" % [seat, col.to_html()]
+	if _badge_tex.has(key):
+		return _badge_tex[key]
+	var n := 128
+	var src := face.get_image()
+	if src == null:
+		return face
+	src = src.duplicate()
+	if src.is_compressed():
+		src.decompress()
+	src.convert(Image.FORMAT_RGBA8)
+	var inner := 90
+	src.resize(inner, inner, Image.INTERPOLATE_LANCZOS)
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var c := n * 0.5
+	for y in n:
+		for x in n:
+			var d := Vector2(x + 0.5 - c, y + 0.5 - c).length()
+			var a_out := clampf(c - 1.0 - d, 0.0, 1.0)
+			if a_out <= 0.0:
+				continue
+			var ring := col
+			if d > c - 4.0:
+				ring = Color(0.04, 0.06, 0.12)   # dark outline: reads on light tiles
+			var px := ring
+			var ix := x - (n - inner) / 2
+			var iy := y - (n - inner) / 2
+			if d < inner * 0.5 - 0.5 and ix >= 0 and iy >= 0 and ix < inner and iy < inner:
+				var f := src.get_pixel(ix, iy)
+				px = ring.lerp(Color(f.r, f.g, f.b), f.a)
+			img.set_pixel(x, y, Color(px.r, px.g, px.b, a_out))
+	img.generate_mipmaps()
+	_badge_tex[key] = ImageTexture.create_from_image(img)
+	return _badge_tex[key]
+
+
 ## Ownership: a frame in the owner's colour around the slab plus a flag on the
 ## lot corner. The tile and building keep their own materials, so the
 ## architecture stays readable (art direction: identity colour never covers
@@ -372,6 +537,9 @@ func show_owner(pid: String, seat: int) -> void:
 	if _owner_marks.has(pid):
 		_owner_marks[pid].queue_free()
 		_owner_marks.erase(pid)
+	if _owner_badges.has(pid):
+		_owner_badges[pid].queue_free()
+		_owner_badges.erase(pid)
 	if seat < 0:
 		return
 	var c := theme.player_color(seat)
@@ -390,21 +558,31 @@ func show_owner(pid: String, seat: int) -> void:
 	mm.add_kit(kit("flag_cloth"), Transform3D(Basis.from_scale(Vector3.ONE * 1.5), corner), c)
 	var flag := mm.instance("Owner")
 	lot.add_child(flag)
-	# The owner's portrait as a round deed seal lying on the tile corner.
-	var face := theme.player_portrait(seat)
-	if face:
-		var seal := Sprite3D.new()
-		seal.name = "Seal"
-		seal.texture = face
-		seal.axis = Vector3.AXIS_Y
-		seal.pixel_size = 0.46 / face.get_width()
-		seal.shaded = false
-		seal.double_sided = false
-		seal.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
-		seal.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		seal.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		seal.position = Vector3(-0.2, 0.012, 0.2)
-		flag.add_child(seal)
+	# Mobile visual pass: the owner's badge (portrait in a ring of the owner's
+	# colour) floats upright over the tile's outer edge, always facing the
+	# camera and drawn over buildings, so ownership reads at a glance on a
+	# phone - not only through the colour of a thin frame.
+	var badge_tex := owner_badge_texture(seat)
+	if badge_tex:
+		var badge := Sprite3D.new()
+		badge.name = "OwnerBadge"
+		badge.texture = badge_tex
+		badge.pixel_size = OWNER_BADGE_SIZE / badge_tex.get_width()
+		badge.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		badge.shaded = false
+		badge.no_depth_test = true
+		badge.render_priority = 3
+		badge.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
+		badge.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		badge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Outer edge of the tile (away from the street), above the lot.
+		var tile_root: Node3D = _tiles[_lot_tile[pid]]
+		var inward := BoardLayout.inward(_lot_tile[pid])
+		badge.position = tile_root.position + Vector3(-inward.x, 0, -inward.z) * 0.3 + Vector3(0, 0.46, 0)
+		add_child(badge)
+		_owner_badges[pid] = badge
+		badge.scale = Vector3.ONE * 0.01
+		create_tween().tween_property(badge, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_owner_marks[pid] = flag
 	flag.scale = Vector3.ONE * 0.01
 	create_tween().tween_property(flag, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -423,8 +601,13 @@ func show_level(pid: String, level: int, seat: int, animate := true) -> void:
 		# would be auto-renamed, so the next upgrade could not find it.
 		lot.remove_child(old)
 		old.queue_free()
+	var old_shadow := lot.get_node_or_null("ContactShadow")
+	if old_shadow:
+		lot.remove_child(old_shadow)
+		old_shadow.queue_free()
 	if level <= 0:
 		return
+	lot.add_child(contact_shadow_node(0.3 + 0.04 * level))
 	var did: String = config.spaces[_lot_tile[pid]]["district_id"]
 	var b := MeshInstance3D.new()
 	b.name = "Building"
