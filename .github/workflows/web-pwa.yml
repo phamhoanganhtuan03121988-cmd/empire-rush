@@ -27,7 +27,7 @@ concurrency:
 jobs:
   web-build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
 
@@ -57,7 +57,13 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.56.1
           npx playwright install --with-deps chromium
 
+      # Pixel ratio 1 on CI: the runner renders WebGL on its CPU, and a x3
+      # canvas makes every frame (and so every step) several times slower.
+      # The layout is the same 390x844 pt; x3 is run locally
+      # (docs/IOS_WEB_TEST_REPORT.md).
       - name: Browser end-to-end test (Chromium, iPhone viewport, touch)
+        env:
+          E2E_DPR: "1"
         run: node tests_web/e2e_web.mjs build/web-public web-e2e
 
       - name: Responsive check (iPhone SE / 15 / 15 Pro Max / landscape / iPad mini)

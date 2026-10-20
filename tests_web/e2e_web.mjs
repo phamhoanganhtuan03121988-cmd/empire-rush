@@ -169,7 +169,7 @@ try {
   const names = s.cards.map((c) => `${c.name}:${c.fits ? 'fits' : 'CUT'}`);
   check(s.cards.every((c) => c.fits), 'player names fit their cards', names.join(', '));
   if (await waitRect('hud:EndTurn', 30000)) check(await tap('hud:EndTurn'), 'tap KẾT THÚC LƯỢT');
-  s = await waitState((x) => x.seat === 0 && x.phase === 'AwaitRoll' && x.idle, 120000);
+  s = await waitState((x) => x.seat === 0 && x.phase === 'AwaitRoll' && x.idle, 300000);
   check(s.seat === 0 && s.phase === 'AwaitRoll', "bot played; the human's turn again (autosave point)", `round ${s.round}`);
   const owned = s.owned_by_human;
   check(s.saved_match && s.saved_round === s.round, 'match autosaved at this turn', `saved round ${s.saved_round}, log ${s.saved_log}`);

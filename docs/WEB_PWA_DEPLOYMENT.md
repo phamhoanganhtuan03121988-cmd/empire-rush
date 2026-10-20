@@ -91,7 +91,7 @@ Each export writes a new `CACHE_VERSION` into the service worker, so a phone wit
 To force it: close the app from the app switcher and open it again while online.
 
 ## 4. Install on iPhone (Thêm vào Màn hình chính)
-1. Mở **Safari** (bắt buộc là Safari; Chrome trên iPhone không cài được PWA theo cách này ở mọi phiên bản iOS) và vào link ở trên.
+1. Mở **Safari** (cách chắc chắn nhất; trình duyệt khác trên iPhone chỉ hỗ trợ từ iOS 16.4) và vào link ở trên.
 2. Chờ game tải xong lần đầu (cần mạng; khoảng 10–15 MB tải về).
 3. Bấm nút **Chia sẻ** (ô vuông có mũi tên lên) → **Thêm vào MH chính** → **Thêm**.
 4. Mở game bằng biểu tượng **EMPIRE RUSH** trên màn hình chính: game chạy toàn màn hình, không có thanh địa chỉ.
