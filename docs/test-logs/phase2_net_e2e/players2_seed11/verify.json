@@ -1,0 +1,99 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 10,
+    "duplicates": 20,
+    "fake_state": 0,
+    "invalid": 16,
+    "reconnects": 2,
+    "voluntary_drops": 0
+  },
+  "client_stats": [
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 20,
+        "fake_state": 0,
+        "invalid": 0,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 104,
+      "seat": 0,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {},
+        "gaps": 0,
+        "hash_checks": 207,
+        "hash_mismatch": 0,
+        "rejections": {},
+        "resends": 0,
+        "snapshots": 207
+      }
+    },
+    {
+      "chaos": {
+        "connect_attempts": 5,
+        "duplicates": 0,
+        "fake_state": 0,
+        "invalid": 16,
+        "reconnects": 1,
+        "voluntary_drops": 0
+      },
+      "commands_sent": 101,
+      "seat": 1,
+      "stats": {
+        "duplicate_events": 0,
+        "errors": {
+          "BAD_REQUEST": 2,
+          "PAYLOAD_TOO_LARGE": 3,
+          "PROTOCOL_UNSUPPORTED": 3
+        },
+        "gaps": 0,
+        "hash_checks": 207,
+        "hash_mismatch": 0,
+        "rejections": {
+          "BAD_REQUEST": 2,
+          "STALE_STATE": 5,
+          "UNAUTHENTICATED": 2
+        },
+        "resends": 0,
+        "snapshots": 207
+      }
+    }
+  ],
+  "commands_applied": 204,
+  "failures": [],
+  "journal_entries": 205,
+  "pass": true,
+  "server": {
+    "end_reason": "round_cap",
+    "policy": {
+      "bot_think_ms": 1200,
+      "hold_ms": 20000,
+      "on_expiry": "bot"
+    },
+    "restarts": 1,
+    "rounds": 40,
+    "server_ms": 269760,
+    "state_version": 206,
+    "stats": {
+      "bot_commands": 0,
+      "bot_takeovers": 0,
+      "commands": 229,
+      "duplicates": 20,
+      "frame_errors": {
+        "BAD_REQUEST": 2,
+        "PAYLOAD_TOO_LARGE": 3,
+        "PROTOCOL_UNSUPPORTED": 3
+      },
+      "frames_in": 648,
+      "frames_out": 1058,
+      "rejected": {
+        "BAD_REQUEST": 2,
+        "STALE_STATE": 5
+      },
+      "seat_reclaims": 0,
+      "snapshots": 409
+    }
+  }
+}

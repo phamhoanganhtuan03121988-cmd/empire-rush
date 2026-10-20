@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[server 0 ms] LISTENING port=18765 players=4 seed=13 time_scale=10.0 policy={ "hold_ms": 20000, "on_expiry": "timers", "bot_think_ms": 1200 }
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[server 0 ms] RESUMED entries=42 state_version=44 hash=ae984aa81c14
+[server 102650 ms] LISTENING port=18765 players=4 seed=13 time_scale=10.0 policy={ "hold_ms": 20000, "on_expiry": "timers", "bot_think_ms": 1200 }
+[server 171390 ms] LINK_CLOSED 1
+[server 679300 ms] MATCH_ENDED reason=round_cap state_version=268
+[server 679570 ms] LINK_CLOSED 2
+[server 679570 ms] LINK_CLOSED 3
+[server 679570 ms] LINK_CLOSED 4
+[server 679570 ms] LINK_CLOSED 5
+[server 684340 ms] FINISHED

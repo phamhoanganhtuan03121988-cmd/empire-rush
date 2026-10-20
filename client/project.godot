@@ -10,12 +10,16 @@ config_version=5
 config/name="Empire Rush"
 config/description="Mobile-first online strategy-party board game."
 config/version="0.0.1"
+run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://assets/branding/icon_1024.png"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/size/window_width_override=405
+window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=6
@@ -23,4 +27,12 @@ window/handheld/orientation=6
 [rendering]
 
 renderer/rendering_method="mobile"
+; Web (WebGL 2, Safari/iOS): the Compatibility renderer.
+renderer/rendering_method.web="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+
+[debug]
+
+; Also on iOS/Android (default is desktop only): user://logs/godot.log is
+; reachable through the Files app and is the first crash clue on a device.
+file_logging/enable_file_logging=true

@@ -1,0 +1,29 @@
+{
+  "chaos": {
+    "connect_attempts": 5,
+    "duplicates": 20,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 1,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 104,
+  "frames_dropped_local": 0,
+  "frames_sent": 331,
+  "invalid_kinds": [],
+  "last_seq": 571,
+  "public_hash": "b7e784a2d3b1eec9e724c9769e583bbae166e22ca29c17bffc7aaadbc55e81c7",
+  "seat": 0,
+  "snapshot_hash": "b7e784a2d3b1eec9e724c9769e583bbae166e22ca29c17bffc7aaadbc55e81c7",
+  "state_version": 206,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 207,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 207
+  }
+}

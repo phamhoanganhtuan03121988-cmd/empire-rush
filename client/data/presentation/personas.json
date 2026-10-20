@@ -1,0 +1,21 @@
+{
+  "_comment": "Phase 5.1 cosmetic personas: name, portrait (assets/ui/portraits/<id>.svg, drawn by scripts/art/gen_portraits.py), signature colour and a one-line bio. Presentation only: no rules data, no ability, no bonus. 'pawn' is the preferred pawn colour (0 red, 1 blue, 2 green, 3 orange); the player may change it.",
+  "personas": [
+    {"id": "khoi", "name": "Minh Khôi", "bio": "Doanh nhân trẻ, thích những toà tháp chọc trời.", "color": "#2c4f8f", "pawn": 1,
+     "skin": "warm", "hair": "side_part", "hair_color": "#2a1d17", "outfit": "suit", "outfit_color": "#1c2c4c"},
+    {"id": "ha", "name": "Thu Hà", "bio": "Nhà thiết kế áo dài, mê những con phố đèn lồng.", "color": "#b8323f", "pawn": 0,
+     "skin": "light", "hair": "long", "hair_color": "#1e1512", "outfit": "ao_dai", "outfit_color": "#c8303d", "accessory": "earrings"},
+    {"id": "tu", "name": "Bác Tư", "bio": "Chủ tiệm trà lâu năm, ai trong phố cũng quen.", "color": "#8a6a3b", "pawn": 3,
+     "skin": "tan", "hair": "older", "hair_color": "#9a958c", "outfit": "cardigan", "outfit_color": "#7a5232", "accessory": "glasses", "mustache": true},
+    {"id": "chi", "name": "Lan Chi", "bio": "Môi giới nhà đất, nhớ giá từng con hẻm.", "color": "#16857a", "pawn": 2,
+     "skin": "light", "hair": "bob", "hair_color": "#3a2418", "outfit": "blazer", "outfit_color": "#13786d", "accent": "#f5b83d"},
+    {"id": "duc", "name": "Đức Anh", "bio": "Lập trình viên khởi nghiệp, làm việc bên bờ sông.", "color": "#5b4bb5", "pawn": 1,
+     "skin": "warm", "hair": "curly", "hair_color": "#24180f", "outfit": "hoodie", "outfit_color": "#4a3f8f", "accessory": "headphones", "accent": "#f5b83d"},
+    {"id": "phuong", "name": "Mai Phương", "bio": "Kiến trúc sư, vẽ lại cả khu phố Hoa.", "color": "#c46a1c", "pawn": 3,
+     "skin": "warm", "hair": "bun", "hair_color": "#2e1c14", "outfit": "architect", "outfit_color": "#e07b22", "accessory": "pencil"},
+    {"id": "long", "name": "Hoàng Long", "bio": "Chủ tàu ở bến cảng, giọng nói to như còi tàu.", "color": "#2f6b3a", "pawn": 2,
+     "skin": "deep", "hair": "cap", "hair_color": "#1a120e", "outfit": "jacket", "outfit_color": "#4d5f2e", "accent": "#2f80ed", "beard": true},
+    {"id": "vy", "name": "Ngọc Vy", "bio": "Quản lý khu nghỉ dưỡng, biết rõ mùa du lịch.", "color": "#d9466f", "pawn": 0,
+     "skin": "tan", "hair": "ponytail", "hair_color": "#3b2216", "outfit": "resort", "outfit_color": "#e8735f", "accessory": "sunglasses"}
+  ]
+}

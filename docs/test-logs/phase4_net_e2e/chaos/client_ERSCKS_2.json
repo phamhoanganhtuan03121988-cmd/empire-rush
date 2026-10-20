@@ -1,0 +1,32 @@
+{
+  "chaos": {
+    "connect_attempts": 6,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 2,
+    "voluntary_drops": 1
+  },
+  "commands_sent": 53,
+  "frames_dropped_local": 0,
+  "frames_sent": 255,
+  "invalid_kinds": [],
+  "last_seq": 710,
+  "public_hash": "4c949c3da4086ca5f134878fd8b229a1a0f699b47550a0df5f14a919efd2c242",
+  "room_code": "ERSCKS",
+  "seat": 2,
+  "snapshot_hash": "4c949c3da4086ca5f134878fd8b229a1a0f699b47550a0df5f14a919efd2c242",
+  "state_version": 239,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 200,
+    "hash_mismatch": 0,
+    "rejections": {
+      "STALE_STATE": 3
+    },
+    "resends": 0,
+    "snapshots": 200
+  }
+}

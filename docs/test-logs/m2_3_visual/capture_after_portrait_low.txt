@@ -1,0 +1,8 @@
+CAPTURE3D 01_buy_prompt scene_draw_calls=38 scene_objects=38 scene_primitives=77210 shadow_draw_calls=0
+CAPTURE 01_buy_prompt draw_calls=91 objects=320 primitives=81818 board_area_pct=31.0 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.1
+CAPTURE3D 02_auction scene_draw_calls=39 scene_objects=39 scene_primitives=77212 shadow_draw_calls=0
+CAPTURE 02_auction draw_calls=92 objects=268 primitives=81714 board_area_pct=31.0 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.1
+CAPTURE3D 03_upgrade_menu scene_draw_calls=41 scene_objects=41 scene_primitives=77216 shadow_draw_calls=0
+CAPTURE 03_upgrade_menu draw_calls=99 objects=251 primitives=80828 board_area_pct=31.0 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.1
+CAPTURE3D 04_results scene_draw_calls=37 scene_objects=37 scene_primitives=77162 shadow_draw_calls=0
+CAPTURE 04_results draw_calls=99 objects=248 primitives=81952 board_area_pct=31.0 min_tile_px=45.8 board_w_pct=88.3 board_h_pct=35.1

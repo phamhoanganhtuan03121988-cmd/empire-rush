@@ -1,0 +1,24 @@
+{
+  "code": "EWQGUJ",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 483772088,
+  "token_hashes": [
+    "ce6e2b80d5e5bec02ff1a3ae9f913c59dcca550afc6cd6bf10e02f6117e771a0",
+    "e55556a295ceafff39681f83e3405cc0f410df3dc398910c5e61d39a2180af21"
+  ]
+}

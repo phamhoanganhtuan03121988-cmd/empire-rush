@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 93,
+  "frames_dropped_local": 0,
+  "frames_sent": 296,
+  "invalid_kinds": [],
+  "last_seq": 549,
+  "public_hash": "c5c1d0ce44a654a999d06ee90de8274a6aaad138545be04b4da96f1b9197afb7",
+  "room_code": "H3QJPK",
+  "seat": 0,
+  "snapshot_hash": "c5c1d0ce44a654a999d06ee90de8274a6aaad138545be04b4da96f1b9197afb7",
+  "state_version": 202,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 202,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 202
+  }
+}

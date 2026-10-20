@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 72,
+  "frames_dropped_local": 0,
+  "frames_sent": 288,
+  "invalid_kinds": [],
+  "last_seq": 632,
+  "public_hash": "9dc8cfc04b718711d02b6d07f22ccf316f662ba8b1babbce5f963a08dd56499c",
+  "room_code": "ZGHMXV",
+  "seat": 0,
+  "snapshot_hash": "9dc8cfc04b718711d02b6d07f22ccf316f662ba8b1babbce5f963a08dd56499c",
+  "state_version": 215,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 215,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 215
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "code": "KFADUU",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1008472321,
+  "token_hashes": [
+    "0d0f25d356d3b4493d8c4e7b180edf0387b2de23c82e7062e6ed089d7c6645fd",
+    "e32ac51180343cbc155a4192defc8e1a1b3fcfee9f378dbdc91b147064cadeee"
+  ]
+}

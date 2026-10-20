@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 110,
+  "frames_dropped_local": 0,
+  "frames_sent": 334,
+  "invalid_kinds": [],
+  "last_seq": 606,
+  "public_hash": "f4637dd7e018c38852ff502a75fecd5aad4c389f529222a5a678390ad8096abb",
+  "room_code": "4VANTZ",
+  "seat": 0,
+  "snapshot_hash": "f4637dd7e018c38852ff502a75fecd5aad4c389f529222a5a678390ad8096abb",
+  "state_version": 223,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 223,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 223
+  }
+}

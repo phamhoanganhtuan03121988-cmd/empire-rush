@@ -1,0 +1,448 @@
+{
+  "_status": "DRAFT - requires owner review",
+  "board_id": "board_v1",
+  "spaces": [
+    {
+      "space_id": "S00",
+      "index": 0,
+      "space_type": "START",
+      "presentation": {
+        "label": "Start"
+      }
+    },
+    {
+      "space_id": "S01",
+      "index": 1,
+      "space_type": "PROPERTY",
+      "property_id": "P_D1_1",
+      "district_id": "D1",
+      "presentation": {
+        "label": "Fish Lane"
+      }
+    },
+    {
+      "space_id": "S02",
+      "index": 2,
+      "space_type": "PROPERTY",
+      "property_id": "P_D1_2",
+      "district_id": "D1",
+      "presentation": {
+        "label": "Lantern Row"
+      }
+    },
+    {
+      "space_id": "S03",
+      "index": 3,
+      "space_type": "OPPORTUNITY",
+      "presentation": {
+        "label": "Opportunity"
+      }
+    },
+    {
+      "space_id": "S04",
+      "index": 4,
+      "space_type": "PROPERTY",
+      "property_id": "P_D1_3",
+      "district_id": "D1",
+      "presentation": {
+        "label": "Canal Steps"
+      }
+    },
+    {
+      "space_id": "S05",
+      "index": 5,
+      "space_type": "PROPERTY",
+      "property_id": "P_D2_1",
+      "district_id": "D2",
+      "presentation": {
+        "label": "Dockside"
+      }
+    },
+    {
+      "space_id": "S06",
+      "index": 6,
+      "space_type": "PROPERTY",
+      "property_id": "P_D2_2",
+      "district_id": "D2",
+      "presentation": {
+        "label": "Ferry Point"
+      }
+    },
+    {
+      "space_id": "S07",
+      "index": 7,
+      "space_type": "PROPERTY",
+      "property_id": "P_D2_3",
+      "district_id": "D2",
+      "presentation": {
+        "label": "Net Street"
+      }
+    },
+    {
+      "space_id": "S08",
+      "index": 8,
+      "space_type": "CITY_EVENT",
+      "presentation": {
+        "label": "City Event"
+      }
+    },
+    {
+      "space_id": "S09",
+      "index": 9,
+      "space_type": "PROPERTY",
+      "property_id": "P_D3_1",
+      "district_id": "D3",
+      "presentation": {
+        "label": "Willow Bank"
+      }
+    },
+    {
+      "space_id": "S10",
+      "index": 10,
+      "space_type": "PROPERTY",
+      "property_id": "P_D3_2",
+      "district_id": "D3",
+      "presentation": {
+        "label": "Bridge End"
+      }
+    },
+    {
+      "space_id": "S11",
+      "index": 11,
+      "space_type": "PROPERTY",
+      "property_id": "P_D3_3",
+      "district_id": "D3",
+      "presentation": {
+        "label": "Mill Court"
+      }
+    },
+    {
+      "space_id": "S12",
+      "index": 12,
+      "space_type": "REST",
+      "presentation": {
+        "label": "Rest / Inspection"
+      }
+    },
+    {
+      "space_id": "S13",
+      "index": 13,
+      "space_type": "PROPERTY",
+      "property_id": "P_D4_1",
+      "district_id": "D4",
+      "presentation": {
+        "label": "Lotus Park"
+      }
+    },
+    {
+      "space_id": "S14",
+      "index": 14,
+      "space_type": "PROPERTY",
+      "property_id": "P_D4_2",
+      "district_id": "D4",
+      "presentation": {
+        "label": "Tea Terrace"
+      }
+    },
+    {
+      "space_id": "S15",
+      "index": 15,
+      "space_type": "PROPERTY",
+      "property_id": "P_D4_3",
+      "district_id": "D4",
+      "presentation": {
+        "label": "Orchid Walk"
+      }
+    },
+    {
+      "space_id": "S16",
+      "index": 16,
+      "space_type": "OPPORTUNITY",
+      "presentation": {
+        "label": "Opportunity"
+      }
+    },
+    {
+      "space_id": "S17",
+      "index": 17,
+      "space_type": "PROPERTY",
+      "property_id": "P_D5_1",
+      "district_id": "D5",
+      "presentation": {
+        "label": "Sunset Pier"
+      }
+    },
+    {
+      "space_id": "S18",
+      "index": 18,
+      "space_type": "PROPERTY",
+      "property_id": "P_D5_2",
+      "district_id": "D5",
+      "presentation": {
+        "label": "Palm Bay"
+      }
+    },
+    {
+      "space_id": "S19",
+      "index": 19,
+      "space_type": "PROPERTY",
+      "property_id": "P_D5_3",
+      "district_id": "D5",
+      "presentation": {
+        "label": "Coral Strand"
+      }
+    },
+    {
+      "space_id": "S20",
+      "index": 20,
+      "space_type": "CITY_EVENT",
+      "presentation": {
+        "label": "City Event"
+      }
+    },
+    {
+      "space_id": "S21",
+      "index": 21,
+      "space_type": "PROPERTY",
+      "property_id": "P_D6_1",
+      "district_id": "D6",
+      "presentation": {
+        "label": "Exchange Plaza"
+      }
+    },
+    {
+      "space_id": "S22",
+      "index": 22,
+      "space_type": "PROPERTY",
+      "property_id": "P_D6_2",
+      "district_id": "D6",
+      "presentation": {
+        "label": "Bank Tower"
+      }
+    },
+    {
+      "space_id": "S23",
+      "index": 23,
+      "space_type": "PROPERTY",
+      "property_id": "P_D6_3",
+      "district_id": "D6",
+      "presentation": {
+        "label": "Capital Square"
+      }
+    },
+    {
+      "space_id": "S24",
+      "index": 24,
+      "space_type": "SPECIAL",
+      "presentation": {
+        "label": "Wealth Tax"
+      }
+    },
+    {
+      "space_id": "S25",
+      "index": 25,
+      "space_type": "PROPERTY",
+      "property_id": "P_D7_1",
+      "district_id": "D7",
+      "presentation": {
+        "label": "Crown Spire"
+      }
+    },
+    {
+      "space_id": "S26",
+      "index": 26,
+      "space_type": "PROPERTY",
+      "property_id": "P_D7_2",
+      "district_id": "D7",
+      "presentation": {
+        "label": "Sky Garden"
+      }
+    },
+    {
+      "space_id": "S27",
+      "index": 27,
+      "space_type": "PROPERTY",
+      "property_id": "P_D7_3",
+      "district_id": "D7",
+      "presentation": {
+        "label": "Imperial Tower"
+      }
+    }
+  ],
+  "districts": [
+    {
+      "district_id": "D1",
+      "name": "Old Market",
+      "tier": 1,
+      "tags": []
+    },
+    {
+      "district_id": "D2",
+      "name": "Harbor Quarter",
+      "tier": 2,
+      "tags": [
+        "tourist"
+      ]
+    },
+    {
+      "district_id": "D3",
+      "name": "Riverside",
+      "tier": 3,
+      "tags": []
+    },
+    {
+      "district_id": "D4",
+      "name": "Garden District",
+      "tier": 4,
+      "tags": []
+    },
+    {
+      "district_id": "D5",
+      "name": "Beach Resort",
+      "tier": 5,
+      "tags": [
+        "tourist"
+      ]
+    },
+    {
+      "district_id": "D6",
+      "name": "Financial Center",
+      "tier": 6,
+      "tags": []
+    },
+    {
+      "district_id": "D7",
+      "name": "Skyline Heights",
+      "tier": 7,
+      "tags": []
+    }
+  ],
+  "properties": [
+    {
+      "property_id": "P_D1_1",
+      "district_id": "D1",
+      "space_id": "S01",
+      "name": "Fish Lane"
+    },
+    {
+      "property_id": "P_D1_2",
+      "district_id": "D1",
+      "space_id": "S02",
+      "name": "Lantern Row"
+    },
+    {
+      "property_id": "P_D1_3",
+      "district_id": "D1",
+      "space_id": "S04",
+      "name": "Canal Steps"
+    },
+    {
+      "property_id": "P_D2_1",
+      "district_id": "D2",
+      "space_id": "S05",
+      "name": "Dockside"
+    },
+    {
+      "property_id": "P_D2_2",
+      "district_id": "D2",
+      "space_id": "S06",
+      "name": "Ferry Point"
+    },
+    {
+      "property_id": "P_D2_3",
+      "district_id": "D2",
+      "space_id": "S07",
+      "name": "Net Street"
+    },
+    {
+      "property_id": "P_D3_1",
+      "district_id": "D3",
+      "space_id": "S09",
+      "name": "Willow Bank"
+    },
+    {
+      "property_id": "P_D3_2",
+      "district_id": "D3",
+      "space_id": "S10",
+      "name": "Bridge End"
+    },
+    {
+      "property_id": "P_D3_3",
+      "district_id": "D3",
+      "space_id": "S11",
+      "name": "Mill Court"
+    },
+    {
+      "property_id": "P_D4_1",
+      "district_id": "D4",
+      "space_id": "S13",
+      "name": "Lotus Park"
+    },
+    {
+      "property_id": "P_D4_2",
+      "district_id": "D4",
+      "space_id": "S14",
+      "name": "Tea Terrace"
+    },
+    {
+      "property_id": "P_D4_3",
+      "district_id": "D4",
+      "space_id": "S15",
+      "name": "Orchid Walk"
+    },
+    {
+      "property_id": "P_D5_1",
+      "district_id": "D5",
+      "space_id": "S17",
+      "name": "Sunset Pier"
+    },
+    {
+      "property_id": "P_D5_2",
+      "district_id": "D5",
+      "space_id": "S18",
+      "name": "Palm Bay"
+    },
+    {
+      "property_id": "P_D5_3",
+      "district_id": "D5",
+      "space_id": "S19",
+      "name": "Coral Strand"
+    },
+    {
+      "property_id": "P_D6_1",
+      "district_id": "D6",
+      "space_id": "S21",
+      "name": "Exchange Plaza"
+    },
+    {
+      "property_id": "P_D6_2",
+      "district_id": "D6",
+      "space_id": "S22",
+      "name": "Bank Tower"
+    },
+    {
+      "property_id": "P_D6_3",
+      "district_id": "D6",
+      "space_id": "S23",
+      "name": "Capital Square"
+    },
+    {
+      "property_id": "P_D7_1",
+      "district_id": "D7",
+      "space_id": "S25",
+      "name": "Crown Spire"
+    },
+    {
+      "property_id": "P_D7_2",
+      "district_id": "D7",
+      "space_id": "S26",
+      "name": "Sky Garden"
+    },
+    {
+      "property_id": "P_D7_3",
+      "district_id": "D7",
+      "space_id": "S27",
+      "name": "Imperial Tower"
+    }
+  ]
+}

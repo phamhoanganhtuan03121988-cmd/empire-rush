@@ -1,0 +1,13 @@
+{
+ "_note": "Phase 3 experiment P3-SEAT-v1: seat-order compensation candidates. Experiment-only options; balance.json (DRAFT v3) is NOT changed. Paired seeds: every variant plays the same seeds.",
+ "players": [2, 3, 4],
+ "matches": {"2": 3000, "3": 3000, "4": 3000},
+ "seed_base": 3000000,
+ "variants": [
+  {"name": "V0 baseline v3"},
+  {"name": "V1 zero-sum cash small", "seat_cash_offsets": {"2": [-25, 25], "3": [-40, 0, 40], "4": [-45, -15, 15, 45]}},
+  {"name": "V2 zero-sum cash large", "seat_cash_offsets": {"2": [-50, 50], "3": [-80, 0, 80], "4": [-90, -30, 30, 90]}},
+  {"name": "V3 later seats +30 per seat (budget grows)", "seat_cash_offsets": {"2": [0, 30], "3": [0, 30, 60], "4": [0, 30, 60, 90]}},
+  {"name": "V4 staggered start squares", "seat_start_positions": {"2": [0, 2], "3": [0, 2, 4], "4": [0, 2, 4, 6]}}
+ ]
+}

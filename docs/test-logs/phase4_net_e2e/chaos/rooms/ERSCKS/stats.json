@@ -1,0 +1,16 @@
+{
+  "bot_commands": 9,
+  "bot_takeovers": 1,
+  "commands": 237,
+  "duplicates": 12,
+  "frame_errors": {},
+  "frames_in": 1565,
+  "frames_out": 2458,
+  "rejected": {
+    "BAD_REQUEST": 2,
+    "STALE_STATE": 8,
+    "WRONG_PHASE": 2
+  },
+  "seat_reclaims": 1,
+  "snapshots": 1327
+}

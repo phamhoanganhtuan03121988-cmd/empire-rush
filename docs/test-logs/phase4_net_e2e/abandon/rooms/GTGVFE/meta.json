@@ -1,0 +1,24 @@
+{
+  "code": "GTGVFE",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 20000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 80199859,
+  "token_hashes": [
+    "8743e8aba1acc7cb61b388711b493487df7db374ce043450e4d38854d5b196cf",
+    "11fad364a8180a6edc40a74d20ad420dff4bbdf4e1f6b1edeb2c536020a466fc"
+  ]
+}

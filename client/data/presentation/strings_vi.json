@@ -1,0 +1,192 @@
+{
+  "_note": "DRAFT Vietnamese display text for DRAFT rules content (owner review pending). Presentation only; rules data unchanged.",
+  "content": {
+    "TYCOON": {
+      "name": "Doanh Nhân",
+      "short": "Doanh Nhân"
+    },
+    "INVESTOR": {
+      "name": "Nhà Đầu Tư",
+      "short": "Đầu Tư"
+    },
+    "NEGOTIATOR": {
+      "name": "Chuyên Gia Đàm Phán",
+      "short": "Đàm Phán"
+    },
+    "TOURISM_BOOM": {
+      "title": "Bùng Nổ Du Lịch",
+      "text": "Tiền thuê ở các quận du lịch +50% trong một vòng."
+    },
+    "CITY_GRANT": {
+      "title": "Tài Trợ Thành Phố",
+      "text": "Nhận 100 RC."
+    },
+    "EXPRESS_TRAIN": {
+      "title": "Tàu Tốc Hành",
+      "text": "Đi thẳng tới Xuất Phát và nhận thưởng."
+    },
+    "UPGRADE_SUBSIDY": {
+      "title": "Trợ Giá Xây Dựng",
+      "text": "Lần nâng cấp tiếp theo trong 2 vòng giảm 50%."
+    },
+    "MARKET_DOWNTURN": {
+      "title": "Khủng Hoảng Thị Trường",
+      "text": "Trả 40 RC cho mỗi công trình từ cấp 2 trở lên."
+    },
+    "PROPERTY_REPAIRS": {
+      "title": "Sửa Chữa Công Trình",
+      "text": "Trả 20 RC cho mỗi cấp công trình bạn sở hữu."
+    },
+    "TRAFFIC_FINE": {
+      "title": "Phạt Giao Thông",
+      "text": "Nộp 50 RC cho ngân hàng."
+    },
+    "BLACKOUT": {
+      "title": "Mất Điện",
+      "text": "Đất của bạn thu tiền thuê −50% trong một vòng."
+    },
+    "SMART_INVESTMENT": {
+      "title": "Đầu Tư Thông Minh",
+      "text": "Trả 100 RC: 50% cơ hội nhận 250 RC ở lượt sau."
+    },
+    "SMART_INVESTMENT.INVEST": {
+      "label": "Đầu tư 100 RC"
+    },
+    "SMART_INVESTMENT.DECLINE": {
+      "label": "Bỏ qua"
+    },
+    "RENT_INSURANCE": {
+      "title": "Bảo Hiểm Tiền Thuê",
+      "text": "Trả 60 RC: trong 2 vòng, tiền thuê bạn trả tối đa 100 RC."
+    },
+    "RENT_INSURANCE.BUY": {
+      "label": "Mua bảo hiểm"
+    },
+    "RENT_INSURANCE.DECLINE": {
+      "label": "Bỏ qua"
+    },
+    "PORTFOLIO_BONUS": {
+      "title": "Thưởng Danh Mục",
+      "text": "Chọn nhận 60 RC, hoặc 20 RC cho mỗi thửa đất."
+    },
+    "PORTFOLIO_BONUS.FLAT": {
+      "label": "Nhận 60 RC"
+    },
+    "PORTFOLIO_BONUS.PER_PROPERTY": {
+      "label": "20 RC mỗi thửa đất"
+    },
+    "CHARITY_GALA": {
+      "title": "Dạ Tiệc Từ Thiện",
+      "text": "Góp 50 RC: lần trả tiền thuê kế tiếp trong 2 vòng giảm một nửa."
+    },
+    "CHARITY_GALA.DONATE": {
+      "label": "Góp 50 RC"
+    },
+    "CHARITY_GALA.DECLINE": {
+      "label": "Bỏ qua"
+    },
+    "POPUP_MARKET": {
+      "title": "Chợ Phiên",
+      "text": "Hai lựa chọn với kết quả cố định."
+    },
+    "POPUP_MARKET.SELL_NOW": {
+      "label": "Nhận 60 RC ngay"
+    },
+    "POPUP_MARKET.STOCK_UP": {
+      "label": "Trả 40, nhận 120 lượt sau"
+    },
+    "STREET_FESTIVAL": {
+      "title": "Lễ Hội Đường Phố",
+      "text": "Hai lựa chọn với kết quả cố định."
+    },
+    "STREET_FESTIVAL.SPONSOR": {
+      "label": "Nhận 50 RC"
+    },
+    "STREET_FESTIVAL.HOST": {
+      "label": "15 RC mỗi thửa (tối đa 150)"
+    },
+    "RENOVATION_GRANT": {
+      "title": "Quỹ Cải Tạo",
+      "text": "Hai lựa chọn với kết quả cố định."
+    },
+    "RENOVATION_GRANT.GRANT": {
+      "label": "Nâng cấp kế tiếp −50%"
+    },
+    "RENOVATION_GRANT.CASH": {
+      "label": "Nhận 40 RC"
+    },
+    "BILLBOARD_DEAL": {
+      "title": "Hợp Đồng Quảng Cáo",
+      "text": "Hai lựa chọn với kết quả cố định."
+    },
+    "BILLBOARD_DEAL.SIGN": {
+      "label": "Nhận 90 RC, thuê −25% 1 vòng"
+    },
+    "BILLBOARD_DEAL.PASS": {
+      "label": "Nhận 30 RC"
+    },
+    "P_D1_1": {
+      "name": "Ngõ Cá"
+    },
+    "P_D1_2": {
+      "name": "Phố Đèn Lồng"
+    },
+    "P_D1_3": {
+      "name": "Bến Kênh"
+    },
+    "P_D2_1": {
+      "name": "Bến Tàu"
+    },
+    "P_D2_2": {
+      "name": "Mũi Phà"
+    },
+    "P_D2_3": {
+      "name": "Phố Lưới"
+    },
+    "P_D3_1": {
+      "name": "Bờ Liễu"
+    },
+    "P_D3_2": {
+      "name": "Đầu Cầu"
+    },
+    "P_D3_3": {
+      "name": "Sân Cối Xay"
+    },
+    "P_D4_1": {
+      "name": "Công Viên Sen"
+    },
+    "P_D4_2": {
+      "name": "Đồi Trà"
+    },
+    "P_D4_3": {
+      "name": "Lối Lan"
+    },
+    "P_D5_1": {
+      "name": "Cầu Hoàng Hôn"
+    },
+    "P_D5_2": {
+      "name": "Vịnh Cọ"
+    },
+    "P_D5_3": {
+      "name": "Bãi San Hô"
+    },
+    "P_D6_1": {
+      "name": "Quảng Trường Giao Dịch"
+    },
+    "P_D6_2": {
+      "name": "Tháp Ngân Hàng"
+    },
+    "P_D6_3": {
+      "name": "Quảng Trường Vốn"
+    },
+    "P_D7_1": {
+      "name": "Tháp Vương Miện"
+    },
+    "P_D7_2": {
+      "name": "Vườn Trên Mây"
+    },
+    "P_D7_3": {
+      "name": "Tháp Hoàng Gia"
+    }
+  }
+}

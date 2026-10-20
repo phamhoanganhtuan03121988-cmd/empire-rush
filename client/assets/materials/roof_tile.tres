@@ -1,0 +1,19 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/roof_tile_albedo.png" id="1_pl5p0"]
+[ext_resource type="Texture2D" path="res://assets/textures/roof_tile_normal.png" id="2_nemga"]
+
+[resource]
+resource_name = "roof_tile"
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("1_pl5p0")
+roughness = 0.72
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("2_nemga")
+uv1_scale = Vector3(4, 4, 4)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 4.0
+uv1_world_triplanar = true
+texture_filter = 5

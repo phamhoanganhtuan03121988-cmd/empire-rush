@@ -1,0 +1,12 @@
+GitHub Actions workflow "tests" (.github/workflows/tests.yml), run #1
+URL: https://github.com/phamhoanganhtuan03121988-cmd/empire-rush/actions/runs/39106251564
+Job: godot-tests (id 117612611545), runner ubuntu-24.04, event push, head 80fb078fb0a855c2b45619e62e41da1ffa5f8526
+Steps: Set up job / checkout / cache (miss) / Install Godot (pinned, SHA-512 verified) / Run scripts/run_tests.sh / Upload test logs -> all "success"
+Excerpt from the job log (retrieved through the GitHub API):
+  07:03:35.90 4.7.2.stable.official.ed1daf0bf
+  07:03:43.53 RESULT: 184 passed, 0 failed
+  07:03:44.21 CHECKED 69 scripts, 0 failed
+  07:04:06.30 UI RESULT: 17 passed, 0 failed
+  07:04:07.06 Artifact test-logs uploaded (ID 12128751136)
+  07:04:09.24 Cache saved with key: godot-4.7.2-stable-linux-x86_64-aabe8cd9...
+Warning in the log: "Node.js 20 is deprecated ... actions/cache@v4, actions/checkout@v4, actions/upload-artifact@v4 ... forced to run on Node.js 24" (non-fatal).

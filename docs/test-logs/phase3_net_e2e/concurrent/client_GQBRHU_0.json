@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 21,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 84,
+  "frames_dropped_local": 0,
+  "frames_sent": 267,
+  "invalid_kinds": [],
+  "last_seq": 459,
+  "public_hash": "9676c46f318e326862727a84e04d5fbd17b859e796b03998ab00bf008fbf1872",
+  "room_code": "GQBRHU",
+  "seat": 0,
+  "snapshot_hash": "9676c46f318e326862727a84e04d5fbd17b859e796b03998ab00bf008fbf1872",
+  "state_version": 161,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 161,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 161
+  }
+}

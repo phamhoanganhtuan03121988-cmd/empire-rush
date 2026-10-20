@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 81,
+  "frames_dropped_local": 0,
+  "frames_sent": 307,
+  "invalid_kinds": [],
+  "last_seq": 637,
+  "public_hash": "6dce391861d862d3a742b0e3fb3943891517024c9ddd6b5b647d0e3c542f1aaa",
+  "room_code": "WQ7Y7H",
+  "seat": 2,
+  "snapshot_hash": "6dce391861d862d3a742b0e3fb3943891517024c9ddd6b5b647d0e3c542f1aaa",
+  "state_version": 225,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 225,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 225
+  }
+}

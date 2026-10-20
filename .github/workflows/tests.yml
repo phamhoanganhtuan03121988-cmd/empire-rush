@@ -1,0 +1,94 @@
+# Runs the full headless test suite (scripts/run_tests.sh) on every push and
+# pull request, and checks that a Public Release export contains no device
+# tools / telemetry while the Internal Test export keeps them.
+# Godot 4.7.2-stable (Linux x86_64) and its export template are downloaded
+# from the official release and checked against the published SHA-512
+# (scripts/ci/install_godot.sh, scripts/ci/install_templates.sh).
+# No iOS/macOS steps: iOS builds need macOS + Xcode (docs/device/IOS_BUILD_GUIDE.md).
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  godot-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Godot 4.7.2-stable
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/godot/4.7.2-stable
+          key: godot-4.7.2-stable-linux-x86_64-${{ hashFiles('scripts/ci/install_godot.sh') }}
+
+      - name: Install Godot (pinned, SHA-512 verified)
+        run: echo "GODOT=$(scripts/ci/install_godot.sh | tail -n 1)" >> "$GITHUB_ENV"
+
+      - name: Run scripts/run_tests.sh
+        env:
+          TEST_TIMEOUT_SECS: "600"
+        run: scripts/run_tests.sh
+
+      # M3 spike: 1 server + 4 client processes over real localhost WebSockets,
+      # with duplicates, hostile frames, a dropped client, a faked client
+      # state and a SIGKILL + journal restart of the server.
+      - name: Multi-process multiplayer test (scripts/run_net_e2e.sh)
+        run: scripts/run_net_e2e.sh logs/net_e2e
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-logs
+          path: logs/
+          if-no-files-found: warn
+
+  release-lock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Godot 4.7.2-stable
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/godot/4.7.2-stable
+          key: godot-4.7.2-stable-linux-x86_64-${{ hashFiles('scripts/ci/install_godot.sh') }}
+
+      - name: Cache export template (Linux release only)
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/godot/export_templates/4.7.2.stable
+          key: godot-templates-4.7.2-stable-linux-release-${{ hashFiles('scripts/ci/install_templates.sh') }}
+
+      - name: Install Godot and the Linux release template (SHA-512 verified)
+        run: |
+          echo "GODOT=$(scripts/ci/install_godot.sh | tail -n 1)" >> "$GITHUB_ENV"
+          scripts/ci/install_templates.sh
+
+      - name: Public Release has no device tools, Internal Test keeps them
+        run: scripts/ci/check_release_lock.sh
+
+      # iOS presets (no Team ID / signing in the repo), orientation, secret
+      # scan, asset register coverage.
+      - name: Repository and mobile readiness (static)
+        run: python3 scripts/ci/check_repo_readiness.py
+
+      - name: Upload release-lock logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-lock-logs
+          path: logs/
+          if-no-files-found: warn

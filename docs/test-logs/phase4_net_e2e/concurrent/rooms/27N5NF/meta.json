@@ -1,0 +1,24 @@
+{
+  "code": "27N5NF",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 1630641854,
+  "token_hashes": [
+    "2c4571c6f9d5e5b14447ba3ea9092be88efabf70b779466c2a7323835e90348b",
+    "1dcd98d06db54b71013aa415b66d4b33367e1b19285e4e02d99e5b60b1c42fde"
+  ]
+}

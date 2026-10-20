@@ -1,0 +1,24 @@
+{
+  "code": "9JBBAK",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 870918908,
+  "token_hashes": [
+    "bbb850f8dc6f97eccab39b537ad805a924a83dcc99faa4fcff350893ba0f9ae4",
+    "2c9248bbb676d65edb67038b33b7d26b65156540dc2075d44379865156aa42a0"
+  ]
+}

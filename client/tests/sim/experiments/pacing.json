@@ -1,0 +1,6 @@
+{"players": [2, 3, 4], "matches": {"2": 1000, "3": 1000, "4": 2000}, "seed_base": 500000,
+ "variants": [
+  {"name": "M1 baseline, time model m1 (fast)", "time_model": "m1"},
+  {"name": "M1 baseline, time model medium", "time_model": "medium"},
+  {"name": "M1 baseline, time model slow", "time_model": "slow"}
+ ]}

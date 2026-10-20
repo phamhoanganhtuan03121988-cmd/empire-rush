@@ -1,0 +1,6 @@
+== v3 shipped ==
+  2p n=1000  min med/p90 14.4/17.3  s/turn 11.8  rounds 36.5  end { "round_cap": 55.2, "last_solvent": 44.8 }  bk 44.8% (rd 33.0)  seats [54.7, 45.3] spread 9.4pp  chars { "NEGOTIATOR": 49.9, "TYCOON": 52.0, "INVESTOR": 48.0 }  winner!=book 3.1%  hoarder/focus 50.9%±3.1
+  3p n=1000  min med/p90 16.5/18.9  s/turn 11.4  rounds 29.7  end { "round_cap": 91.9, "last_solvent": 8.1 }  bk 41.6% (rd 26.0)  seats [39.0, 30.7, 30.3] spread 8.7pp  chars { "NEGOTIATOR": 30.0, "INVESTOR": 34.3, "TYCOON": 35.7 }  winner!=book 7.9%  hoarder/focus 33.6%±2.9
+  4p n=2000  min med/p90 18.2/20.5  s/turn 11.1  rounds 25.0  end { "round_cap": 99.1, "last_solvent": 0.9 }  bk 30.8% (rd 23.0)  seats [32.1, 27.3, 21.3, 19.3] spread 12.8pp  chars { "TYCOON": 24.1, "INVESTOR": 26.3, "NEGOTIATOR": 24.6 }  winner!=book 8.0%  hoarder/focus 24.1%±1.9
+FAILURES: 0  wall 103759 ms
+wrote /home/user/empire-rush/docs/test-logs/m1.2/seat_block_3000000.json

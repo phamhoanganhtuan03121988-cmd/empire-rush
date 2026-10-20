@@ -1,0 +1,249 @@
+{
+  "failures": 0,
+  "seed_base": 5000000,
+  "spec": "res://tests/sim/experiments/seat_baseline.json",
+  "variants": {
+    "M1 baseline": {
+      "definition": {
+        "name": "M1 baseline"
+      },
+      "groups": {
+        "2p": {
+          "avg_cash": {
+            "r10": 1099,
+            "r15": 1016,
+            "r20": 958,
+            "r25": 966,
+            "r5": 1200
+          },
+          "bankruptcy": {
+            "matches_pct": 1.9,
+            "per_match": 0.02,
+            "round_median": 23.0
+          },
+          "characters": {
+            "INVESTOR": 54.0,
+            "NEGOTIATOR": 46.9,
+            "TYCOON": 49.1
+          },
+          "comeback_pct": 45.4,
+          "end_pct": {
+            "last_solvent": 1.9,
+            "round_cap": 98.1
+          },
+          "fair_pct": 50.0,
+          "flows_per_turn": {
+            "ability": 1.6,
+            "auction": 4.1,
+            "bankruptcy": 0.1,
+            "card": 1.3,
+            "choice": 1.2,
+            "event": 0.7,
+            "liquidation": 1.2,
+            "opportunity": 3.6,
+            "payout": 2.6,
+            "purchase": 51.3,
+            "rent": 15.6,
+            "start_reward": 46.9,
+            "trade": 10.4,
+            "upgrade": 15.9,
+            "wealth_tax": 5.3
+          },
+          "focus_seat_ci95": 3.1,
+          "focus_seat_win_pct": 51.5,
+          "focus_seat_win_pct_if_ranked_by_book_value": 49.4,
+          "matches": 1000,
+          "minutes": {
+            "median": 9.9,
+            "p10": 8.4,
+            "p90": 11.7
+          },
+          "players": 2,
+          "rounds_mean": 25.0,
+          "seat_spread_pp": 11.0,
+          "seats": {
+            "seat0": {
+              "ci95": 3.1,
+              "props_round5": 2.85,
+              "win_pct": 55.5
+            },
+            "seat1": {
+              "ci95": 3.1,
+              "props_round5": 2.75,
+              "win_pct": 44.5
+            }
+          },
+          "sec_per_turn": 12.0,
+          "valuation": {
+            "others_cash_share_of_nw_pct": 38.5,
+            "winner_cash_share_of_nw_pct": 58.9,
+            "winner_changes_under_book_value_pct": 14.5,
+            "winner_has_most_cash_pct": 87.5
+          }
+        },
+        "3p": {
+          "avg_cash": {
+            "r10": 1211,
+            "r15": 1202,
+            "r20": 1237,
+            "r25": 1322,
+            "r5": 1229
+          },
+          "bankruptcy": {
+            "matches_pct": 12.0,
+            "per_match": 0.13,
+            "round_median": 24.0
+          },
+          "characters": {
+            "INVESTOR": 35.0,
+            "NEGOTIATOR": 33.1,
+            "TYCOON": 31.9
+          },
+          "comeback_pct": 67.0,
+          "end_pct": {
+            "last_solvent": 1.0,
+            "round_cap": 99.0
+          },
+          "fair_pct": 33.3,
+          "flows_per_turn": {
+            "ability": 1.5,
+            "auction": 3.4,
+            "bankruptcy": 0.6,
+            "card": 1.3,
+            "choice": 1.3,
+            "event": 0.6,
+            "liquidation": 1.4,
+            "opportunity": 3.3,
+            "payout": 2.8,
+            "purchase": 38.8,
+            "rent": 28.5,
+            "start_reward": 46.8,
+            "trade": 10.4,
+            "upgrade": 13.6,
+            "wealth_tax": 5.5
+          },
+          "focus_seat_ci95": 2.9,
+          "focus_seat_win_pct": 33.5,
+          "focus_seat_win_pct_if_ranked_by_book_value": 33.0,
+          "matches": 1000,
+          "minutes": {
+            "median": 14.3,
+            "p10": 12.4,
+            "p90": 16.5
+          },
+          "players": 3,
+          "rounds_mean": 25.0,
+          "seat_spread_pp": 8.3,
+          "seats": {
+            "seat0": {
+              "ci95": 3.0,
+              "props_round5": 2.77,
+              "win_pct": 35.5
+            },
+            "seat1": {
+              "ci95": 3.0,
+              "props_round5": 2.58,
+              "win_pct": 36.4
+            },
+            "seat2": {
+              "ci95": 2.8,
+              "props_round5": 2.3,
+              "win_pct": 28.1
+            }
+          },
+          "sec_per_turn": 11.5,
+          "valuation": {
+            "others_cash_share_of_nw_pct": 59.5,
+            "winner_cash_share_of_nw_pct": 71.9,
+            "winner_changes_under_book_value_pct": 17.2,
+            "winner_has_most_cash_pct": 81.8
+          }
+        },
+        "4p": {
+          "avg_cash": {
+            "r10": 1284,
+            "r15": 1342,
+            "r20": 1446,
+            "r25": 1589,
+            "r5": 1252
+          },
+          "bankruptcy": {
+            "matches_pct": 20.7,
+            "per_match": 0.25,
+            "round_median": 23.0
+          },
+          "characters": {
+            "INVESTOR": 27.4,
+            "NEGOTIATOR": 23.1,
+            "TYCOON": 24.5
+          },
+          "comeback_pct": 75.3,
+          "end_pct": {
+            "last_solvent": 0.1,
+            "round_cap": 99.9
+          },
+          "fair_pct": 25.0,
+          "flows_per_turn": {
+            "ability": 1.3,
+            "auction": 2.7,
+            "bankruptcy": 1.0,
+            "card": 1.2,
+            "choice": 1.2,
+            "event": 0.5,
+            "liquidation": 0.9,
+            "opportunity": 3.3,
+            "payout": 2.6,
+            "purchase": 30.5,
+            "rent": 35.7,
+            "start_reward": 46.7,
+            "trade": 8.1,
+            "upgrade": 10.5,
+            "wealth_tax": 5.6
+          },
+          "focus_seat_ci95": 1.9,
+          "focus_seat_win_pct": 25.8,
+          "focus_seat_win_pct_if_ranked_by_book_value": 25.4,
+          "matches": 2000,
+          "minutes": {
+            "median": 18.3,
+            "p10": 16.2,
+            "p90": 20.8
+          },
+          "players": 4,
+          "rounds_mean": 25.0,
+          "seat_spread_pp": 11.5,
+          "seats": {
+            "seat0": {
+              "ci95": 2.0,
+              "props_round5": 2.71,
+              "win_pct": 31.1
+            },
+            "seat1": {
+              "ci95": 2.0,
+              "props_round5": 2.5,
+              "win_pct": 27.3
+            },
+            "seat2": {
+              "ci95": 1.8,
+              "props_round5": 2.29,
+              "win_pct": 22.1
+            },
+            "seat3": {
+              "ci95": 1.7,
+              "props_round5": 2.09,
+              "win_pct": 19.6
+            }
+          },
+          "sec_per_turn": 11.1,
+          "valuation": {
+            "others_cash_share_of_nw_pct": 70.7,
+            "winner_cash_share_of_nw_pct": 78.5,
+            "winner_changes_under_book_value_pct": 12.2,
+            "winner_has_most_cash_pct": 84.2
+          }
+        }
+      }
+    }
+  },
+  "wall_time_ms": 92746
+}

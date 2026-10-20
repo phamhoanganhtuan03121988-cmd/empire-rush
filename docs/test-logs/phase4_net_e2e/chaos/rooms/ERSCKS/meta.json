@@ -1,0 +1,34 @@
+{
+  "code": "ERSCKS",
+  "format": 1,
+  "players": 4,
+  "policy": {
+    "hold_ms": 20000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    },
+    {
+      "character_id": "TYCOON",
+      "player_id": "p3"
+    }
+  ],
+  "seed": 742892775,
+  "token_hashes": [
+    "7a6df2acb418f4d708b2cdbd82164726569edbd85e8fdf96c8f6c5ffd10b85d1",
+    "840adeb12663b3ae8adc2005320ff6cfe7bfc827eaeb271d862b6fb07faf9782",
+    "a46cfdf64619e62f0c1f19c5c04ce093de01b9b34d00ea0f75676aede1530872",
+    "e869faafd2d095bd1d463b9ac98b3c39764b2db228e045d7e176c7aaf998de95"
+  ]
+}

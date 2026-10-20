@@ -1,0 +1,8 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SCRIPT ERROR: Invalid access to property or key 'state_version' on a base object of type 'Dictionary'.
+          at: NetClient.handle_frame (res://scripts/net/net_client.gd:91)
+          GDScript backtrace (most recent call first):
+              [0] handle_frame (res://scripts/net/net_client.gd:91)
+              [1] _process (res://tools/net/client_main.gd:94)
+[client 1] DONE version=246 hash=fa5dadd7c987

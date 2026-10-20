@@ -1,0 +1,91 @@
+{
+  "summary": {
+    "args": {
+      "idle": "3",
+      "matches": "1000",
+      "out": "/tmp/claude-0/-home-user-empire-rush/550d1413-894c-52c7-942f-285b47abf167/scratchpad/m12logs/v3_sim_1000_2p_summary.json",
+      "players": "2",
+      "seed": "300000",
+      "summary": "1"
+    },
+    "failures": {
+      "examples": [],
+      "invariant_errors": 0,
+      "rejections": 0,
+      "stuck": 0,
+      "total": 0
+    },
+    "groups": {
+      "2p": {
+        "avg_cash_per_player_at": {
+          "round1": 1500,
+          "round10": 1116,
+          "round15": 1043,
+          "round20": 1015,
+          "round25": 1057,
+          "round5": 1202
+        },
+        "bankruptcy": {
+          "matches_with_any_pct": 44.8,
+          "per_match": 0.45,
+          "round_mean": 32.5,
+          "round_median": 33.0
+        },
+        "comeback_pct": 49.6,
+        "duration_min": {
+          "max": 22.5,
+          "mean": 14.3,
+          "median": 14.5,
+          "min": 6.3,
+          "p90": 17.1
+        },
+        "end_reasons_pct": {
+          "last_solvent": 44.8,
+          "round_cap": 55.2
+        },
+        "fair_share_pct": 50.0,
+        "matches": 1000,
+        "per_match": {
+          "abilities": 2.65,
+          "auctions": 1.8,
+          "auctions_sold": 1.8,
+          "liquidations": 3.78,
+          "rent_paid": 3152.95,
+          "rescues": 1.38,
+          "timeouts": 10.98,
+          "trades_accepted": 2.1,
+          "trades_expired": 0.15,
+          "trades_proposed": 5.56,
+          "unowned_at_end": 5.72,
+          "upgrades": 23.61
+        },
+        "players": 2,
+        "rounds": {
+          "mean": 36.6,
+          "median": 40.0
+        },
+        "win_pct_by_character": {
+          "INVESTOR": {
+            "games": 667,
+            "win_pct": 49.9
+          },
+          "NEGOTIATOR": {
+            "games": 666,
+            "win_pct": 51.5
+          },
+          "TYCOON": {
+            "games": 667,
+            "win_pct": 48.6
+          }
+        },
+        "win_pct_by_seat": {
+          "seat0": 53.3,
+          "seat1": 46.7
+        },
+        "winner_net_worth_share_pct": 84.3
+      }
+    },
+    "matches": 1000,
+    "wall_time_ms": 22300
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "code": "H3QJPK",
+  "end_reason": "round_cap",
+  "public_hash": "c5c1d0ce44a654a999d06ee90de8274a6aaad138545be04b4da96f1b9197afb7",
+  "restarts": 0,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2289,
+      "character_id": "INVESTOR",
+      "districts": 3,
+      "net_worth": 3941,
+      "player_id": "p1",
+      "rank": 1,
+      "seat": 1
+    },
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 626,
+      "character_id": "TYCOON",
+      "districts": 0,
+      "net_worth": 1176,
+      "player_id": "p0",
+      "rank": 2,
+      "seat": 0
+    }
+  ],
+  "rounds": 40,
+  "server_ms": 216790,
+  "state_hash": "fb517f10f66fed966fe6282a680a69464c1b37e12c380b8df464e3adcccbdbe0",
+  "state_version": 202,
+  "stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 201,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 603,
+    "frames_out": 1007,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 402
+  }
+}

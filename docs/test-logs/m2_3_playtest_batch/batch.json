@@ -1,0 +1,212 @@
+{
+  "analysis": {
+    "by_players": {
+      "2": {
+        "auctions_per_match": 1.86,
+        "bankruptcies_per_match": 0.44,
+        "cpu_ms_median": 21.6,
+        "duration_min": {
+          "max": 20.57,
+          "mean": 14.13,
+          "median": 14.44,
+          "min": 5.98,
+          "p10": 10.27,
+          "p25": 12.63,
+          "p75": 15.95,
+          "p90": 17.14,
+          "p95": 17.89
+        },
+        "end_reason_pct": {
+          "last_solvent": 44.4,
+          "round_cap": 55.6
+        },
+        "invalid": 0,
+        "longest": [],
+        "matches": 1000,
+        "matches_with_bankruptcy_pct": 44.4,
+        "over_35_min": 0,
+        "seat_win": [
+          {
+            "ci95": 3.1,
+            "seat": 0,
+            "win_pct": 54.7
+          },
+          {
+            "ci95": 3.1,
+            "seat": 1,
+            "win_pct": 45.3
+          }
+        ],
+        "stuck": 0,
+        "timeouts_per_match": 10.92,
+        "trades_accepted_per_match": 2.2,
+        "trades_proposed_per_match": 4.88,
+        "turns_mean": 72.7,
+        "upgrades_per_match": 24.34
+      },
+      "3": {
+        "auctions_per_match": 1.6,
+        "bankruptcies_per_match": 0.48,
+        "cpu_ms_median": 24.5,
+        "duration_min": {
+          "max": 23.48,
+          "mean": 16.65,
+          "median": 16.59,
+          "min": 10.32,
+          "p10": 14.44,
+          "p25": 15.45,
+          "p75": 17.81,
+          "p90": 18.97,
+          "p95": 19.76
+        },
+        "end_reason_pct": {
+          "last_solvent": 7.0,
+          "round_cap": 93.0
+        },
+        "invalid": 0,
+        "longest": [],
+        "matches": 1000,
+        "matches_with_bankruptcy_pct": 41.3,
+        "over_35_min": 0,
+        "seat_win": [
+          {
+            "ci95": 3.0,
+            "seat": 0,
+            "win_pct": 38.8
+          },
+          {
+            "ci95": 2.9,
+            "seat": 1,
+            "win_pct": 31.7
+          },
+          {
+            "ci95": 2.8,
+            "seat": 2,
+            "win_pct": 29.5
+          }
+        ],
+        "stuck": 0,
+        "timeouts_per_match": 12.29,
+        "trades_accepted_per_match": 2.59,
+        "trades_proposed_per_match": 5.77,
+        "turns_mean": 87.7,
+        "upgrades_per_match": 21.77
+      },
+      "4": {
+        "auctions_per_match": 1.4,
+        "bankruptcies_per_match": 0.41,
+        "cpu_ms_median": 26.9,
+        "duration_min": {
+          "max": 23.98,
+          "mean": 18.23,
+          "median": 18.13,
+          "min": 13.86,
+          "p10": 16.03,
+          "p25": 17.0,
+          "p75": 19.4,
+          "p90": 20.55,
+          "p95": 21.19
+        },
+        "end_reason_pct": {
+          "last_solvent": 0.7,
+          "round_cap": 99.3
+        },
+        "invalid": 0,
+        "longest": [],
+        "matches": 1000,
+        "matches_with_bankruptcy_pct": 31.3,
+        "over_35_min": 0,
+        "seat_win": [
+          {
+            "ci95": 2.8,
+            "seat": 0,
+            "win_pct": 29.7
+          },
+          {
+            "ci95": 2.8,
+            "seat": 1,
+            "win_pct": 27.3
+          },
+          {
+            "ci95": 2.6,
+            "seat": 2,
+            "win_pct": 23.9
+          },
+          {
+            "ci95": 2.4,
+            "seat": 3,
+            "win_pct": 19.1
+          }
+        ],
+        "stuck": 0,
+        "timeouts_per_match": 12.86,
+        "trades_accepted_per_match": 2.29,
+        "trades_proposed_per_match": 5.09,
+        "turns_mean": 98.8,
+        "upgrades_per_match": 17.27
+      }
+    },
+    "reproducibility": {
+      "checked": 150,
+      "mismatch_list": [],
+      "mismatches": 0
+    },
+    "totals": {
+      "invariant_errors": 0,
+      "matches": 3000,
+      "rejections": 0,
+      "stuck": 0
+    }
+  },
+  "meta": {
+    "args": {
+      "idle": "3",
+      "matches": "1000",
+      "mode": "fast",
+      "out": "/home/user/empire-rush/docs/test-logs/m2_3_playtest_batch",
+      "players": "2,3,4",
+      "repro": "50",
+      "seed": "1"
+    },
+    "bot": "BotPlayer (scripted heuristic bot, idle_pct=3)",
+    "engine": "4.7.2-stable (official)",
+    "generated_unix": 1792308514,
+    "rules": {
+      "balance_status": "DRAFT v3 (owner-approved Option C from docs/M1_BALANCE_REVIEW.md, 2026-10-18) - trial values, NOT locked; per-turn timing must be measured after M2. All money is integer RC.",
+      "combined_sha256": "d5e3a9a877afe9323894d9864ee6ef829b2dc8b82b4428da0639264a9aa155ca",
+      "files": {
+        "balance.json": "e6d14208b30fc80252b863063ae4cdd38624c6d9f364861246f501681668c44b",
+        "board.json": "f03afb1cd46877ec13870c490bbd84290b8c93aff421dd5a602a935ca271de9a",
+        "characters.json": "d678479321914c964224b7f05f92f51b61886912db1d3cfad2164217c7667bcb",
+        "events.json": "a5b3412d325df8bc271c5421dbe67ed8bf43a691b6776b3675268a1ca75f2529",
+        "opportunities.json": "25dd010d2627476be7301193112f909767fd842af6df6846375a2a5e0fabe586"
+      }
+    },
+    "time_model": {
+      "anim_base": 1800,
+      "anim_per_space": 250,
+      "bid": [
+        600,
+        1400
+      ],
+      "other": [
+        1500,
+        3500
+      ],
+      "roll": [
+        800,
+        1700
+      ],
+      "strategy": [
+        700,
+        2300
+      ],
+      "trade": [
+        2000,
+        7000
+      ]
+    },
+    "total_cpu_ms": 79756
+  },
+  "note": "Per-match rows are in matches.csv (same run). Full JSON with rows is produced by scripts/run_playtest_batch.sh."
+}

@@ -1,0 +1,113 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 6,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "clients": 6,
+  "failures": [],
+  "pass": true,
+  "rooms": [
+    {
+      "code": "9JBBAK",
+      "commands_applied": 193,
+      "end_reason": "round_cap",
+      "journal_entries": 193,
+      "players": 2,
+      "restarts": 0,
+      "rounds": 40,
+      "state_version": 194,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 193,
+        "duplicates": 0,
+        "frame_errors": {},
+        "frames_in": 579,
+        "frames_out": 967,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 386
+      }
+    },
+    {
+      "code": "H3QJPK",
+      "commands_applied": 201,
+      "end_reason": "round_cap",
+      "journal_entries": 201,
+      "players": 2,
+      "restarts": 0,
+      "rounds": 40,
+      "state_version": 202,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 201,
+        "duplicates": 0,
+        "frame_errors": {},
+        "frames_in": 603,
+        "frames_out": 1007,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 402
+      }
+    },
+    {
+      "code": "KFADUU",
+      "commands_applied": 127,
+      "end_reason": "last_solvent",
+      "journal_entries": 128,
+      "players": 2,
+      "restarts": 0,
+      "rounds": 24,
+      "state_version": 129,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 127,
+        "duplicates": 0,
+        "frame_errors": {},
+        "frames_in": 383,
+        "frames_out": 641,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 256
+      }
+    }
+  ],
+  "server_meta": {
+    "links": 0,
+    "objects": 1497,
+    "pid": 19711,
+    "restarts": 0,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
+    "stats": {
+      "frame_errors": {},
+      "handshake_timeouts": 0,
+      "links_refused": 0,
+      "rate_closed": 0,
+      "rate_limited": 0,
+      "rooms_created": 3,
+      "rooms_ended": 3,
+      "rooms_removed": 3,
+      "rooms_started": 3
+    },
+    "tls": false
+  },
+  "server_stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 521,
+    "duplicates": 0,
+    "frame_errors": {},
+    "frames_in": 1565,
+    "frames_out": 2615,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 1044
+  }
+}

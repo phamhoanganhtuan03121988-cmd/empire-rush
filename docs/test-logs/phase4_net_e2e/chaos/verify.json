@@ -1,0 +1,83 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 22,
+    "duplicates": 12,
+    "fake_state": 1,
+    "flood_sent": 1000,
+    "invalid": 9,
+    "reconnects": 6,
+    "voluntary_drops": 1
+  },
+  "clients": 4,
+  "failures": [],
+  "pass": true,
+  "rooms": [
+    {
+      "code": "ERSCKS",
+      "commands_applied": 225,
+      "end_reason": "round_cap",
+      "journal_entries": 232,
+      "players": 4,
+      "restarts": 1,
+      "rounds": 25,
+      "state_version": 239,
+      "stats": {
+        "bot_commands": 9,
+        "bot_takeovers": 1,
+        "commands": 239,
+        "duplicates": 12,
+        "frame_errors": {},
+        "frames_in": 1571,
+        "frames_out": 2472,
+        "rejected": {
+          "BAD_REQUEST": 2,
+          "STALE_STATE": 8,
+          "WRONG_PHASE": 2
+        },
+        "seat_reclaims": 1,
+        "snapshots": 1331
+      }
+    }
+  ],
+  "server_meta": {
+    "links": 0,
+    "objects": 1497,
+    "pid": 7073,
+    "restarts": 1,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
+    "stats": {
+      "frame_errors": {
+        "BAD_REQUEST": 1,
+        "PAYLOAD_TOO_LARGE": 2,
+        "PROTOCOL_UNSUPPORTED": 1
+      },
+      "handshake_timeouts": 0,
+      "links_refused": 0,
+      "rate_closed": 19,
+      "rate_limited": 68,
+      "rooms_created": 1,
+      "rooms_ended": 1,
+      "rooms_expired": 0,
+      "rooms_removed": 1,
+      "rooms_started": 1
+    },
+    "tls": false
+  },
+  "server_stats": {
+    "bot_commands": 9,
+    "bot_takeovers": 1,
+    "commands": 239,
+    "duplicates": 12,
+    "frame_errors": {},
+    "frames_in": 1571,
+    "frames_out": 2472,
+    "rejected": {
+      "BAD_REQUEST": 2,
+      "STALE_STATE": 8,
+      "WRONG_PHASE": 2
+    },
+    "seat_reclaims": 1,
+    "snapshots": 1331
+  }
+}

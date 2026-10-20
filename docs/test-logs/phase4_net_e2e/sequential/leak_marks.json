@@ -1,0 +1,23 @@
+[
+  {
+    "after_match": 1,
+    "objects": 1497.0,
+    "static_mem_mb": 25.4,
+    "rooms": 0,
+    "links": 0
+  },
+  {
+    "after_match": 2,
+    "objects": 1497.0,
+    "static_mem_mb": 25.4,
+    "rooms": 0,
+    "links": 0
+  },
+  {
+    "after_match": 3,
+    "objects": 1497.0,
+    "static_mem_mb": 25.4,
+    "rooms": 0,
+    "links": 0
+  }
+]

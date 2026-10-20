@@ -1,0 +1,70 @@
+{
+  "client_chaos_total": {
+    "connect_attempts": 41,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 38,
+    "voluntary_drops": 0
+  },
+  "clients": 3,
+  "failures": [],
+  "pass": true,
+  "rooms": [
+    {
+      "code": "CH359N",
+      "commands_applied": 217,
+      "end_reason": "round_cap",
+      "journal_entries": 217,
+      "players": 3,
+      "restarts": 0,
+      "rounds": 30,
+      "state_version": 218,
+      "stats": {
+        "bot_commands": 0,
+        "bot_takeovers": 0,
+        "commands": 222,
+        "duplicates": 5,
+        "frame_errors": {},
+        "frames_in": 871,
+        "frames_out": 1539,
+        "rejected": {},
+        "seat_reclaims": 0,
+        "snapshots": 649
+      }
+    }
+  ],
+  "server_meta": {
+    "links": 0,
+    "objects": 1497,
+    "pid": 7806,
+    "restarts": 0,
+    "rooms": 0,
+    "static_mem_mb": 25.4,
+    "stats": {
+      "frame_errors": {},
+      "handshake_timeouts": 0,
+      "links_refused": 0,
+      "rate_closed": 0,
+      "rate_limited": 0,
+      "rooms_created": 1,
+      "rooms_ended": 1,
+      "rooms_expired": 0,
+      "rooms_removed": 1,
+      "rooms_started": 1
+    },
+    "tls": false
+  },
+  "server_stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 222,
+    "duplicates": 5,
+    "frame_errors": {},
+    "frames_in": 871,
+    "frames_out": 1539,
+    "rejected": {},
+    "seat_reclaims": 0,
+    "snapshots": 649
+  }
+}

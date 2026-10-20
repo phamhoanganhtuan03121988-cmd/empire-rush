@@ -1,0 +1,29 @@
+{
+  "code": "SGNXTY",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 881068956,
+  "token_hashes": [
+    "63e207541d7b24160418c18fc4c83c030172d9907f354fd853cfd0d7d6d79461",
+    "449de7a19d5b297772f9c57faa4964e5ee24cdcf52c055ba1e947c3be229cded",
+    "967da5095de56d85a03201ad35e18744ed440c19a1cd38f39f06406e0c85d9b3"
+  ]
+}

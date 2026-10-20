@@ -1,0 +1,34 @@
+{
+  "code": "NXWFW9",
+  "format": 1,
+  "players": 4,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    },
+    {
+      "character_id": "TYCOON",
+      "player_id": "p3"
+    }
+  ],
+  "seed": 1810070157,
+  "token_hashes": [
+    "83300d23c43ae93e15e78717b96749a7cfd5915182c23cbdbffbb6db20c5dc34",
+    "d9ed10710270b37670b2e1d7133b9ae3f1ff09100e2959c2533cea009a813a0b",
+    "1b6edc9dadec2812d0090afa8cf41dd31875ad4dc750f1e317b730abb9cb2d4e",
+    "1c1208306d2db15e121a15917decc1679eb6dee55860c435face6f02dd0daeb5"
+  ]
+}

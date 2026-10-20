@@ -1,0 +1,26 @@
+{
+  "_status": "DRAFT - 4-entry Opportunity table (G4). One entry is drawn with the seeded RNG; both options have fixed, disclosed outcomes.",
+  "entries": [
+    {"entry_id": "POPUP_MARKET", "title": "Pop-up Market", "default_option": 0,
+     "options": [
+       {"option_id": "SELL_NOW", "label": "Collect 60 RC now", "cost": 0, "effects": [{"type": "cash", "amount": 60}]},
+       {"option_id": "STOCK_UP", "label": "Pay 40 RC, collect 120 RC at your next turn", "cost": 40,
+        "effects": [{"type": "delayed_payout", "reward": 120, "chance_pct": 100}]}]},
+    {"entry_id": "STREET_FESTIVAL", "title": "Street Festival", "default_option": 0,
+     "options": [
+       {"option_id": "SPONSOR", "label": "Collect 50 RC", "cost": 0, "effects": [{"type": "cash", "amount": 50}]},
+       {"option_id": "HOST", "label": "Collect 15 RC per property you own (max 150)", "cost": 0,
+        "effects": [{"type": "per_property_cash", "amount": 15, "max_total": 150}]}]},
+    {"entry_id": "RENOVATION_GRANT", "title": "Renovation Grant", "default_option": 1,
+     "options": [
+       {"option_id": "GRANT", "label": "Next upgrade within 2 rounds costs 50% less", "cost": 0,
+        "effects": [{"type": "upgrade_discount_next", "pct": 50, "duration_rounds": 2}]},
+       {"option_id": "CASH", "label": "Collect 40 RC", "cost": 0, "effects": [{"type": "cash", "amount": 40}]}]},
+    {"entry_id": "BILLBOARD_DEAL", "title": "Billboard Deal", "default_option": 1,
+     "options": [
+       {"option_id": "SIGN", "label": "Collect 90 RC; your properties earn 25% less rent for one round", "cost": 0,
+        "effects": [{"type": "cash", "amount": 90},
+                    {"type": "rent_modifier", "target": "owner_self", "pct": -25, "duration_rounds": 1}]},
+       {"option_id": "PASS", "label": "Collect 30 RC", "cost": 0, "effects": [{"type": "cash", "amount": 30}]}]}
+  ]
+}

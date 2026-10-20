@@ -1,0 +1,58 @@
+{
+  "end_reason": "round_cap",
+  "policy": {
+    "bot_think_ms": 1200,
+    "hold_ms": 20000,
+    "on_expiry": "bot"
+  },
+  "public_hash": "b7e784a2d3b1eec9e724c9769e583bbae166e22ca29c17bffc7aaadbc55e81c7",
+  "restarts": 1,
+  "results": [
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 2314,
+      "character_id": "INVESTOR",
+      "districts": 3,
+      "net_worth": 3890,
+      "player_id": "p1",
+      "rank": 1,
+      "seat": 1
+    },
+    {
+      "bankrupt": false,
+      "bankrupt_turn": 0,
+      "cash": 497,
+      "character_id": "TYCOON",
+      "districts": 0,
+      "net_worth": 672,
+      "player_id": "p0",
+      "rank": 2,
+      "seat": 0
+    }
+  ],
+  "rounds": 40,
+  "server_ms": 269760,
+  "state_hash": "75d1c249bec62851aac2e31d9b567dc12bb23fbfae4551bc566b9d96506e7d45",
+  "state_version": 206,
+  "static_mem_peak_mb": 35.3,
+  "stats": {
+    "bot_commands": 0,
+    "bot_takeovers": 0,
+    "commands": 229,
+    "duplicates": 20,
+    "frame_errors": {
+      "BAD_REQUEST": 2,
+      "PAYLOAD_TOO_LARGE": 3,
+      "PROTOCOL_UNSUPPORTED": 3
+    },
+    "frames_in": 648,
+    "frames_out": 1058,
+    "rejected": {
+      "BAD_REQUEST": 2,
+      "STALE_STATE": 5
+    },
+    "seat_reclaims": 0,
+    "snapshots": 409
+  }
+}

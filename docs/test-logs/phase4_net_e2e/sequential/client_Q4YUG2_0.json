@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 86,
+  "frames_dropped_local": 0,
+  "frames_sent": 261,
+  "invalid_kinds": [],
+  "last_seq": 486,
+  "public_hash": "666bdf1cc4ed072ffaafb12dfbcfdf3fa7f325b2c27abc219f3362c2792cd598",
+  "room_code": "Q4YUG2",
+  "seat": 0,
+  "snapshot_hash": "666bdf1cc4ed072ffaafb12dfbcfdf3fa7f325b2c27abc219f3362c2792cd598",
+  "state_version": 174,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 174,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 174
+  }
+}

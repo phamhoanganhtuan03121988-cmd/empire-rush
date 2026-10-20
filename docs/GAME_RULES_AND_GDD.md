@@ -37,6 +37,8 @@ Match: 2–4 players, target 20–30 minutes
 7. Server checks insolvency, elimination and victory, then advances turn.
 8. If player times out, server uses safe default: pass purchase, no upgrade, no ability, end turn.
 
+Offline mode note (M2.2.1, owner decision): in an offline match on a phone, the turn timer and the 30-minute match cap pause while the app is in the background and resume with the remaining time. Background time never counts. A force-quit offline match is not recovered. Details: `docs/RULES_M1.md` "Offline lifecycle". Online matches keep server-side timers.
+
 ## 4. Board composition (28 spaces)
 - 21 property spaces, arranged in 7 districts of 3 properties each.
 - 1 Start.

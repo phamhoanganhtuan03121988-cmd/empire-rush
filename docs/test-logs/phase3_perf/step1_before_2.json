@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "api": "1.4.318",
+    "args": {
+      "frames": "120",
+      "out": "/tmp/claude-0/-home-user-empire-rush/550d1413-894c-52c7-942f-285b47abf167/scratchpad/p3/bake_base_2.json"
+    },
+    "engine": "4.7.2-stable (official)",
+    "viewport": "(720.0, 1560.0)",
+    "window": "(786, 1704)"
+  },
+  "results": [
+    {
+      "ablation": "base",
+      "buffer_mem_mb": 9.1,
+      "draw_calls_3d": 43,
+      "draw_calls_shadow": 0,
+      "draw_calls_total": 90,
+      "frame_ms": {
+        "max": 86.94,
+        "mean": 67.27,
+        "p50": 65.73,
+        "p95": 78.27,
+        "p99": 84.74
+      },
+      "frames": 120,
+      "preset": "low",
+      "primitives_3d": 52162,
+      "primitives_shadow": 0,
+      "primitives_total": 55812,
+      "process_ms_mean": 69.9,
+      "render_cpu_ms": {
+        "max": 0.96,
+        "mean": 0.5,
+        "p50": 0.47,
+        "p95": 0.66,
+        "p99": 0.74
+      },
+      "render_gpu_ms": {
+        "max": 72.34,
+        "mean": 54.73,
+        "p50": 54.18,
+        "p95": 63.42,
+        "p99": 66.59
+      },
+      "static_mem_mb": 54.3,
+      "texture_mem_mb": 73.4,
+      "video_mem_mb": 104.4
+    },
+    {
+      "ablation": "base",
+      "buffer_mem_mb": 9.1,
+      "draw_calls_3d": 43,
+      "draw_calls_shadow": 28,
+      "draw_calls_total": 118,
+      "frame_ms": {
+        "max": 365.41,
+        "mean": 237.18,
+        "p50": 236.69,
+        "p95": 259.66,
+        "p99": 276.89
+      },
+      "frames": 120,
+      "preset": "medium",
+      "primitives_3d": 52162,
+      "primitives_shadow": 44390,
+      "primitives_total": 100200,
+      "process_ms_mean": 246.53,
+      "render_cpu_ms": {
+        "max": 0.87,
+        "mean": 0.65,
+        "p50": 0.61,
+        "p95": 0.82,
+        "p99": 0.85
+      },
+      "render_gpu_ms": {
+        "max": 270.45,
+        "mean": 224.28,
+        "p50": 223.76,
+        "p95": 246.6,
+        "p99": 264.72
+      },
+      "static_mem_mb": 54.9,
+      "texture_mem_mb": 103.7,
+      "video_mem_mb": 134.7
+    },
+    {
+      "ablation": "base",
+      "buffer_mem_mb": 9.1,
+      "draw_calls_3d": 43,
+      "draw_calls_shadow": 28,
+      "draw_calls_total": 118,
+      "frame_ms": {
+        "max": 623.51,
+        "mean": 505.5,
+        "p50": 497.24,
+        "p95": 586.0,
+        "p99": 609.21
+      },
+      "frames": 120,
+      "preset": "high",
+      "primitives_3d": 52162,
+      "primitives_shadow": 44390,
+      "primitives_total": 100200,
+      "process_ms_mean": 519.99,
+      "render_cpu_ms": {
+        "max": 1.21,
+        "mean": 0.68,
+        "p50": 0.66,
+        "p95": 0.86,
+        "p99": 1.01
+      },
+      "render_gpu_ms": {
+        "max": 609.74,
+        "mean": 492.71,
+        "p50": 484.14,
+        "p95": 569.61,
+        "p99": 596.4
+      },
+      "static_mem_mb": 54.7,
+      "texture_mem_mb": 134.9,
+      "video_mem_mb": 165.9
+    }
+  ]
+}

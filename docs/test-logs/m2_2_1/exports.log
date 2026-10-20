@@ -1,0 +1,8 @@
+EXPORTED Linux Public Release (release) commit=8e26501 -> /home/user/empire-rush/build/linux-public
+EXPORTED Linux Internal Test (release) commit=8e26501 -> /home/user/empire-rush/build/linux-internal
+WARNING: Xcode Build: .ipa can only be built on macOS. Leaving Xcode project without building the package.
+EXPORTED iOS Public Release (release) commit=8e26501 -> /home/user/empire-rush/build/ios-public
+WARNING: Xcode Build: .ipa can only be built on macOS. Leaving Xcode project without building the package.
+EXPORTED iOS Internal Test (release) commit=8e26501 -> /home/user/empire-rush/build/ios-internal
+public builds must be release builds (debug builds enable the device tools)
+public debug refused: exit=2

@@ -1,0 +1,13 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+== V0 baseline v3 ==
+  2p n=3000  min med/p90 14.5/17.3  s/turn 11.7  rounds 36.7  end { "round_cap": 56.6, "last_solvent": 43.4 }  bk 43.4% (rd 33.0)  seats [52.6, 47.4] spread 5.2pp  chars { "NEGOTIATOR": 48.6, "TYCOON": 49.9, "INVESTOR": 51.5 }  winner!=book 3.1%  hoarder/focus 50.2%±1.8
+  3p n=3000  min med/p90 16.5/19.0  s/turn 11.4  rounds 29.8  end { "round_cap": 92.2, "last_solvent": 7.8 }  bk 42.8% (rd 26.0)  seats [38.8, 33.0, 28.2] spread 10.6pp  chars { "NEGOTIATOR": 30.9, "INVESTOR": 35.5, "TYCOON": 33.6 }  winner!=book 7.4%  hoarder/focus 32.2%±1.7
+  4p n=3000  min med/p90 18.2/20.5  s/turn 11.1  rounds 25.0  end { "round_cap": 99.2, "last_solvent": 0.8 }  bk 30.9% (rd 23.0)  seats [31.3, 27.0, 22.3, 19.4] spread 11.9pp  chars { "TYCOON": 24.7, "INVESTOR": 26.2, "NEGOTIATOR": 24.1 }  winner!=book 8.5%  hoarder/focus 24.7%±1.5
+== V5 zero-sum cash x-large ==
+  2p n=3000  min med/p90 14.5/17.2  s/turn 11.7  rounds 36.7  end { "round_cap": 56.3, "last_solvent": 43.7 }  bk 43.7% (rd 33.0)  seats [50.0, 50.0] spread 0.0pp  chars { "NEGOTIATOR": 50.0, "TYCOON": 49.2, "INVESTOR": 50.8 }  winner!=book 3.4%  hoarder/focus 50.2%±1.8
+  3p n=3000  min med/p90 16.5/19.0  s/turn 11.3  rounds 29.8  end { "round_cap": 92.0, "last_solvent": 8.0 }  bk 42.8% (rd 26.0)  seats [35.2, 33.0, 31.8] spread 3.4pp  chars { "NEGOTIATOR": 31.1, "INVESTOR": 35.2, "TYCOON": 33.7 }  winner!=book 7.3%  hoarder/focus 32.3%±1.7
+  4p n=3000  min med/p90 18.2/20.6  s/turn 11.1  rounds 25.0  end { "round_cap": 99.0, "last_solvent": 1.0 }  bk 30.5% (rd 23.0)  seats [26.4, 26.2, 23.4, 24.0] spread 3.0pp  chars { "TYCOON": 24.8, "INVESTOR": 26.6, "NEGOTIATOR": 23.7 }  winner!=book 8.8%  hoarder/focus 24.2%±1.5
+FAILURES: 0  wall 511155 ms
+wrote /tmp/claude-0/-home-user-empire-rush/550d1413-894c-52c7-942f-285b47abf167/scratchpad/p3/p3_seat_v1b.csv
+wrote /tmp/claude-0/-home-user-empire-rush/550d1413-894c-52c7-942f-285b47abf167/scratchpad/p3/p3_seat_v1b.json

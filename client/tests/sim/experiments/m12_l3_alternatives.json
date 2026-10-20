@@ -1,0 +1,34 @@
+{
+ "_note": "M1.2: base config is shipped balance v3; 'M1 v2' variants patch the full M1 v2 values back in.",
+ "players": [
+  2,
+  3,
+  4
+ ],
+ "matches": {
+  "2": 1000,
+  "3": 1000,
+  "4": 2000
+ },
+ "seed_base": 700000,
+ "variants": [
+  {
+   "name": "DATA ONLY: v3 with level3 x50 (T7 max 1600)",
+   "time_model": "medium",
+   "balance": {
+    "rent_multiplier_pct": {
+     "level3": 5000
+    }
+   }
+  },
+  {
+   "name": "DATA ONLY: v3 with level3 x45 (T7 max 1440)",
+   "time_model": "medium",
+   "balance": {
+    "rent_multiplier_pct": {
+     "level3": 4500
+    }
+   }
+  }
+ ]
+}

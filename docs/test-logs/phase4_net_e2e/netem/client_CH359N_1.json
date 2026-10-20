@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 13,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 12,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 76,
+  "frames_dropped_local": 0,
+  "frames_sent": 302,
+  "invalid_kinds": [],
+  "last_seq": 673,
+  "public_hash": "f79ecd29813ee34c32c54575dcdfbcea06c6f95a9a90d0f314b2c457c962be2b",
+  "room_code": "CH359N",
+  "seat": 1,
+  "snapshot_hash": "f79ecd29813ee34c32c54575dcdfbcea06c6f95a9a90d0f314b2c457c962be2b",
+  "state_version": 218,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 216,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 3,
+    "snapshots": 216
+  }
+}

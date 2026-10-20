@@ -1,0 +1,29 @@
+{
+  "code": "UX7Z3F",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 1125309755,
+  "token_hashes": [
+    "458746efec876bb891fb2b0e4654db15183493a8549cbb1ace50eb8762bee1b8",
+    "9f9fd30ce9e09ef0104cf774ae5f7de5f5f3518684ed1cca7d4c8f8b87e8be09",
+    "ff44d21811e29b943554761c257371e7e0477c7cedd579ee977db1d83f74a0d6"
+  ]
+}

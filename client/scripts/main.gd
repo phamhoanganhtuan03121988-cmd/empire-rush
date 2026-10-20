@@ -1,0 +1,498 @@
+## Vertical-slice entry point: one offline match (human seat 0 vs bots).
+## Wires rules (LocalMatch -> GameEngine), presentation (BoardView, tokens,
+## dice, EventPresenter) and UI (GameHud). Command-line user args (after --):
+##   --players=N --seed=S --quality=low|medium|high --notch (emulate iPhone
+##   safe area) --autoplay (HUD autopilot plays seat 0) --timescale=X
+##   --telemetry=PATH --shots=DIR --shot-every=SECONDS --quit-on-end
+##   --stats=FRAMES (print render statistics once after N frames)
+##   --perf (show the device-validation overlay) --bench=SECONDS (run the
+##   low/medium/high benchmark at start, SECONDS per preset) --bench-quit
+##   --devpanel (open the device panel at start)
+##   --reduced-motion (no particle effects, faster token moves)
+extends Node3D
+
+const CHARACTERS := ["TYCOON", "INVESTOR", "NEGOTIATOR", "TYCOON"]
+
+var args := {}
+## Tests set this before adding the scene to the tree (replaces CLI args).
+var args_override: Dictionary = {}
+var config: GameConfig
+var theme_data: ThemeData
+var board: BoardView
+var dice: DiceView
+var dice_stage: DiceStage
+var match_ref: LocalMatch
+var presenter: EventPresenter
+var hud: GameHud
+var camera: CameraRig
+var sun: DirectionalLight3D
+var env: Environment
+var telemetry: SessionTelemetry
+var autopilot: HudAutopilot
+var probe: DeviceProbe
+var dev_panel: DevPanel
+var quality := "medium"
+var menu: StartMenu
+## Phase 5: audio, pause menu and the guided tutorial.
+var audio: AudioDirector
+var pause_menu: PauseMenu
+var coach: CoachOverlay
+## Web/PWA: the match autosaves (SavedMatch) and can resume from the title.
+var _save_enabled := false
+var _resumed := false
+## Fixed seed of the tutorial match (2 players): the first roll lands on a
+## property the player can buy, so step 3 happens on the first turn.
+const TUTORIAL_SEED := 4
+var _shot_t := 0.0
+var _shot_n := 0
+
+
+func _ready() -> void:
+	if args_override.is_empty():
+		for a in OS.get_cmdline_user_args():
+			var kv := a.trim_prefix("--").split("=", true, 1)
+			args[kv[0]] = kv[1] if kv.size() == 2 else "1"
+	else:
+		args = args_override
+	if args.has("timescale"):
+		Engine.time_scale = float(args["timescale"])
+	_fit_content_scale()
+	get_tree().root.size_changed.connect(_fit_content_scale)
+	# Settings: real launches read the player's file once; automated runs
+	# (tests, captures) use a scratch file and never touch the player's.
+	if not args_override.is_empty():
+		GameSettings.path = "user://test_telemetry/settings.cfg"
+		SavedMatch.path = "user://test_telemetry/saved_match.json"
+	elif not GameSettings.loaded:
+		GameSettings.load_settings()
+	if WebBridge.wanted():
+		var bridge := WebBridge.new()
+		bridge.main = self
+		add_child(bridge)
+		# Browser tests may fix the dice seed (only in this ?e2e=1 test mode).
+		var seed_arg := WebBridge.query_value("seed")
+		if seed_arg.is_valid_int():
+			args["seed"] = seed_arg
+	config = GameConfig.load_from_dir()
+	theme_data = ThemeData.load_default()
+	audio = AudioDirector.new()
+	audio.name = "Audio"
+	add_child(audio)
+	if not args.has("autoplay") and not args.has("bench"):
+		audio.play_music()
+	_build_world()
+	# Phase 4: a normal launch (no --players) shows the start menu first.
+	# --resume (tests, captures) goes straight to the saved match.
+	if not args.has("players") and not MatchSetup.chosen and not args.has("resume"):
+		_show_menu()
+		return
+	_start_match()
+
+
+## Phase 5: the design canvas follows the window's orientation. Portrait keeps
+## the 720 x 1280 phone canvas; a landscape window (Windows desktop, rotated
+## phone) uses 1600 x 900: HUD text at 80 % of its phone size (it used to
+## shrink to ~56 %, 720/1280) and a right column wide enough for the HUD. Headless runs (tests) set
+## their canvas themselves.
+func _fit_content_scale() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var w := DisplayServer.window_get_size()
+	var want := Vector2i(1600, 900) if w.x > w.y else Vector2i(720, 1280)
+	if get_tree().root.content_scale_size != want:
+		get_tree().root.content_scale_size = want
+
+
+## Start screen over the (empty) board. Starting builds the match in place.
+func _show_menu() -> void:
+	set_quality(MatchSetup.quality)
+	var layer := CanvasLayer.new()
+	layer.name = "MenuLayer"
+	add_child(layer)
+	menu = StartMenu.new()
+	if args.has("notch"):
+		menu.simulated_insets = Rect2(0, 108, 0, 62)
+	layer.add_child(menu)
+	menu.setup(config, theme_data, args.get("menu_page", "title"))
+	menu.start_requested.connect(func(): _leave_menu(layer, false))
+	menu.tutorial_requested.connect(func(): _leave_menu(layer, true))
+	menu.resume_requested.connect(func(): _leave_menu(layer, false))
+	menu.settings_changed.connect(_apply_settings)
+	_reframe.call_deferred()
+
+
+func _leave_menu(layer: CanvasLayer, as_tutorial: bool) -> void:
+	MatchSetup.chosen = true
+	MatchSetup.tutorial = as_tutorial
+	layer.queue_free()
+	menu = null
+	camera.configure(45.0, camera.pitch, camera.half, camera.tall)
+	_start_match()
+
+
+## Settings changed in a menu: apply the preset, motion and audio live.
+func _apply_settings() -> void:
+	if MatchSetup.quality != quality:
+		set_quality(MatchSetup.quality)
+	if presenter:
+		presenter.reduced_motion = MatchSetup.reduced_motion
+	if audio:
+		audio.apply_settings()
+	if hud:
+		hud.refresh_sound_button()
+
+
+func open_pause() -> void:
+	if pause_menu or match_ref == null:
+		return
+	match_ref.lifecycle.pause("menu")
+	var layer := CanvasLayer.new()
+	layer.layer = 10
+	layer.name = "PauseLayer"
+	add_child(layer)
+	pause_menu = PauseMenu.new()
+	if args.has("notch"):
+		pause_menu.simulated_insets = Rect2(0, 108, 0, 62)
+	layer.add_child(pause_menu)
+	pause_menu.setup(config)
+	pause_menu.settings_changed.connect(_apply_settings)
+	pause_menu.resume_requested.connect(close_pause)
+	pause_menu.main_menu_requested.connect(func():
+		MatchSetup.chosen = false
+		MatchSetup.tutorial = false
+		get_tree().reload_current_scene())
+
+
+func close_pause() -> void:
+	if pause_menu == null:
+		return
+	pause_menu.get_parent().queue_free()
+	pause_menu = null
+	match_ref.lifecycle.resume("menu")
+
+
+func _start_match() -> void:
+	# Menu choices apply only to menu launches; --players/tests keep their args.
+	var from_menu := not args.has("players")
+	# Web/PWA: "TIẾP TỤC TRẬN" on the title screen resumes the saved match.
+	var resume: Dictionary = SavedMatch.pending
+	SavedMatch.pending = {}
+	if resume.is_empty() and args.has("resume"):
+		resume = SavedMatch.load_record()
+	var as_tutorial := from_menu and MatchSetup.tutorial and resume.is_empty()
+	var n := 2 if as_tutorial else clampi(int(args.get("players", str(MatchSetup.players))), 2, 4)
+	var chars: Array = MatchSetup.seat_characters(n, MatchSetup.character) if from_menu else CHARACTERS
+	var seed_value := int(args["seed"]) if args.has("seed") else int(Time.get_unix_time_from_system()) % 1000000
+	if as_tutorial and not args.has("seed"):
+		seed_value = TUTORIAL_SEED
+	if from_menu:
+		# Phase 5 identity (presentation only): the player's colour and name.
+		theme_data.players = MatchSetup.identities(theme_data.players, maxi(n, 4), theme_data.personas)
+	var seats: Array = []
+	for i in n:
+		seats.append({"player_id": "p%d" % i, "character_id": chars[i]})
+	if not resume.is_empty():
+		n = resume["seats"].size()
+		seats = resume["seats"]
+		seed_value = int(resume["seed"])
+		var ids: Array = resume.get("identities", [])
+		if ids.size() >= n:
+			theme_data.players = ids
+	match_ref = LocalMatch.new()
+	match_ref.name = "LocalMatch"
+	add_child(match_ref)
+	var tokens: Array[TokenView] = []
+	for i in n:
+		var t := TokenView.new()
+		t.build(i, theme_data)
+		add_child(t)
+		tokens.append(t)
+	presenter = EventPresenter.new()
+	presenter.name = "Presenter"
+	presenter.board = board
+	presenter.dice = dice
+	presenter.dice_stage = dice_stage
+	presenter.tokens = tokens
+	presenter.theme = theme_data
+	presenter.config = config
+	presenter.match_ref = match_ref
+	presenter.popup_parent = self
+	presenter.reduced_motion = args.has("reduced-motion") or (from_menu and MatchSetup.reduced_motion)
+	add_child(presenter)
+	presenter.cue.connect(audio.on_cue)
+	match_ref.can_act = presenter.is_idle
+	match_ref.events_emitted.connect(presenter.enqueue)
+	match_ref.events_emitted.connect(_on_events)
+	_resumed = false
+	if not resume.is_empty():
+		_resumed = match_ref.resume(config, resume, [0] as Array[int])
+		if not _resumed:
+			SavedMatch.clear()  # broken save: start fresh instead of failing
+	if not _resumed:
+		match_ref.start(config, seats, seed_value, [0] as Array[int])
+	# Autosave (menu launches; tests/captures only with --save; never the tutorial).
+	_save_enabled = (from_menu and not as_tutorial and not args.has("autoplay")) or args.has("save")
+	telemetry = SessionTelemetry.new()
+	telemetry.source = "autopilot" if args.has("autoplay") else "human"
+	add_child(telemetry)
+	presenter.busy_changed.connect(telemetry.on_presentation)
+	var layer := CanvasLayer.new()
+	add_child(layer)
+	hud = GameHud.new()
+	if args.has("notch"):
+		# iPhone 14 Pro portrait safe area: 59 pt top, 34 pt bottom (x1.83 px/pt).
+		hud.simulated_insets = Rect2(0, 108, 0, 62)
+	layer.add_child(hud)
+	hud.setup(match_ref, presenter, theme_data, config)
+	dice_stage.region_provider = hud.board_insets
+	hud.restart_requested.connect(func(): get_tree().reload_current_scene())
+	hud.menu_requested.connect(func():
+		MatchSetup.chosen = false
+		get_tree().reload_current_scene())
+	hud.quality_cycle_requested.connect(func(): set_quality(QualitySettings.next(quality)))
+	hud.pause_requested.connect(open_pause)
+	# Phase 5.1 coach: the guided tutorial, and contextual tips in a normal
+	# match started from the menu (once each; off in Settings). Command-line
+	# and test matches only get it with --coach.
+	if (from_menu and not args.has("autoplay") and (as_tutorial or GameSettings.tips_enabled)) or args.has("coach"):
+		coach = CoachOverlay.new()
+		layer.add_child(coach)
+		coach.setup(match_ref, hud, presenter, config, as_tutorial)
+		# Play again after the tutorial starts a normal match.
+		coach.finished.connect(func(): MatchSetup.tutorial = false)
+	if _resumed:
+		presenter.sync_to_state(match_ref.engine.state)
+		hud.show_toast.call_deferred(UiText.t("resumed") % match_ref.engine.state.round, UiTheme.GOLD, "check")
+	_setup_device_probe()
+	presenter.match_ended_presented.connect(_on_match_ended)
+	set_quality(args.get("quality", MatchSetup.quality if from_menu else "medium"))
+	get_viewport().size_changed.connect(_reframe)
+	_reframe.call_deferred()
+	if args.has("autoplay"):
+		start_autopilot()
+	if dev_panel and args.has("perf"):
+		dev_panel.toggle_overlay()
+	if dev_panel and args.has("devpanel"):
+		dev_panel.open.call_deferred()
+	if dev_panel and args.has("bench"):
+		dev_panel.bench_seconds = float(args["bench"])
+		dev_panel.start_bench.call_deferred()
+
+
+func start_autopilot() -> void:
+	if autopilot:
+		return
+	autopilot = HudAutopilot.new()
+	add_child(autopilot)
+	autopilot.setup(hud, match_ref, 0, match_ref.engine.state.seed_value + 1)
+
+
+## The probe lives on the root so it survives "play again" scene reloads and
+## keeps measuring one app session. Automated tests (args_override) only get
+## it when they ask for it, so test runs do not write device reports.
+func _setup_device_probe() -> void:
+	# Public release builds never get the tools (BuildFlavor).
+	if not BuildFlavor.device_tools_enabled():
+		return
+	if not args_override.is_empty() and not args.has("probe"):
+		return
+	probe = get_tree().root.get_node_or_null("DeviceProbe") as DeviceProbe
+	if probe == null:
+		probe = DeviceProbe.new()
+		probe.name = "DeviceProbe"
+		get_tree().root.add_child.call_deferred(probe)
+	dev_panel = DevPanel.new()
+	dev_panel.set_quality = set_quality
+	dev_panel.start_autopilot = start_autopilot
+	dev_panel.current_quality = func() -> String: return quality
+	hud.add_child(dev_panel)
+	dev_panel.setup(probe)
+	hud.dev_menu_enabled = true
+	hud.dev_menu_requested.connect(dev_panel.open)
+	dev_panel.bench_finished.connect(func(path: String):
+		print("BENCH_REPORT ", ProjectSettings.globalize_path(path))
+		if args.has("bench-quit"):
+			get_tree().quit())
+
+
+func _build_world() -> void:
+	# Phase 5 tabletop: a night-blue room; the sky only feeds ambient light
+	# (warm-neutral, so the diorama keeps true colours instead of a blue cast).
+	env = Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color("#060a12")
+	var sky := Sky.new()
+	var sm := ProceduralSkyMaterial.new()
+	sm.sky_top_color = Color("#8ea6c8")
+	sm.sky_horizon_color = Color("#e9d6b8")
+	sm.ground_horizon_color = Color("#d9c6a6")
+	sm.ground_bottom_color = Color("#3a3f4c")
+	sm.sun_angle_max = 30.0
+	sky.sky_material = sm
+	env.sky = sky
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	env.ambient_light_energy = 0.75
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.tonemap_exposure = 1.05
+	env.glow_enabled = true
+	env.glow_intensity = 0.45
+	env.glow_bloom = 0.04
+	env.glow_hdr_threshold = 1.0
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 1.06
+	env.adjustment_contrast = 1.05
+	var we := WorldEnvironment.new()
+	we.environment = env
+	add_child(we)
+	sun = DirectionalLight3D.new()
+	sun.light_color = Color("#ffe2b8")
+	sun.light_energy = 1.45
+	sun.rotation_degrees = Vector3(-48, -35, 0)
+	sun.shadow_enabled = true
+	sun.shadow_blur = 1.5
+	add_child(sun)
+	var fill := DirectionalLight3D.new()
+	fill.light_color = Color("#9cc3ff")
+	fill.light_energy = 0.35
+	fill.rotation_degrees = Vector3(-30, 150, 0)
+	add_child(fill)
+	camera = CameraRig.new()
+	if args.has("cam_yaw"):
+		camera.configure(float(args["cam_yaw"]), float(args.get("cam_pitch", "50")),
+			float(args.get("cam_half", "4.6")), float(args.get("cam_tall", "1.6")))
+	add_child(camera)
+	camera.current = true
+	board = BoardView.new()
+	board.name = "Board"
+	add_child(board)
+	board.build(config, theme_data)
+	# Phase 5.1: the dice are thrown on a foreground stage (own 3D world) so
+	# nothing on the board can cover them; it sits under the HUD layer.
+	var dice_layer := CanvasLayer.new()
+	dice_layer.name = "DiceLayer"
+	add_child(dice_layer)
+	dice_stage = DiceStage.new()
+	dice_layer.add_child(dice_stage)
+	dice = dice_stage.dice
+
+
+func set_quality(name: String) -> void:
+	quality = name
+	QualitySettings.apply(name, get_viewport(), sun, env)
+	board.set_water_lite(name == "low")
+	if dice_stage:
+		dice_stage.set_quality(name)
+	if hud:
+		hud.set_quality_label(name)
+	if probe and not (dev_panel and dev_panel.is_benchmarking()):
+		probe.begin_segment(name)
+
+
+func _reframe() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if hud == null:
+		camera.frame(_menu_insets())  # menu backdrop
+		return
+	camera.frame(hud.board_insets())
+
+
+## Title: the board sits beside the logo column (landscape) or between the
+## logo and the buttons (portrait); other menu pages centre it.
+func _menu_insets() -> Dictionary:
+	var vp := get_viewport().get_visible_rect().size
+	if menu != null and menu.page == "title":
+		if vp.x > vp.y:
+			return {"top": 0.06, "bottom": 0.06, "left": 0.5, "right": 0.02}
+		var band: Dictionary = menu.title_board_band()
+		return {"top": band["top"], "bottom": band["bottom"], "left": 0.06, "right": 0.06}
+	return {"top": 0.06, "bottom": 0.06, "left": 0.0, "right": 0.0}
+
+
+func _on_events(events: Array) -> void:
+	for ev in events:
+		if ev["type"] == "TurnStarted":
+			_autosave()
+		elif ev["type"] == "MatchEnded" and _save_enabled:
+			SavedMatch.clear()
+		if ev["type"] == "TurnStarted":
+			telemetry.on_turn_started(ev["data"]["seat"], ev["data"]["round"], match_ref.is_human(ev["data"]["seat"]))
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	var pos := Vector2(-1, -1)
+	if event is InputEventScreenTouch and event.pressed:
+		pos = event.position
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		pos = event.position
+	if pos.x >= 0 and hud != null:
+		var idx := board.pick(camera, pos)
+		if idx >= 0:
+			hud.open_tile_info(idx)
+
+
+func _autosave() -> void:
+	if _save_enabled and match_ref and match_ref.engine and not match_ref.engine.is_ended():
+		SavedMatch.save(match_ref.engine, theme_data.players, match_ref.human_seats)
+
+
+## Phones and browsers may kill a backgrounded app or tab: save on the way out.
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_WM_CLOSE_REQUEST]:
+		_autosave()
+
+
+func _on_match_ended(d: Dictionary) -> void:
+	var summary := telemetry.summary(d["reason"], match_ref.engine.state.players.size())
+	summary["seed"] = match_ref.engine.state.seed_value
+	summary["rounds"] = match_ref.engine.state.round
+	summary["engine_duration_s"] = d["duration_ms"] / 1000.0
+	# Public release builds write no telemetry files (BuildFlavor).
+	if BuildFlavor.device_tools_enabled():
+		# Exact replay record for bug reports (tools/replay_match.gd).
+		summary["replay"] = MatchReplay.record(match_ref.engine)
+		var path: String = args.get("telemetry", "user://telemetry/session_%d.json" % Time.get_unix_time_from_system())
+		telemetry.save(path, summary)
+		print("TELEMETRY ", path, " turns=", summary["turns"], " game_s=", summary["session_game_seconds"])
+	if args.has("quit-on-end"):
+		await get_tree().create_timer(1.0).timeout
+		_capture("final")
+		get_tree().quit()
+
+
+var _stats_t := 0.0
+var _stats_done := false
+
+
+func _process(delta: float) -> void:
+	# Title screen: the diorama turns slowly behind the logo (off with
+	# reduced motion, and in captures that need a fixed frame).
+	if menu != null and menu.page == "title" and not MatchSetup.reduced_motion and not args.has("still"):
+		camera.configure(camera.yaw + delta * 5.0, camera.pitch, camera.half, camera.tall)
+		camera.frame(_menu_insets())
+	if args.has("stats") and not _stats_done:
+		_stats_t += 1.0
+		if _stats_t > float(args["stats"]):
+			_stats_done = true
+			var rs := RenderingServer
+			print("RENDER_STATS draw_calls=%d objects=%d primitives=%d video_mem_mb=%.1f fps=%.1f adapter=%s resolution=%s" % [
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
+				rs.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0,
+				Engine.get_frames_per_second(), rs.get_video_adapter_name(), str(get_viewport().get_visible_rect().size)])
+			get_tree().quit()
+	if args.has("shots"):
+		_shot_t += delta
+		if _shot_t >= float(args.get("shot-every", "5")):
+			_shot_t = 0.0
+			_capture("%03d" % _shot_n)
+			_shot_n += 1
+
+
+func _capture(tag: String) -> void:
+	if not args.has("shots"):
+		return
+	DirAccess.make_dir_recursive_absolute(args["shots"])
+	var img := get_viewport().get_texture().get_image()
+	img.save_png("%s/shot_%s.png" % [args["shots"], tag])

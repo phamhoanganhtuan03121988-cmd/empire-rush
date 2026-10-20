@@ -1,0 +1,48 @@
+{
+  "chaos": {
+    "connect_attempts": 5,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 10,
+    "reconnects": 1,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 64,
+  "frames_dropped_local": 0,
+  "frames_sent": 310,
+  "invalid_kinds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "last_seq": 694,
+  "public_hash": "3a5a8ae38afad154fdacb1c6030f6a24f1f51a04852a45c4c6c868f44a6a420a",
+  "seat": 1,
+  "snapshot_hash": "3a5a8ae38afad154fdacb1c6030f6a24f1f51a04852a45c4c6c868f44a6a420a",
+  "state_version": 238,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {
+      "BAD_REQUEST": 1,
+      "PAYLOAD_TOO_LARGE": 2,
+      "PROTOCOL_UNSUPPORTED": 2
+    },
+    "gaps": 0,
+    "hash_checks": 236,
+    "hash_mismatch": 0,
+    "rejections": {
+      "BAD_REQUEST": 2,
+      "STALE_STATE": 4,
+      "UNAUTHENTICATED": 1
+    },
+    "resends": 0,
+    "snapshots": 236
+  }
+}

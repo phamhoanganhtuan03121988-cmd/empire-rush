@@ -1,0 +1,24 @@
+{
+  "code": "9F2NF3",
+  "format": 1,
+  "players": 2,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    }
+  ],
+  "seed": 360595428,
+  "token_hashes": [
+    "f8d6d4910173f929d9ac22fb173588263d8f5a1d6cc48353caf1bf741e7028ca",
+    "027e9c8e582008e5278792df960480b2d2924ceb161026d53934a5c6a335add4"
+  ]
+}

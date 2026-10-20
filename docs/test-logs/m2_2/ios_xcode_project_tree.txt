@@ -1,0 +1,35 @@
+.
+./EmpireRush
+./EmpireRush.pck
+./EmpireRush.xcframework
+./EmpireRush.xcframework/Info.plist
+./EmpireRush.xcframework/ios-arm64
+./EmpireRush.xcframework/ios-arm64_x86_64-simulator
+./EmpireRush.xcodeproj
+./EmpireRush.xcodeproj/project.pbxproj
+./EmpireRush.xcodeproj/project.xcworkspace
+./EmpireRush.xcodeproj/xcshareddata
+./EmpireRush/EmpireRush-Info.plist
+./EmpireRush/EmpireRush.entitlements
+./EmpireRush/Images.xcassets
+./EmpireRush/Launch Screen.storyboard
+./EmpireRush/dummy.cpp
+./EmpireRush/dummy.h
+./EmpireRush/dummy.swift
+./EmpireRush/dylibs
+./EmpireRush/en.lproj
+./EmpireRush/export_options.plist
+./MoltenVK.xcframework
+./MoltenVK.xcframework/Info.plist
+./MoltenVK.xcframework/ios-arm64
+./MoltenVK.xcframework/ios-arm64_x86_64-simulator
+./PrivacyInfo.xcprivacy
+./libgodot_camera.visionos.debug.xcframework
+./libgodot_camera.visionos.debug.xcframework/Info.plist
+./libgodot_camera.visionos.debug.xcframework/xros-arm64
+./libgodot_camera.visionos.debug.xcframework/xros-arm64-simulator
+./libgodot_camera.visionos.release.xcframework
+./libgodot_camera.visionos.release.xcframework/Info.plist
+./libgodot_camera.visionos.release.xcframework/xros-arm64
+./libgodot_camera.visionos.release.xcframework/xros-arm64-simulator
+367M	.

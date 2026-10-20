@@ -1,0 +1,106 @@
+# EMPIRE RUSH — Playtest checklist (M2.2, kit completed in Phase 2)
+
+**Current build limits (tell testers before they start):**
+- Offline only: **1 person plays against 1–3 bots**. Online play or several people on one phone is not available yet (M3).
+- All art is placeholder; there is no sound yet.
+
+Game rules and balance are **not changed** based on these results. Record them and write proposals only.
+
+## 1. For the tester (read in 1 minute)
+1. Open the game. You are **"Bạn"**, seat 1. Play to the end of the match, or until you want to stop. **If you want to stop, that is useful data too: tell us when and why.**
+2. Talk out loud while playing (think-aloud): "I don't know what this button does", "why did I lose money", "waiting too long"…
+3. Don't ask the facilitator how to play. Try to work it out yourself; the facilitator only takes notes.
+4. At the end, answer the 6 questions in §3.
+
+## 2. For the facilitator
+**Before:**
+- [ ] Fill in the header: tester code (no real name), age group, how often they play board / mobile games, device, iOS, build commit (device panel), number of bots, portrait / landscape.
+- [ ] Phone charged ≥ 50%, Do Not Disturb on, preset **Vừa**.
+- [ ] Note the start time.
+
+**During** (one line per event in `playtest_log_template.csv`):
+| Type | Code | Example |
+|---|---|---|
+| Confusion | `CONFUSED` | doesn't know when to press KẾT THÚC LƯỢT; doesn't understand why rent is that amount |
+| Input error | `MISTAP` | meant to tap MUA but hit BỎ QUA; button hard to reach |
+| Waited too long | `WAIT` | complained or looked away while bots were playing |
+| Bored / disengaged | `BORED` | picked up another phone, sighed, asked "how much longer" |
+| Excited | `DELIGHT` | laughed, reacted to an event card, auction or upgrade |
+| Technical issue | `BUG` | stutter, wrong layout, crash (note the time; take a screenshot if possible) |
+
+**After:**
+- [ ] Note the end time and how it ended: played to the end · stopped early (round ___, reason ___).
+- [ ] Copy `telemetry/session_*.json` and `device_validation/run_*.json` (Files app → On My iPhone → Empire Rush). The telemetry file records **match length, per-turn length, human turns vs bot turns (waiting time), and animation time**.
+- [ ] Do not change rules or balance because of a single session.
+
+## 3. Questions after the match (scale 1–5 plus one sentence)
+Write the answers in `feedback_form_template.csv`, one row per session.
+- Columns `q1`–`q4` and `q6`–`q8` hold a number from 1 to 5.
+- `q5`, `q9` and `q10` are short text.
+- `finished` is yes/no. If no, also fill `stopped_round` and `stopped_reason`.
+
+1. How clear was it what you needed to do on each turn?
+2. Was waiting for the other players' (bots') turns too long?
+3. Was the text, the land and the money easy to read on the phone?
+4. Were the buttons easy to tap and placed well?
+5. Which moment was the most fun? Which was the most boring?
+6. Would you play another match? Why or why not?
+7. Were auctions exciting or tedious? (M2.3)
+8. Was upgrading worth it, and could you tell the building level on the board? (M2.3)
+9. Which rule did you not understand? (open answer; note the screen)
+10. At what point did you start to lose interest, if at all? (round / event)
+
+## 4. Summary after several sessions
+| Metric | Source | Target / notes |
+|---|---|---|
+| Match length (median, P90) | telemetry `session_game_seconds` | GDD: median 22–27 min, P90 ≤ 35 min (4-player). Offline vs bots does not represent online yet |
+| Human turn length (mean) | `mean_turn_s.human` | Compare against the 45 s timer |
+| Wait time per round (sum of bot turns) | `turn_log` (human = false) | The main cause of `WAIT` / `BORED` |
+| Animation time per turn | `mean_presentation_s_per_turn` | |
+| Confusion points | `CONFUSED` count by spot | Group by screen / action |
+| Input errors | `MISTAP` count by button | Compare with the device checklist C1–C2 |
+| Stopped early | number of sessions, round, reason | |
+| Auction / upgrade appeal | questions 7–8; `DELIGHT` / `BORED` near auctions and upgrades | Compare with bot rates in `docs/test-logs/m2_3_playtest_batch/summary.md` (auctions and upgrades per match) |
+| Unclear rules | question 9 + `CONFUSED` | One row per rule; never change rules from a single session |
+| Disengagement point | question 10 + first `BORED` | Round number vs match length |
+
+The log template `playtest_log_template.csv` has a `phase` column: roll, buy, auction, upgrade, event, trade, rescue or results.
+
+Bot baseline: `scripts/run_playtest_batch.sh --out=/abs/dir` (2/3/4 players, reproducible seeds, CSV + JSON + summary). The bots are a pacing and flow baseline only. **Never fill this sheet with bot or invented data.**
+
+## 5. Bug reproduction (Phase 2)
+**Internal builds** (debug or `device_tools`) save a `replay` record inside each `telemetry/session_*.json` at match end:
+- seed;
+- seats;
+- every accepted command and timer step, with its match time.
+
+On a desktop:
+```
+godot --headless --path client --script res://tools/replay_match.gd -- --file=/abs/session_123.json            # whole match: must say MATCHES
+godot --headless --path client --script res://tools/replay_match.gd -- --file=/abs/session_123.json --until=N --events=1   # stop at input N, print events + state
+```
+
+A bug report needs:
+1. `session_id` + the clock time from the event log (`BUG` row) + a screenshot.
+2. The telemetry file, plus build commit and preset.
+3. Steps in words: what the tester did, what they expected, what happened.
+4. Whether it repeats when replayed. Run the steps above:
+   - If the replay **matches** and the state at the reported moment is correct, the bug is in **presentation/UI**. Check the screenshot against the printed state.
+   - If the state itself is wrong, it is a **rules** bug. Add a regression test in `client/tests/unit/test_regressions.gd`.
+
+Limits:
+- **The record is written only when the match ends.** A crash or force-quit mid-match leaves only the seed (device panel) and the event log. Force quit = no match recovery, by design; the replay record is a debug log, not a save.
+- **Public release builds write no telemetry at all** (BuildFlavor lock, checked in CI).
+
+## 6. Anonymous aggregation (Phase 2)
+```
+python3 scripts/analysis/aggregate_playtest.py --logs logs/*.csv --forms forms/*.csv --telemetry telemetry/*.json --md summary.md
+```
+
+What the tool does:
+- Replaces tester codes with T01, T02, …
+- Drops device and free-text quotes unless `--include-quotes` is given.
+- Excludes autopilot/bench telemetry from human metrics.
+- Warns on unknown event codes and on answers outside 1–5.
+
+`--self-test` checks the tool with generated data held in memory only. **Never commit invented sessions.** Real results go in `docs/test-logs/playtest/` only after a real session.

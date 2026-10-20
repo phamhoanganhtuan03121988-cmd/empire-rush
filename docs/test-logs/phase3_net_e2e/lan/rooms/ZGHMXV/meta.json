@@ -1,0 +1,29 @@
+{
+  "code": "ZGHMXV",
+  "format": 1,
+  "players": 3,
+  "policy": {
+    "hold_ms": 60000,
+    "on_expiry": "bot"
+  },
+  "seats": [
+    {
+      "character_id": "TYCOON",
+      "player_id": "p0"
+    },
+    {
+      "character_id": "INVESTOR",
+      "player_id": "p1"
+    },
+    {
+      "character_id": "NEGOTIATOR",
+      "player_id": "p2"
+    }
+  ],
+  "seed": 768845907,
+  "token_hashes": [
+    "4d46430f007a24af5d3ececc52c50b7c7b6a254edbd7ab0549bc31c5e4b2cd53",
+    "9caa711c8f0cafd1961f9fcb1190b050fe9ce91fc5536e6fee78014b3c5bf141",
+    "b3de78dc18bdc3e9fd2b4547db3adaade3ecefd8951b5c3cfb7a42cee8902faa"
+  ]
+}

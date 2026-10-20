@@ -1,0 +1,30 @@
+{
+  "chaos": {
+    "connect_attempts": 1,
+    "duplicates": 0,
+    "fake_state": 0,
+    "invalid": 0,
+    "reconnects": 0,
+    "voluntary_drops": 0
+  },
+  "commands_sent": 68,
+  "frames_dropped_local": 0,
+  "frames_sent": 204,
+  "invalid_kinds": [],
+  "last_seq": 397,
+  "public_hash": "b945e35bbae4c1f7324c742af124cb3d23eaaf3ae2a9cd9a84ad92cdaa8fa56e",
+  "room_code": "DNXS7A",
+  "seat": 0,
+  "snapshot_hash": "b945e35bbae4c1f7324c742af124cb3d23eaaf3ae2a9cd9a84ad92cdaa8fa56e",
+  "state_version": 135,
+  "stats": {
+    "duplicate_events": 0,
+    "errors": {},
+    "gaps": 0,
+    "hash_checks": 135,
+    "hash_mismatch": 0,
+    "rejections": {},
+    "resends": 0,
+    "snapshots": 135
+  }
+}
