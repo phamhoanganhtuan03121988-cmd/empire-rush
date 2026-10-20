@@ -138,6 +138,8 @@ func _apply_settings() -> void:
 		presenter.reduced_motion = MatchSetup.reduced_motion
 	if audio:
 		audio.apply_settings()
+	if hud:
+		hud.refresh_sound_button()
 
 
 func open_pause() -> void:

@@ -210,7 +210,59 @@ static func fit_name(l: Label, max_size: int, min_size := 16) -> void:
 	if not l.resized.is_connected(refit):
 		l.resized.connect(refit)
 	l.set_meta("fit_max", max_size)
+	l.set_meta("fit_call", refit)
 	refit.call()
+
+
+## Button text on ONE line, never cut and never wrapped ("CÁCH CHƠI" and
+## "BẮT ĐẦU" broke over two lines on a 375 pt iPhone): shrink the font down
+## to `min_size`; if it still does not fit, drop the icon to give the text
+## the whole width (the icon comes back when the button is wide enough).
+## clip_text stops the text from widening the button's container.
+static func fit_button(b: Button, min_size := 18) -> void:
+	if b.has_meta("fit_button"):
+		return
+	var max_size := b.get_theme_font_size("font_size")
+	b.set_meta("fit_button", max_size)
+	b.set_meta("fit_icon", b.icon)
+	b.clip_text = true
+	b.autowrap_mode = TextServer.AUTOWRAP_OFF
+	b.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	var refit := func():
+		if b.size.x <= 1.0:
+			return
+		var font := b.get_theme_font("font")
+		var st := b.get_theme_stylebox("normal")
+		var pad := (st.get_margin(SIDE_LEFT) + st.get_margin(SIDE_RIGHT)) if st else 0.0
+		var icon: Texture2D = b.get_meta("fit_icon")
+		var icon_w := 0.0
+		if icon and b.vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER:
+			var mw := b.get_theme_constant("icon_max_width")
+			icon_w = (float(mw) if mw > 0 else float(icon.get_width())) + b.get_theme_constant("h_separation")
+		for with_icon in [true, false]:
+			var avail := b.size.x - pad - (icon_w if with_icon else 0.0) - 4.0
+			var fs: int = max_size
+			while fs > min_size and font.get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > avail:
+				fs -= 1
+			if font.get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= avail or not with_icon or icon == null:
+				b.add_theme_font_size_override("font_size", fs)
+				b.icon = icon if with_icon else null
+				return
+	b.resized.connect(refit)
+	b.set_meta("fit_call", refit)
+	refit.call()
+
+
+## Fit a fit_button() button again after its text changed.
+static func refit_button(b: Button) -> void:
+	if b.has_meta("fit_call"):
+		(b.get_meta("fit_call") as Callable).call()
+
+
+## Fit again after the text changed (fit_name() refits on resize only).
+static func refit_name(l: Label) -> void:
+	if l.has_meta("fit_call"):
+		(l.get_meta("fit_call") as Callable).call()
 
 
 ## Centres a button's text on the WHOLE button ("CHƠI" read off-centre:

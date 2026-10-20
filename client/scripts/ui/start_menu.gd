@@ -295,6 +295,8 @@ func _show_intro(i: int) -> void:
 	var last := _intro_index == pages.size() - 1
 	buttons["intro_next"].text = "BẮT ĐẦU" if last else "TIẾP"
 	buttons["intro_back"].text = "MENU" if _intro_index == 0 else "QUAY LẠI"
+	UiTheme.refit_button(buttons["intro_next"])
+	UiTheme.refit_button(buttons["intro_back"])
 	var box: Control = _intro_parts["box"]
 	if not MatchSetup.reduced_motion and is_inside_tree():
 		box.modulate.a = 0.0
@@ -628,8 +630,6 @@ func _choice_row(v: VBoxContainer, id: String, options: Array, current: Variant,
 	for o in options:
 		var b := _button(str(o[1]), o[2] if o.size() > 2 else "")
 		b.set_meta("value", o[0])
-		# Narrow portrait screens: labels wrap instead of widening the card.
-		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		b.custom_minimum_size.x = 0
 		row.add_child(b)
 		group.append(b)
@@ -657,8 +657,9 @@ func _button(text: String, icon_name: String) -> Button:
 		b.icon = UiTheme.icon(icon_name)
 	b.custom_minimum_size = Vector2(0, UiTheme.MIN_TOUCH)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# Rows of 3 buttons on a 720 px phone: wrap rather than widen the card.
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Rows of 3 buttons on a phone: one line, the text shrinks to fit
+	# (UiTheme.fit_button), it never wraps or widens the card.
+	UiTheme.fit_button.call_deferred(b)
 	AudioDirector.wire(b)
 	return b
 

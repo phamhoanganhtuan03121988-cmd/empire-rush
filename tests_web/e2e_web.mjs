@@ -34,6 +34,43 @@ const iphone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: Numbe
   userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' };
 const ctx = await browser.newContext(iphone);
 const page = await ctx.newPage();
+// Audio probe (test only): counts started sources and measures the real
+// signal reaching the speakers, through an analyser on every connection to
+// the context's destination. Installed before the page's own scripts.
+await page.addInitScript(() => {
+  const tap = { starts: 0, peak: 0 };
+  window.__erTap = tap;
+  // AudioBufferSourceNode has its own start() (it shadows the base class').
+  for (const K of [AudioBufferSourceNode, OscillatorNode]) {
+    const start = K.prototype.start;
+    K.prototype.start = function (...a) { tap.starts += 1; return start.apply(this, a); };
+  }
+  const connect = AudioNode.prototype.connect;
+  AudioNode.prototype.connect = function (dest, ...rest) {
+    if (dest instanceof AudioDestinationNode) {
+      const c = this.context;
+      if (!c.__erAn) {
+        c.__erAn = c.createAnalyser();
+        c.__erAn.fftSize = 2048;
+        const sink = c.createGain();
+        sink.gain.value = 0;
+        connect.call(c.__erAn, sink);
+        connect.call(sink, c.destination);
+        const buf = new Float32Array(2048);
+        setInterval(() => {
+          c.__erAn.getFloatTimeDomainData(buf);
+          let m = 0;
+          for (let i = 0; i < buf.length; i += 1) m = Math.max(m, Math.abs(buf[i]));
+          tap.peak = Math.max(tap.peak, m);
+        }, 40);
+      }
+      connect.call(this, c.__erAn);
+    }
+    return connect.call(this, dest, ...rest);
+  };
+});
+const audioProbe = () => page.evaluate(() => ({ ...window.__erTap, info: window.erAudio ? JSON.parse(window.erAudio.info()) : null }));
+const resetPeak = () => page.evaluate(() => { window.__erTap.peak = 0; });
 if (process.env.E2E_TRACE) {
   await page.addInitScript(() => {
     const put = IDBObjectStore.prototype.put;
@@ -101,7 +138,12 @@ async function closeCoach() {
     await tap('coach:ok', 2000);
   }
 }
-const shot = (name) => page.screenshot({ path: path.join(out, name + '.png') });
+const shot = async (name) => {
+  // Every screenshot is also a layout audit of what is on screen.
+  const a = JSON.parse(await page.evaluate(() => { window.erE2E.audit(); return window.erE2EResult; }));
+  check(a.problems.length === 0, `layout audit at ${name}: ${a.buttons} buttons, nothing cut or off screen`, a.problems.slice(0, 4).join(' | '));
+  await page.screenshot({ path: path.join(out, name + '.png') });
+};
 
 try {
   // 1. Boot.
@@ -127,7 +169,13 @@ try {
   await page.evaluate(() => document.getElementById('install-hint-close').click());
 
   // 3. Title -> intro -> setup (touch).
+  const a0 = await audioProbe();
+  check(a0.info && a0.info.contexts >= 1, 'audio: the engine created an AudioContext', JSON.stringify(a0.info));
   check(await tap('menu:title_play'), 'tap CHƠI');
+  await page.waitForTimeout(1500);
+  const a1 = await audioProbe();
+  check(a1.info.state === 'running' && a1.info.gestures >= 1, 'audio: context running after the first tap', JSON.stringify(a1.info));
+  check(a1.peak > 0.001, 'audio: real signal reaches the output after the first tap (music / UI click)', `peak ${a1.peak.toFixed(4)}, sources started ${a1.starts}`);
   let s = await state();
   if (s.page === 'intro') {
     await shot('02_intro');
@@ -150,16 +198,28 @@ try {
   check(!!(await waitRect('hud:RollDice', 90000)), 'roll button offered');
   await shot('04_roll_ready');
   const cash0 = s.cash[0];
+  // Sound button: mute, then on again (state saved like the settings page).
+  check(await tap('hud:sound'), 'tap the sound button (mute)');
+  check((await state()).muted === true, 'sound muted from the HUD');
+  check(await tap('hud:sound'), 'tap the sound button (unmute)');
+  check((await state()).muted === false, 'sound back on from the HUD');
+  await resetPeak();
+  const starts0 = (await audioProbe()).starts;
   check(await tap('hud:RollDice'), 'tap ĐỔ XÚC XẮC');
   await page.waitForTimeout(600);
   await shot('05_dice');
   s = await waitState((x) => x.idle && x.seat === 0 && x.phase !== 'AwaitRoll', 60000);
   check(s.phase !== 'AwaitRoll', 'dice rolled and pawn moved', s.phase);
+  const a2 = await audioProbe();
+  const rec = s.sounds_recent || [];
+  check(['dice_roll', 'step'].every((k) => rec.includes(k)), 'gameplay sounds triggered: dice roll, pawn steps', rec.join(','));
+  check(a2.starts > starts0 && a2.peak > 0.001, 'gameplay sounds reach the output', `+${a2.starts - starts0} sources, peak ${a2.peak.toFixed(4)}`);
   await closeCoach();
   if (s.phase === 'AwaitBuyDecision') {
     await shot('06_buy_prompt');
     check(await tap('hud:BuyProperty'), 'tap MUA');
     s = await waitState((x) => x.owned_by_human.length > 0 && x.idle, 30000);
+    check((s.sounds_recent || []).includes('buy'), 'purchase sound triggered', (s.sounds_recent || []).join(','));
     check(s.owned_by_human.length === 1 && s.cash[0] < cash0 + 400, 'property bought: owner updated, cash paid', JSON.stringify({ owned: s.owned_by_human, cash: s.cash[0] }));
   } else {
     check(true, 'no buy on this landing', s.phase);
@@ -167,7 +227,7 @@ try {
   await closeCoach();
   await shot('07_after_buy');
   const names = s.cards.map((c) => `${c.name}:${c.fits ? 'fits' : 'CUT'}`);
-  check(s.cards.every((c) => c.fits), 'player names fit their cards', names.join(', '));
+  check(s.cards.every((c) => c.fits && c.role_fits && c.cash_fits), 'player names, net worth and cash fit their cards', s.cards.map((c) => `${c.name}|${c.role}|${c.cash}`).join(', '));
   if (await waitRect('hud:EndTurn', 30000)) check(await tap('hud:EndTurn'), 'tap KẾT THÚC LƯỢT');
   s = await waitState((x) => x.seat === 0 && x.phase === 'AwaitRoll' && x.idle, 300000);
   check(s.seat === 0 && s.phase === 'AwaitRoll', "bot played; the human's turn again (autosave point)", `round ${s.round}`);

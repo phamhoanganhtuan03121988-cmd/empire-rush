@@ -50,6 +50,10 @@ func build(p_seat: int, theme: ThemeData) -> void:
 	_ring_mat.albedo_color = theme.player_color(seat)
 	_ring.material_override = _ring_mat
 	add_child(_ring)
+	# Mobile visual pass: a soft contact shadow grounds the pawn on the tile.
+	var shadow := BoardView.contact_shadow_node(0.2, 0.7)
+	shadow.position.y = 0.006
+	add_child(shadow)
 	var face := theme.player_portrait(seat)
 	if face:
 		medallion = Sprite3D.new()

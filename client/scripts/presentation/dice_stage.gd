@@ -182,7 +182,7 @@ func _region() -> Rect2:
 	return r
 
 
-## The tray fills most of the board area (dice ~1/7 of its width each), the
+## The tray covers the middle of the board area (dice ~1/7 of its width each), the
 ## result card sits just under it.
 func _layout() -> void:
 	# Hidden at _ready, so anchors never sized it: fill the screen by hand
@@ -192,7 +192,9 @@ func _layout() -> void:
 	_dim.position = Vector2.ZERO
 	_dim.size = size
 	var r := _region()
-	var w := minf(minf(r.size.x * 0.92, (r.size.y - 120.0) * 1.35), 760.0)
+	# Mobile pass: 76% of the board area (was 92%): the dice stay big and
+	# readable but no longer cover the whole board on a phone.
+	var w := minf(minf(r.size.x * 0.76, (r.size.y - 120.0) * 1.1), 620.0)
 	w = maxf(w, 280.0)
 	var h := w / 1.35
 	_box.size = Vector2(w, h)

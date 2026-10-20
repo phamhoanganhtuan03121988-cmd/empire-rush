@@ -34,6 +34,9 @@ var _timer_bar: ProgressBar
 var _timer_fill: StyleBoxFlat
 var _quality_btn: Button
 var pause_button: Button
+var _compact_cards := false
+var _compact_applied := false
+var sound_button: Button
 ## Set by main only when the device tools exist (BuildFlavor). Otherwise a
 ## long press is just a press and cycles the preset.
 var dev_menu_enabled := false
@@ -151,6 +154,22 @@ func _build_top() -> void:
 	_quality_btn.pressed.connect(_on_quality_pressed)
 	AudioDirector.wire(_quality_btn)
 	row.add_child(_quality_btn)
+	# Shrinks its text (and drops the gear icon if needed) when the top row is
+	# narrow: the sound button made the landscape column too wide.
+	_quality_btn.custom_minimum_size.x = 170
+	UiTheme.fit_button.call_deferred(_quality_btn, 20)
+	# Sound on/off at hand (iPhone players looked for it); same setting as the
+	# settings page toggle.
+	sound_button = Button.new()
+	sound_button.custom_minimum_size = Vector2(82, 82)
+	sound_button.add_theme_constant_override("icon_max_width", 34)
+	sound_button.tooltip_text = "Bật / tắt âm thanh"
+	UiTheme.neutral(sound_button)
+	sound_button.pressed.connect(func():
+		AudioDirector.toggle_mute()
+		refresh_sound_button())
+	row.add_child(sound_button)
+	refresh_sound_button()
 	pause_button = Button.new()
 	pause_button.custom_minimum_size = Vector2(82, 82)
 	pause_button.icon = UiTheme.icon("menu")
@@ -222,9 +241,11 @@ func _build_card(seat: int) -> Dictionary:
 	# The whole name, always ("Tuấn" was cut to "Tu"): shrink, then wrap.
 	UiTheme.fit_name(name, 22, 16)
 	var ch := _label(20, UiTheme.TEXT_MUTED)
-	ch.autowrap_mode = TextServer.AUTOWRAP_OFF
-	ch.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	ch.text = theme_data.loc(p["character_id"], "short", theme_data.character_name(p["character_id"], config))
+	var role_text := ch.text
+	# Never "Tài sản 1500…": the line shrinks to fit; on narrow cards (3-4
+	# players on a phone) it shows the net worth only (role in the tile info).
+	UiTheme.fit_name(ch, 20, 14)
 	ch.tooltip_text = UiText.t("worth_tip")
 	ch.mouse_filter = Control.MOUSE_FILTER_PASS
 	v.add_child(ch)
@@ -234,11 +255,16 @@ func _build_card(seat: int) -> Dictionary:
 	money.add_child(_icon_rect("coin", 22, UiTheme.GOLD))
 	var cash := _label(26, UiTheme.TEXT)
 	cash.add_theme_font_override("font", UiTheme.font("ExtraBold"))
-	cash.autowrap_mode = TextServer.AUTOWRAP_OFF
-	cash.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	cash.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	money.add_child(cash)
-	return {"panel": panel, "name": name, "cash": cash, "seat": seat, "avatar": avatar, "role": ch, "role_text": ch.text}
+	# The amount is never cut: it shrinks on narrow cards.
+	UiTheme.fit_name(cash, 26, 16)
+	return {"panel": panel, "name": name, "cash": cash, "seat": seat, "avatar": avatar, "role": ch, "role_text": role_text}
+
+
+func refresh_sound_button() -> void:
+	if sound_button:
+		sound_button.icon = UiTheme.icon("sound_off" if GameSettings.muted else "sound")
 
 
 func _icon_rect(name: String, size: int, tint: Color) -> TextureRect:
@@ -381,6 +407,18 @@ func _layout() -> void:
 	var m := 14.0
 	var n_cards := _cards.size()
 	_cards_box.columns = 2 if _landscape and n_cards > 2 else maxi(n_cards, 1)
+	# Narrow cards (3-4 players across a phone in portrait): smaller avatar,
+	# net worth without the role, so nothing is cut.
+	var top_w := column_width() if _landscape else s.size.x - m * 2
+	var card_w := (top_w - 44.0) / _cards_box.columns
+	var compact := card_w < 280.0
+	if compact != _compact_cards or not _compact_applied:
+		_compact_cards = compact
+		_compact_applied = true
+		for c in _cards:
+			var av: Control = c["avatar"]
+			av.custom_minimum_size = Vector2.ONE * (34.0 if compact else 46.0)
+		_refresh_worth()
 	# Wrapped text re-measures at the new width over the next frames; place
 	# the panels again then (Phase 5: the action panel ended 33 px off screen
 	# after a portrait -> landscape switch).
@@ -505,7 +543,8 @@ func _refresh_worth() -> void:
 			worth = int(presenter.presented_cash.get(seat, e.state.player(seat)["cash"]))
 			for pid in e.state.properties_of(seat):
 				worth += e.liquidation_value(pid)
-		c["role"].text = UiText.t("role_worth") % [worth, c["role_text"]]
+		c["role"].text = (UiText.t("worth_only") % worth) if _compact_cards else (UiText.t("role_worth") % [worth, c["role_text"]])
+		UiTheme.refit_name(c["role"])
 
 
 func _on_turn(seat: int, round: int) -> void:
@@ -596,10 +635,18 @@ func open_tile_info(index: int) -> void:
 		var t := config.tier_of(pid)
 		var o: int = match_ref.engine.state.owner[pid]
 		var lad := match_ref.engine.rent_ladder(pid)
+		# Mobile pass: one fact per line, the ones a player decides on first
+		# (price, owner, the rent due right now), then the full ladder.
 		lines.append("%s — %s" % [_prop_name(pid), theme_data.districts[sp["district_id"]]["label"]])
-		lines.append(UiText.t("price_rent") % [t["price"], lad[0]])
+		lines.append(UiText.t("info_price") % t["price"])
+		if o < 0:
+			lines.append(UiText.t("info_owner_none"))
+			lines.append(UiText.t("info_rent_base") % lad[0])
+		else:
+			var who := theme_data.player_name(o) + (" (" + UiText.t("you") + ")" if match_ref.is_human(o) else "")
+			lines.append(UiText.t("info_owner") % [who, match_ref.engine.state.level[pid]])
+			lines.append(UiText.t("info_rent_now") % match_ref.engine.gross_rent(pid))
 		lines.append(UiText.t("rent_table") % lad)
-		lines.append("Chủ: %s · Cấp %d" % [UiText.t("bank") if o < 0 else theme_data.player_name(o), match_ref.engine.state.level[pid]])
 	else:
 		lines.append(theme_data.special[sp["space_type"]]["label"].replace("\n", " "))
 	_info_label.text = "\n".join(lines)
@@ -662,6 +709,7 @@ func _on_quality_pressed() -> void:
 
 func set_quality_label(name: String) -> void:
 	_quality_btn.text = UiText.t("quality") % UiText.t("quality_" + name)
+	UiTheme.refit_button(_quality_btn)
 
 
 # --- action panel ---------------------------------------------------------------
