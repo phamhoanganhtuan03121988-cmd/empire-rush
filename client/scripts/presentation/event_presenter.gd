@@ -273,6 +273,26 @@ func _token_offset(seat: int) -> Vector3:
 	return offs[seat % 4]
 
 
+## Web/PWA resume: show a replayed match as it stands (no animations): cash,
+## pawn positions, owners and buildings, the round and whose turn it is.
+func sync_to_state(s: GameState) -> void:
+	for p in s.players:
+		var seat: int = p["seat"]
+		presented_cash[seat] = p["cash"]
+		presented_pos[seat] = p["position"]
+		cash_presented.emit(seat, p["cash"])
+		if seat < tokens.size():
+			tokens[seat].position = board.tile_position(p["position"]) + _token_offset(seat)
+			tokens[seat].visible = not p["bankrupt"]
+			tokens[seat].set_active(seat == s.current_seat, not reduced_motion)
+	for pid in s.owner:
+		var o: int = s.owner[pid]
+		board.show_owner(pid, o if o >= 0 else -1)
+		board.show_level(pid, int(s.level.get(pid, 0)), o, false)
+	turn_presented.emit(s.current_seat, s.round)
+	board.set_highlight(presented_pos.get(s.current_seat, 0))
+
+
 func _place_tokens() -> void:
 	for t in tokens:
 		t.position = board.tile_position(0) + _token_offset(t.seat)

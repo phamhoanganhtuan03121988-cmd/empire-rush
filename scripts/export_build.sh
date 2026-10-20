@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Exports a build with a build stamp (commit + time) that the in-app device
 # panel and every device report show.
-# Usage: scripts/export_build.sh ios|linux|windows internal|public [debug|release]
+# Usage: scripts/export_build.sh ios|linux|windows|web internal|public [debug|release]
+#   web: public only (the browser build has no device tools); single-threaded
+#        WebGL 2 export + PWA files in build/web-public/ (index.html ...).
 #   internal  = "... Internal Test" preset: custom feature "device_tools", so
 #               the device panel, reports and telemetry files exist even in a
 #               release build (for device measurements).
@@ -19,7 +21,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GODOT="${GODOT:-godot}"
-USAGE="usage: export_build.sh ios|linux|windows internal|public [debug|release]"
+USAGE="usage: export_build.sh ios|linux|windows|web internal|public [debug|release]"
 TARGET="${1:?$USAGE}"
 FLAVOR="${2:?$USAGE}"
 MODE="${3:-release}"
@@ -62,10 +64,18 @@ case "$TARGET" in
 		# One self-contained .exe (data embedded); needs the windows_*_x86_64
 		# templates (scripts/ci/install_templates.sh windows).
 		preset="Windows $flavor_name"; out="$ROOT/build/windows-$FLAVOR/EmpireRush.exe" ;;
+	web)
+		[ "$FLAVOR" = "public" ] || { echo "web builds are public only" >&2; exit 2; }
+		# Needs web_nothreads_release.zip (scripts/ci/install_templates.sh web).
+		preset="Web $flavor_name"; out="$ROOT/build/web-$FLAVOR/index.html"
+		rm -rf "$(dirname "$out")" ;;
 	*) echo "$USAGE" >&2; exit 2 ;;
 esac
 
 mkdir -p "$(dirname "$out")"
 "$GODOT" --headless --path "$CLIENT" --import >/dev/null 2>&1 || true
 "$GODOT" --headless --path "$CLIENT" "--export-$MODE" "$preset" "$out"
+if [ "$TARGET" = "web" ]; then
+	python3 "$ROOT/scripts/web/postprocess_web.py" "$(dirname "$out")"
+fi
 echo "EXPORTED $preset ($MODE) commit=$commit$dirty -> $(dirname "$out")"

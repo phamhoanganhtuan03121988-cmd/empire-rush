@@ -15,6 +15,7 @@ extends Control
 signal start_requested
 signal tutorial_requested
 signal settings_changed
+signal resume_requested
 
 const PRESET_LABELS := SettingsPanel.PRESET_LABELS
 ## Widest the how-to column and the cards get (logical px).
@@ -156,8 +157,28 @@ func _build_title() -> void:
 	_title_buttons = VBoxContainer.new()
 	_title_buttons.add_theme_constant_override("separation", 14)
 	p.add_child(_title_buttons)
-	var play := _button("CHƠI", "dice")
-	play.custom_minimum_size.y = 120
+	# Web/PWA: a saved match comes first (closing the app never loses it).
+	var saved := SavedMatch.load_record()
+	if not saved.is_empty():
+		var res := _button("TIẾP TỤC TRẬN", "arrow_up")
+		res.custom_minimum_size.y = 120
+		res.add_theme_font_size_override("font_size", 38)
+		res.add_theme_font_override("font", UiTheme.font("ExtraBold"))
+		res.pressed.connect(func():
+			SavedMatch.pending = SavedMatch.load_record()
+			if SavedMatch.pending.is_empty():
+				show_page("title")
+				return
+			resume_requested.emit())
+		buttons["title_resume"] = res
+		_title_buttons.add_child(res)
+		var info := _label(SavedMatch.summary(saved), 22, UiTheme.TEXT_MUTED, "Medium")
+		info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_title_buttons.add_child(info)
+	var play := _button("CHƠI" if saved.is_empty() else "TRẬN MỚI", "dice")
+	play.custom_minimum_size.y = 120 if saved.is_empty() else 96
+	if not saved.is_empty():
+		UiTheme.secondary(play)
 	play.add_theme_font_size_override("font_size", 40)
 	play.add_theme_font_override("font", UiTheme.font("ExtraBold"))
 	play.add_theme_constant_override("icon_max_width", 52)

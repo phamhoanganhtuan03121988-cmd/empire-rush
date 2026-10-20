@@ -14,3 +14,5 @@ Thumbs.db
 /build/
 client/data/build_info.json
 /dist/
+# Browser test tooling (npm install in tests_web/)
+tests_web/node_modules/

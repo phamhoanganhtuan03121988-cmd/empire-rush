@@ -4,6 +4,9 @@
 # extracts only the templates asked for, plus version.txt.
 #   scripts/ci/install_templates.sh            -> linux_release.x86_64 (release-lock)
 #   scripts/ci/install_templates.sh windows    -> + windows_release_x86_64.exe
+#   scripts/ci/install_templates.sh web        -> + web_nothreads_release.zip
+#     (single-threaded web: no SharedArrayBuffer, so no COOP/COEP headers
+#     are needed - GitHub Pages cannot send them - and Safari/iOS runs it)
 # No iOS/macOS templates: iOS builds need macOS + Xcode.
 set -euo pipefail
 VERSION="4.7.2-stable"
@@ -14,6 +17,7 @@ WANT=(linux_release.x86_64)
 for p in "$@"; do
 	case "$p" in
 		windows) WANT+=(windows_release_x86_64.exe) ;;
+		web) WANT+=(web_nothreads_release.zip) ;;
 		*) echo "unknown platform: $p" >&2; exit 2 ;;
 	esac
 done

@@ -42,6 +42,35 @@ func start(p_config: GameConfig, seats: Array, seed_value: int, p_human_seats: A
 	events_emitted.emit.call_deferred(engine.event_log.duplicate())
 
 
+## Web/PWA: rebuilds a saved match by replaying its logged commands on a
+## fresh engine (SavedMatch). Returns false - and leaves the match unstarted -
+## when the record does not replay to the saved state hash.
+func resume(p_config: GameConfig, rec: Dictionary, p_human_seats: Array[int]) -> bool:
+	var r := MatchReplay.replay(p_config, rec)
+	if not r["ok"] or r["engine"].state.state_hash() != str(rec.get("state_hash", "")):
+		push_warning("resume failed: %s" % r.get("error", "state hash differs"))
+		return false
+	config = p_config
+	human_seats = p_human_seats
+	engine = r["engine"]
+	# Continue on the frame clock from the replayed match time.
+	clock = FrameClock.new(engine.clock.now_ms())
+	engine.clock = clock
+	# Command ids continue after the logged ones (the engine ignores a
+	# repeated id as a duplicate).
+	for entry in engine.input_log:
+		var id: String = str(entry.get("cmd", {}).get("command_id", ""))
+		if id.begins_with("ui-"):
+			_cmd_n = maxi(_cmd_n, int(id.trim_prefix("ui-")))
+	var seed_value: int = int(rec["seed"])
+	_rng.seed = seed_value
+	var bot_rng := ErRng.new(seed_value * 7919 + 17)
+	for i in engine.state.players.size():
+		if not i in human_seats:
+			_bots[i] = BotPlayer.new(i, engine.state.players[i]["player_id"], bot_rng, 0)
+	return true
+
+
 func is_human(seat: int) -> bool:
 	return seat in human_seats
 

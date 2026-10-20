@@ -37,6 +37,9 @@ var menu: StartMenu
 var audio: AudioDirector
 var pause_menu: PauseMenu
 var coach: CoachOverlay
+## Web/PWA: the match autosaves (SavedMatch) and can resume from the title.
+var _save_enabled := false
+var _resumed := false
 ## Fixed seed of the tutorial match (2 players): the first roll lands on a
 ## property the player can buy, so step 3 happens on the first turn.
 const TUTORIAL_SEED := 4
@@ -59,8 +62,13 @@ func _ready() -> void:
 	# (tests, captures) use a scratch file and never touch the player's.
 	if not args_override.is_empty():
 		GameSettings.path = "user://test_telemetry/settings.cfg"
+		SavedMatch.path = "user://test_telemetry/saved_match.json"
 	elif not GameSettings.loaded:
 		GameSettings.load_settings()
+	if WebBridge.wanted():
+		var bridge := WebBridge.new()
+		bridge.main = self
+		add_child(bridge)
 	config = GameConfig.load_from_dir()
 	theme_data = ThemeData.load_default()
 	audio = AudioDirector.new()
@@ -70,7 +78,8 @@ func _ready() -> void:
 		audio.play_music()
 	_build_world()
 	# Phase 4: a normal launch (no --players) shows the start menu first.
-	if not args.has("players") and not MatchSetup.chosen:
+	# --resume (tests, captures) goes straight to the saved match.
+	if not args.has("players") and not MatchSetup.chosen and not args.has("resume"):
 		_show_menu()
 		return
 	_start_match()
@@ -103,6 +112,7 @@ func _show_menu() -> void:
 	menu.setup(config, theme_data, args.get("menu_page", "title"))
 	menu.start_requested.connect(func(): _leave_menu(layer, false))
 	menu.tutorial_requested.connect(func(): _leave_menu(layer, true))
+	menu.resume_requested.connect(func(): _leave_menu(layer, false))
 	menu.settings_changed.connect(_apply_settings)
 	_reframe.call_deferred()
 
@@ -158,7 +168,12 @@ func close_pause() -> void:
 func _start_match() -> void:
 	# Menu choices apply only to menu launches; --players/tests keep their args.
 	var from_menu := not args.has("players")
-	var as_tutorial := from_menu and MatchSetup.tutorial
+	# Web/PWA: "TIẾP TỤC TRẬN" on the title screen resumes the saved match.
+	var resume: Dictionary = SavedMatch.pending
+	SavedMatch.pending = {}
+	if resume.is_empty() and args.has("resume"):
+		resume = SavedMatch.load_record()
+	var as_tutorial := from_menu and MatchSetup.tutorial and resume.is_empty()
 	var n := 2 if as_tutorial else clampi(int(args.get("players", str(MatchSetup.players))), 2, 4)
 	var chars: Array = MatchSetup.seat_characters(n, MatchSetup.character) if from_menu else CHARACTERS
 	var seed_value := int(args["seed"]) if args.has("seed") else int(Time.get_unix_time_from_system()) % 1000000
@@ -170,6 +185,13 @@ func _start_match() -> void:
 	var seats: Array = []
 	for i in n:
 		seats.append({"player_id": "p%d" % i, "character_id": chars[i]})
+	if not resume.is_empty():
+		n = resume["seats"].size()
+		seats = resume["seats"]
+		seed_value = int(resume["seed"])
+		var ids: Array = resume.get("identities", [])
+		if ids.size() >= n:
+			theme_data.players = ids
 	match_ref = LocalMatch.new()
 	match_ref.name = "LocalMatch"
 	add_child(match_ref)
@@ -195,7 +217,15 @@ func _start_match() -> void:
 	match_ref.can_act = presenter.is_idle
 	match_ref.events_emitted.connect(presenter.enqueue)
 	match_ref.events_emitted.connect(_on_events)
-	match_ref.start(config, seats, seed_value, [0] as Array[int])
+	_resumed = false
+	if not resume.is_empty():
+		_resumed = match_ref.resume(config, resume, [0] as Array[int])
+		if not _resumed:
+			SavedMatch.clear()  # broken save: start fresh instead of failing
+	if not _resumed:
+		match_ref.start(config, seats, seed_value, [0] as Array[int])
+	# Autosave (menu launches; tests/captures only with --save; never the tutorial).
+	_save_enabled = (from_menu and not as_tutorial and not args.has("autoplay")) or args.has("save")
 	telemetry = SessionTelemetry.new()
 	telemetry.source = "autopilot" if args.has("autoplay") else "human"
 	add_child(telemetry)
@@ -224,6 +254,9 @@ func _start_match() -> void:
 		coach.setup(match_ref, hud, presenter, config, as_tutorial)
 		# Play again after the tutorial starts a normal match.
 		coach.finished.connect(func(): MatchSetup.tutorial = false)
+	if _resumed:
+		presenter.sync_to_state(match_ref.engine.state)
+		hud.show_toast.call_deferred(UiText.t("resumed") % match_ref.engine.state.round, UiTheme.GOLD, "check")
 	_setup_device_probe()
 	presenter.match_ended_presented.connect(_on_match_ended)
 	set_quality(args.get("quality", MatchSetup.quality if from_menu else "medium"))
@@ -373,6 +406,10 @@ func _menu_insets() -> Dictionary:
 func _on_events(events: Array) -> void:
 	for ev in events:
 		if ev["type"] == "TurnStarted":
+			_autosave()
+		elif ev["type"] == "MatchEnded" and _save_enabled:
+			SavedMatch.clear()
+		if ev["type"] == "TurnStarted":
 			telemetry.on_turn_started(ev["data"]["seat"], ev["data"]["round"], match_ref.is_human(ev["data"]["seat"]))
 
 
@@ -386,6 +423,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		var idx := board.pick(camera, pos)
 		if idx >= 0:
 			hud.open_tile_info(idx)
+
+
+func _autosave() -> void:
+	if _save_enabled and match_ref and match_ref.engine and not match_ref.engine.is_ended():
+		SavedMatch.save(match_ref.engine, theme_data.players, match_ref.human_seats)
+
+
+## Phones and browsers may kill a backgrounded app or tab: save on the way out.
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_WM_CLOSE_REQUEST]:
+		_autosave()
 
 
 func _on_match_ended(d: Dictionary) -> void:
