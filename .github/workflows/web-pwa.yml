@@ -82,10 +82,21 @@ jobs:
         with:
           path: build/web-public
 
+  # Deploys only (a) on a push to main or to the launch branch, or (b) when
+  # run by hand (workflow_dispatch) on the launch branch or main. Never from
+  # a pull_request event (forks / unreviewed code cannot publish).
   deploy:
     needs: web-build
-    if: github.event_name != 'pull_request'
+    if: >-
+      (github.event_name == 'push' &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/claude/empire-rush-web-pwa-launch')) ||
+      (github.event_name == 'workflow_dispatch' &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/claude/empire-rush-web-pwa-launch'))
     runs-on: ubuntu-24.04
+    # One deployment at a time, and never cancel one half-way.
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
