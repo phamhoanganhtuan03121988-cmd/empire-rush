@@ -135,7 +135,8 @@ func _build_world() -> void:
 	im.radial_segments = 64
 	inlay.mesh = im
 	inlay.position = Vector3(0, -0.062, 0)
-	inlay.material_override = _mat(UiTheme.GOLD, 0.3, 0.6)
+	# Muted brass, not UI gold: the bright ring read as a glaring yellow band.
+	inlay.material_override = _mat(Color("#a87e3a"), 0.4, 0.5)
 	world.add_child(inlay)
 	var felt := MeshInstance3D.new()
 	var fm := CylinderMesh.new()
