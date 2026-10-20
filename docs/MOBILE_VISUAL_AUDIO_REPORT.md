@@ -110,6 +110,15 @@ Asset paths: the sounds are inside `index.pck`, loaded from the page's own folde
 
 **WebKit:** `.github/workflows/web-pwa.yml` gains a `webkit` job (`tests_web/webkit_smoke.mjs`, Playwright WebKit with the iPhone 13 profile): boot, WebGL 2, the AudioContext after a tap, CHƠI. It is informative (`continue-on-error`): Linux WebKit is Safari's engine, not iOS Safari on a phone. WebKit cannot be installed in this build environment; the result comes from the CI run.
 
+**Result on PR #2:** CI run 39391394113, **WEB_WEBKIT 6/6 PASS**:
+- WebGL 2 available;
+- the game boots;
+- AudioContext `running` after one tap;
+- CHƠI leads to the intro;
+- no page errors or failed requests.
+
+`navigator.audioSession` does not exist in Linux WebKit ("n/a"), so the silent-switch handling is only exercised on iOS.
+
 **Before / after screenshots:** `docs/media/mobile/`
 - `board_zoom.png` (2 players, after a purchase, both at ×3);
 - `roll_ready_iphone.png`;
