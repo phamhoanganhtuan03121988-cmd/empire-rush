@@ -215,11 +215,12 @@ func _build_card(seat: int) -> Dictionary:
 	head.add_child(avatar)
 	var name := _label(22, pc.lightened(0.35))
 	name.add_theme_font_override("font", UiTheme.font("Bold"))
-	name.autowrap_mode = TextServer.AUTOWRAP_OFF
-	name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name.custom_minimum_size.x = 0
 	name.text = theme_data.player_name(seat)
 	head.add_child(name)
+	# The whole name, always ("Tuấn" was cut to "Tu"): shrink, then wrap.
+	UiTheme.fit_name(name, 22, 16)
 	var ch := _label(20, UiTheme.TEXT_MUTED)
 	ch.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ch.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -423,6 +424,8 @@ func _width(c: Control, w: float) -> void:
 	# width; give them the final width up front or panels grow to full height.
 	var pad := 44.0  # panel content margins (20 + 20) + slack
 	for l in c.find_children("*", "Label", true, false):
+		if l.has_meta("fit_max"):
+			continue  # name labels size themselves (UiTheme.fit_name)
 		if l.autowrap_mode != TextServer.AUTOWRAP_OFF:
 			var avail := w - pad
 			# Labels sharing a row with icons/badges get what the row leaves.
@@ -940,6 +943,7 @@ func _hero(b: Button) -> void:
 	b.add_theme_constant_override("icon_max_width", 64)
 	b.add_theme_stylebox_override("hover", UiTheme.hover_skin("btn_primary"))
 	b.set_meta("hero", true)
+	UiTheme.center_text(b)
 	if _hero_tween:
 		_hero_tween.kill()
 		_hero_tween = null

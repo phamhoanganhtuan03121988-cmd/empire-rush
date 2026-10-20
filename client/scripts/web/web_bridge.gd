@@ -5,6 +5,8 @@
 ##   erE2E.rect(id)  -> [x, y, w, h] of a visible button as fractions of the
 ##                      canvas (the test converts them to CSS pixels), or null
 ##   erE2E.state()   -> JSON text: page, phase, seat, cash, owners, card names
+## Godot JS callbacks cannot return values, so each call leaves its answer in
+## window.erE2EResult (the test reads it right after the call).
 ## Ids: "menu:<id>", "hud:<command>", "coach:<ok|off>", "pause:<id>",
 ## "hud:pause". It never sends commands itself: input goes through the browser.
 class_name WebBridge
@@ -21,10 +23,23 @@ static func wanted() -> bool:
 	return q is String and (q as String).contains("e2e=1")
 
 
+## Value of `name` in the page URL query, or "" (test mode only).
+static func query_value(name: String) -> String:
+	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
+	if not (q is String):
+		return ""
+	for part in (q as String).trim_prefix("?").split("&"):
+		var kv := part.split("=", true, 1)
+		if kv.size() == 2 and kv[0] == name:
+			return kv[1]
+	return ""
+
+
 func _ready() -> void:
 	var api: JavaScriptObject = JavaScriptBridge.create_object("Object")
-	var rect_cb := JavaScriptBridge.create_callback(func(args: Array): return _rect_json(str(args[0])))
-	var state_cb := JavaScriptBridge.create_callback(func(_args: Array): return JSON.stringify(_state()))
+	var win := JavaScriptBridge.get_interface("window")
+	var rect_cb := JavaScriptBridge.create_callback(func(args: Array): win.erE2EResult = _rect_json(str(args[0])))
+	var state_cb := JavaScriptBridge.create_callback(func(_args: Array): win.erE2EResult = JSON.stringify(_state()))
 	_callbacks = [rect_cb, state_cb]
 	api.rect = rect_cb
 	api.state = state_cb
@@ -88,5 +103,7 @@ func _state() -> Dictionary:
 		out["cards"] = cards
 	out["setup"] = {"persona": MatchSetup.persona, "name": MatchSetup.player_name, "players": MatchSetup.players}
 	out["saved_match"] = SavedMatch.exists()
+	out["saved_round"] = int(SavedMatch.load_record().get("round", 0)) if SavedMatch.exists() else 0
+	out["saved_log"] = SavedMatch.load_record().get("input_log", []).size() if SavedMatch.exists() else 0
 	out["resumed"] = main._resumed
 	return out

@@ -185,3 +185,62 @@ static func badge(color: Color, border := Color(1, 1, 1, 0.85)) -> StyleBoxFlat:
 	s.border_color = border
 	s.set_content_margin_all(4)
 	return s
+
+
+## A name is never cut: the label shrinks its font (down to `min_size`) to
+## fit its width, and only then wraps onto a second line. Re-fits whenever
+## the label is resized (orientation change, window resize).
+static func fit_name(l: Label, max_size: int, min_size := 16) -> void:
+	# clip_text keeps the label from widening its container (its minimum
+	# width would be the whole name); the font fit below makes the text fit,
+	# so nothing is ever clipped in practice.
+	l.clip_text = true
+	l.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	l.max_lines_visible = 2
+	var refit := func():
+		if l.size.x <= 1.0:
+			return
+		var font := l.get_theme_font("font")
+		var fs := max_size
+		while fs > min_size and font.get_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > l.size.x:
+			fs -= 1
+		l.add_theme_font_size_override("font_size", fs)
+		var fits := font.get_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= l.size.x
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF if fits else TextServer.AUTOWRAP_WORD_SMART
+	if not l.resized.is_connected(refit):
+		l.resized.connect(refit)
+	l.set_meta("fit_max", max_size)
+	refit.call()
+
+
+## Centres a button's text on the WHOLE button ("CHƠI" read off-centre:
+## Godot centres text in the space right of the icon). The icon moves to a
+## child drawn at the left edge, so the text is centred across the full
+## width; its colour still follows the button's state (normal / disabled).
+## For full-width buttons only (title column, hero roll button).
+static func center_text(b: Button) -> void:
+	if b.icon == null or b.has_meta("ct"):
+		return
+	b.set_meta("ct", true)
+	var tex := b.icon
+	b.icon = null
+	var ic := TextureRect.new()
+	ic.name = "CenteredIcon"
+	ic.texture = tex
+	ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(ic)
+	var place := func():
+		var w := float(b.get_theme_constant("icon_max_width"))
+		if w <= 0.0:
+			w = 48.0
+		w = minf(w, b.size.y * 0.6)
+		var sb := b.get_theme_stylebox("normal")
+		var left := sb.get_margin(SIDE_LEFT) if sb else 22.0
+		ic.size = Vector2(w, w)
+		ic.position = Vector2(left, (b.size.y - w) * 0.5 - (2.0 if not b.button_pressed else 0.0))
+		var col := "icon_disabled_color" if b.disabled else ("icon_pressed_color" if b.button_pressed else "icon_normal_color")
+		ic.modulate = b.get_theme_color(col)
+	b.resized.connect(place)
+	b.draw.connect(place)

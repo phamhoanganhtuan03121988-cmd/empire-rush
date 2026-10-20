@@ -51,6 +51,15 @@ for f in opt:
         cached.append(f)
 sw = re.sub(r"const CACHED_FILES = \[[^\]]*\];", "const CACHED_FILES = %s;" % json.dumps(cached), sw)
 sw = re.sub(r"const CACHEABLE_FILES = \[[^\]]*\];", "const CACHEABLE_FILES = [];", sw)
+# Look pages up in the cache without their query string, so a launch URL
+# with ?... (shared links, tests) still opens offline.
+old = "let cached = await cache.match(event.request);"
+if old not in sw:
+    sys.exit("service worker layout changed: cannot patch cache lookup")
+sw = sw.replace(old, "let cached = await cache.match(event.request, { ignoreSearch: true });")
+old_full = "const fullCache = await Promise.all(FULL_CACHE.map((name) => cache.match(name)));"
+if old_full not in sw:
+    sys.exit("service worker layout changed: cannot patch full-cache check")
 open(sp, "w").write(sw)
 
 open(os.path.join(out, ".nojekyll"), "w").close()

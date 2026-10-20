@@ -69,6 +69,10 @@ func _ready() -> void:
 		var bridge := WebBridge.new()
 		bridge.main = self
 		add_child(bridge)
+		# Browser tests may fix the dice seed (only in this ?e2e=1 test mode).
+		var seed_arg := WebBridge.query_value("seed")
+		if seed_arg.is_valid_int():
+			args["seed"] = seed_arg
 	config = GameConfig.load_from_dir()
 	theme_data = ThemeData.load_default()
 	audio = AudioDirector.new()

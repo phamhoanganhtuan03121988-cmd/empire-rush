@@ -171,6 +171,7 @@ func _build_title() -> void:
 				return
 			resume_requested.emit())
 		buttons["title_resume"] = res
+		UiTheme.center_text(res)
 		_title_buttons.add_child(res)
 		var info := _label(SavedMatch.summary(saved), 22, UiTheme.TEXT_MUTED, "Medium")
 		info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -184,11 +185,13 @@ func _build_title() -> void:
 	play.add_theme_constant_override("icon_max_width", 52)
 	play.pressed.connect(_play_pressed)
 	buttons["title_play"] = play
+	UiTheme.center_text(play)
 	_title_buttons.add_child(play)
 	var tut := _button("HƯỚNG DẪN TỪNG BƯỚC", "star")
 	UiTheme.secondary(tut)
 	tut.pressed.connect(func(): tutorial_requested.emit())
 	buttons["title_tutorial"] = tut
+	UiTheme.center_text(tut)
 	_title_buttons.add_child(tut)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
@@ -486,10 +489,9 @@ func _refresh_lineup() -> void:
 				["%s · %s" % [theme_data.loc(chars[seat], "short", chars[seat]), "bạn" if seat == 0 else "máy"], 17, UiTheme.TEXT_MUTED, "Medium"]]:
 			var l := _label(str(line[0]), line[1], line[2], line[3])
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			l.autowrap_mode = TextServer.AUTOWRAP_OFF
 			l.custom_minimum_size.x = 0
 			cell.add_child(l)
+			UiTheme.fit_name(l, line[1], 14)
 		cell.set_meta("seat", seat)
 		_lineup.add_child(cell)
 	_relayouts = 2
@@ -752,6 +754,8 @@ func _layout() -> void:
 		var text_w := (w - 64.0 - 28.0) * 0.5 if (two_cols and name == "setup") else w - 64.0
 		card.custom_minimum_size.x = w
 		for l in card.find_children("*", "Label", true, false):
+			if l.has_meta("fit_max"):
+				continue  # name labels size themselves (UiTheme.fit_name)
 			if l.autowrap_mode != TextServer.AUTOWRAP_OFF:
 				l.custom_minimum_size.x = maxf(_avail_width(l, card, text_w), 80.0)
 		if card.has_meta("scroll"):

@@ -117,7 +117,7 @@ func test_landscape_layout_keeps_panels_on_screen() -> void:
 	assert_true(vp.size.x > vp.size.y, "landscape viewport")
 	var top: Rect2 = main.hud._top.get_global_rect()
 	var act: Rect2 = main.hud._action_panel.get_global_rect()
-	assert_true(vp.grow(1).encloses(top), "top panel on screen")
+	assert_true(vp.grow(1).encloses(top), "top panel on screen %s in %s" % [str(top), str(vp)])
 	assert_true(vp.grow(1).encloses(act), "action panel on screen")
 	assert_false(top.intersects(act), "panels do not overlap in landscape")
 	# Phase 2: the board has the left side to itself; no tile under a panel.
