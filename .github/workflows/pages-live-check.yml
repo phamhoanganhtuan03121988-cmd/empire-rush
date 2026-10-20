@@ -1,0 +1,59 @@
+# Read-only check of the live GitHub Pages site: does it serve exactly the
+# build that the latest successful deploy published? Finds the newest web-pwa
+# push run on the deployment branch whose deploy job succeeded, downloads its
+# github-pages artifact and compares every live file with it
+# (scripts/web/verify_live.sh). Deploys nothing, changes nothing.
+name: pages-live-check
+
+on:
+  push:
+    branches: [claude/empire-rush-pages-deploy-fix]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Find the latest deployed build
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          for id in $(gh api "repos/$REPO/actions/workflows/web-pwa.yml/runs?branch=claude/empire-rush-web-pwa-launch&event=push&status=success&per_page=10" --jq '.workflow_runs[].id'); do
+            deployed=$(gh api "repos/$REPO/actions/runs/$id/jobs" --jq '[.jobs[] | select(.name == "deploy" and .conclusion == "success")] | length')
+            if [ "$deployed" -gt 0 ]; then
+              sha=$(gh api "repos/$REPO/actions/runs/$id" --jq '.head_sha')
+              echo "run=$id" >> "$GITHUB_OUTPUT"
+              echo "sha=$sha" >> "$GITHUB_OUTPUT"
+              echo "Latest deploy: run $id, commit $sha"
+              exit 0
+            fi
+          done
+          echo "No successful deploy found"; exit 1
+
+      - name: Download what that run deployed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ steps.find.outputs.run }}" -R "${{ github.repository }}" -n github-pages -D pages
+          mkdir -p deployed && tar -xf pages/artifact.tar -C deployed
+
+      - name: Compare the live site with it
+        run: |
+          set -euo pipefail
+          URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"
+          {
+            echo "### Live site: ${URL}"
+            echo "Expected: deploy run [${{ steps.find.outputs.run }}](https://github.com/${{ github.repository }}/actions/runs/${{ steps.find.outputs.run }}), commit \`${{ steps.find.outputs.sha }}\`"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+          scripts/web/verify_live.sh deployed "$URL" "${{ steps.find.outputs.sha }}" | tee -a "$GITHUB_STEP_SUMMARY"
