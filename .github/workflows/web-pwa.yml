@@ -128,3 +128,25 @@ jobs:
         if: steps.pages.outcome == 'success'
         run: |
           echo "### Play: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+
+      # Fetch the live site over HTTPS (from the runner) and check that it is
+      # this build: the page, the PWA manifest, the service worker, the engine.
+      - name: Verify the live site
+        if: steps.pages.outcome == 'success'
+        env:
+          URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 18); do
+            if curl -fsS "${URL}index.html" -o page.html && grep -q "<title>EMPIRE RUSH</title>" page.html; then ok=1; break; fi
+            sleep 10
+          done
+          [ "$ok" = 1 ] || { echo "live page not reachable or not this game"; exit 1; }
+          curl -fsS "${URL}index.manifest.json" | python3 -c "import json,sys; m=json.load(sys.stdin); assert m['name']=='EMPIRE RUSH' and m['display']=='standalone', m; print('manifest ok:', m['name'], m['display'])"
+          curl -fsS "${URL}index.service.worker.js" | grep -q "CACHED_FILES" && echo "service worker ok"
+          code=$(curl -sS -o /dev/null -w '%{http_code} %{content_type} %{size_download}' "${URL}index.wasm"); echo "index.wasm: $code"
+          case "$code" in "200 application/wasm"*) ;; *) echo "index.wasm not served as application/wasm"; exit 1 ;; esac
+          code=$(curl -sS -o /dev/null -w '%{http_code} %{size_download}' "${URL}index.pck"); echo "index.pck: $code"
+          case "$code" in "200 "*) ;; *) exit 1 ;; esac
+          echo "Verified live: ${URL} (page, manifest, service worker, engine, game data)" >> "$GITHUB_STEP_SUMMARY"
