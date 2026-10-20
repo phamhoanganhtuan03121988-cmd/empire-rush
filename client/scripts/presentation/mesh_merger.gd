@@ -197,13 +197,29 @@ func build() -> ArrayMesh:
 		arrays[Mesh.ARRAY_VERTEX] = s["v"]
 		arrays[Mesh.ARRAY_NORMAL] = s["n"]
 		arrays[Mesh.ARRAY_TEX_UV] = s["uv"]
-		arrays[Mesh.ARRAY_COLOR] = s["c"]
+		var mat := material_for(key)
+		var srgb := mat is BaseMaterial3D and (mat as BaseMaterial3D).vertex_color_is_srgb
+		arrays[Mesh.ARRAY_COLOR] = _linear_colors(s["c"]) if srgb and _compat() else s["c"]
 		arrays[Mesh.ARRAY_INDEX] = s["i"]
 		if s.has("t"):
 			arrays[Mesh.ARRAY_TANGENT] = s["t"]
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		mesh.surface_set_material(mesh.get_surface_count() - 1, material_for(key))
+		mesh.surface_set_material(mesh.get_surface_count() - 1, mat)
 	return mesh
+
+
+## The Compatibility renderer (web build, WebGL 2) does not apply the
+## materials' vertex_color_is_srgb conversion, so tints rendered far too pale
+## (white tiles, washed-out districts). Convert them here instead.
+static func _compat() -> bool:
+	return RenderingServer.get_current_rendering_method() == "gl_compatibility"
+
+
+static func _linear_colors(c: PackedColorArray) -> PackedColorArray:
+	var out := c.duplicate()
+	for j in out.size():
+		out[j] = out[j].srgb_to_linear()
+	return out
 
 
 func instance(name := "Merged") -> MeshInstance3D:

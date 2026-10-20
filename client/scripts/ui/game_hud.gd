@@ -874,7 +874,8 @@ func _rebuild_actions() -> void:
 	match s.phase:
 		GameState.AWAIT_ROLL:
 			_set_title(UiText.t("your_turn"), "dice")
-			_action_body.text = UiText.t("roll_hint")
+			# Phones and tablets have no Space key to mention.
+			_action_body.text = UiText.t("roll_hint_touch" if DisplayServer.is_touchscreen_available() else "roll_hint")
 			_hero(_add_button(UiText.t("roll"), ErCommand.ROLL_DICE))
 		GameState.AWAIT_BUY:
 			var pid := e.property_at(s.player(seat)["position"])

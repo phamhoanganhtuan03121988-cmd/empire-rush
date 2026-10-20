@@ -11,6 +11,7 @@ const T := {
 	"waiting": "%s đang suy nghĩ…",
 	"roll": "ĐỔ XÚC XẮC",
 	"roll_hint": "Bấm nút (hoặc phím Space) để tung xúc xắc.",
+	"roll_hint_touch": "Chạm nút bên dưới để tung xúc xắc.",
 	"rolling": "ĐANG TUNG…",
 	"rolled_hero": "%d + %d = %d",
 	"buy": "MUA  %d RC",

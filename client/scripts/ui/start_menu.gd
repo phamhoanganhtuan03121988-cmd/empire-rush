@@ -206,7 +206,8 @@ func _build_title() -> void:
 	sets.pressed.connect(func(): _settings_back_to = "title"; show_page("settings"))
 	buttons["title_settings"] = sets
 	row.add_child(sets)
-	var foot := _label("Bản thử nội bộ · %s" % _build_stamp(), 20, Color(1, 1, 1, 0.45), "Medium")
+	var stamp := ("Phiên bản %s" if BuildFlavor.name() == "public-release" else "Bản thử nội bộ · %s") % _build_stamp()
+	var foot := _label(stamp, 20, Color(1, 1, 1, 0.45), "Medium")
 	foot.name = "Footer"
 	_title_buttons.add_child(foot)
 

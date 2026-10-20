@@ -298,8 +298,10 @@ func _build_price_label(root: Node3D, pid: String, band_local: Vector3, accent: 
 	l.text = str(config.tier_of(pid)["price"])
 	l.font = load("res://assets/fonts/BeVietnamPro-ExtraBold.ttf")
 	l.font_size = 64
-	l.pixel_size = 0.0034
-	l.outline_size = 10
+	# Web/PWA polish: larger and with a heavier outline, so the price reads
+	# on a phone held in portrait (the board is ~390 pt wide there).
+	l.pixel_size = 0.0044
+	l.outline_size = 14
 	l.outline_modulate = accent.darkened(0.45)
 	l.modulate = Color("#fffaf0")
 	l.rotation_degrees = Vector3(-90, 45, 0)
@@ -381,8 +383,8 @@ func show_owner(pid: String, seat: int) -> void:
 	# Phase 5.1: a bolder frame (it read as a hairline from the overview
 	# camera) and a taller flag.
 	for s in [-1, 1]:
-		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.92, 0.016, 0.08)), Vector3(0, TILE_H + 0.006, s * 0.42)), c)
-		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.08, 0.016, 0.92)), Vector3(s * 0.42, TILE_H + 0.006, 0)), c)
+		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.94, 0.016, 0.11)), Vector3(0, TILE_H + 0.006, s * 0.415)), c)
+		mm.add_kit(kit("unit_paint"), to_lot * Transform3D(Basis.from_scale(Vector3(0.11, 0.016, 0.94)), Vector3(s * 0.415, TILE_H + 0.006, 0)), c)
 	var corner := Vector3(0.24, 0.0, 0.24)
 	mm.add_kit(kit("flag_pole"), Transform3D(Basis.from_scale(Vector3.ONE * 1.5), corner))
 	mm.add_kit(kit("flag_cloth"), Transform3D(Basis.from_scale(Vector3.ONE * 1.5), corner), c)
@@ -395,13 +397,13 @@ func show_owner(pid: String, seat: int) -> void:
 		seal.name = "Seal"
 		seal.texture = face
 		seal.axis = Vector3.AXIS_Y
-		seal.pixel_size = 0.36 / face.get_width()
+		seal.pixel_size = 0.46 / face.get_width()
 		seal.shaded = false
 		seal.double_sided = false
 		seal.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 		seal.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		seal.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		seal.position = Vector3(-0.23, 0.012, 0.23)
+		seal.position = Vector3(-0.2, 0.012, 0.2)
 		flag.add_child(seal)
 	_owner_marks[pid] = flag
 	flag.scale = Vector3.ONE * 0.01

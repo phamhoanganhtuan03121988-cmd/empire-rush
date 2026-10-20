@@ -1,0 +1,113 @@
+# Web/PWA build for iPhone Safari (Add to Home Screen) and GitHub Pages.
+#   1. web-build: exports the "Web Public Release" preset (single-threaded,
+#      Compatibility/WebGL 2, PWA), then plays it in headless Chromium with an
+#      iPhone-sized touch viewport (tests_web/e2e_web.mjs): boot, a real turn
+#      with a purchase, names on the HUD, save + reload + resume, the service
+#      worker and a reload with the network cut. This is NOT Safari/iOS.
+#   2. deploy: publishes the tested build to GitHub Pages - only when Pages is
+#      enabled for the repository (Settings > Pages > Source: GitHub Actions)
+#      and this branch may deploy to the github-pages environment. Otherwise
+#      the job explains what is missing and stays green.
+# No secrets are used. See docs/WEB_PWA_DEPLOYMENT.md.
+name: web-pwa
+
+on:
+  push:
+    branches: [main, claude/empire-rush-web-pwa-launch]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-pwa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Godot 4.7.2-stable
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/godot/4.7.2-stable
+          key: godot-4.7.2-stable-linux-x86_64-${{ hashFiles('scripts/ci/install_godot.sh') }}
+
+      - name: Cache export templates (Linux + web)
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/godot/export_templates/4.7.2.stable
+          key: godot-templates-4.7.2-stable-linux-web-${{ hashFiles('scripts/ci/install_templates.sh') }}
+
+      - name: Install Godot and the web template (SHA-512 verified)
+        run: |
+          echo "GODOT=$(scripts/ci/install_godot.sh | tail -n 1)" >> "$GITHUB_ENV"
+          scripts/ci/install_templates.sh web
+
+      - name: Export the web build (PWA)
+        run: scripts/export_build.sh web public
+
+      - name: Install Playwright + Chromium (test only, not shipped)
+        working-directory: tests_web
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Browser end-to-end test (Chromium, iPhone viewport, touch)
+        run: node tests_web/e2e_web.mjs build/web-public web-e2e
+
+      - name: Responsive check (iPhone SE / 15 / 15 Pro Max / landscape / iPad mini)
+        run: node tests_web/responsive_web.mjs build/web-public web-e2e/responsive
+
+      - name: Upload e2e screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-e2e
+          path: web-e2e/
+          if-no-files-found: warn
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/web-public
+
+  deploy:
+    needs: web-build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Is GitHub Pages enabled?
+        id: pages
+        continue-on-error: true
+        uses: actions/configure-pages@v5
+
+      - name: Pages not enabled yet
+        if: steps.pages.outcome != 'success'
+        run: |
+          {
+            echo "### GitHub Pages is not enabled for this repository"
+            echo "The web build passed its tests but was not published."
+            echo "Settings > Pages > Build and deployment > Source: **GitHub Actions**, then re-run this workflow."
+            echo "(GitHub Pages is free for public repositories.)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        if: steps.pages.outcome == 'success'
+        uses: actions/deploy-pages@v4
+
+      - name: Link
+        if: steps.pages.outcome == 'success'
+        run: |
+          echo "### Play: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

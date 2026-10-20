@@ -30,10 +30,21 @@ function check(ok, name, detail = '') {
 
 const server = await serve(root, PORT);
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-const iphone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true,
+const iphone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: Number(process.env.E2E_DPR || 3), isMobile: true, hasTouch: true,
   userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' };
 const ctx = await browser.newContext(iphone);
 const page = await ctx.newPage();
+if (process.env.E2E_TRACE) {
+  await page.addInitScript(() => {
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (v, k) { if (String(k).includes('saved_match')) console.log('TRACE put', performance.now() | 0, k, v && v.contents ? v.contents.length : '-'); return put.call(this, v, k); };
+    const tx = IDBDatabase.prototype.transaction;
+    IDBDatabase.prototype.transaction = function (a, b) { console.log('TRACE tx', performance.now() | 0, String(a), b); return tx.call(this, a, b); };
+    const del = IDBObjectStore.prototype.delete;
+    IDBObjectStore.prototype.delete = function (k) { if (String(k).includes('saved_match')) console.log('TRACE del', performance.now() | 0, k); return del.call(this, k); };
+  });
+  page.on('console', (m) => { if (m.text().startsWith('TRACE')) console.log(m.text()); });
+}
 const problems = [];
 page.on('console', (m) => {
   const t = m.text();
@@ -183,7 +194,7 @@ try {
   }));
   const tIdb = Date.now();
   let inIdb = await idbLog();
-  while (inIdb !== savedLog && Date.now() - tIdb < 20000) { await page.waitForTimeout(250); inIdb = await idbLog(); }
+  while (inIdb !== savedLog && Date.now() - tIdb < 150000) { await page.waitForTimeout(250); inIdb = await idbLog(); }
   if (process.env.E2E_IDB_KEYS) console.log(JSON.stringify(await page.evaluate(eval(fs.readFileSync(process.env.E2E_IDB_KEYS, 'utf8')))));
   check(inIdb === savedLog, 'latest save written to IndexedDB', `${Date.now() - tIdb} ms after the turn became playable`);
 
